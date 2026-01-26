@@ -14,12 +14,15 @@ export default function PayfastGuidePage() {
 # --- PRODUCTION ---
 # Replace with your LIVE PayFast Merchant ID (public).
 # NEXT_PUBLIC_PAYFAST_MERCHANT_ID="YOUR_LIVE_MERCHANT_ID"
+# Replace with your LIVE PayFast Merchant Key (public).
+# NEXT_PUBLIC_PAYFAST_MERCHANT_KEY="YOUR_LIVE_MERCHANT_KEY"
 # Replace with your LIVE PayFast Passphrase (secret, for server-side use only).
 # PAYFAST_PASSPHRASE="YOUR_LIVE_PASSPHRASE"
 
 # --- SANDBOX (for testing) ---
 # Uncomment these lines to use the sandbox environment.
 NEXT_PUBLIC_PAYFAST_MERCHANT_ID="10000100"
+NEXT_PUBLIC_PAYFAST_MERCHANT_KEY="46f0cd694581a"
 PAYFAST_PASSPHRASE="jt7NOE43FZPn"
 
 # The base URL of your application when deployed.
@@ -38,7 +41,7 @@ NEXT_PUBLIC_PAYFAST_PROCESS_URL="https://sandbox.payfast.co.za/eng/process"
   const formHtml = `
 <form action="https://sandbox.payfast.co.za/eng/process" method="post">
   <input type="hidden" name="merchant_id" value={process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID}>
-  <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY">
+  <input type="hidden" name="merchant_key" value={process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY}>
   <input type="hidden" name="return_url" value="https://your-site.com/checkout/success">
   <input type="hidden" name="cancel_url" value="https://your-site.com/checkout/cancel">
   <input type="hidden" name="notify_url" value="https://your-site.com/api/payfast-itn">

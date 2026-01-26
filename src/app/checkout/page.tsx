@@ -107,9 +107,15 @@ export default function CheckoutPage() {
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const payfastData = {
         merchant_id: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID || '10000100',
+        merchant_key: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY || '46f0cd694581a',
         return_url: `${origin}/checkout/success?orderId=${docRef.id}`,
         cancel_url: `${origin}/cart`,
         notify_url: `${origin}/api/payfast-itn`, // You will need to build this API route
+        
+        name_first: values.firstName,
+        name_last: values.lastName,
+        email_address: values.email,
+
         m_payment_id: docRef.id,
         amount: totalAmount.toFixed(2),
         item_name: `Working on Grass - Order #${docRef.id.substring(0, 8)}`,
@@ -148,7 +154,7 @@ export default function CheckoutPage() {
                 <CardContent>
                     <p className="text-muted-foreground">Please wait...</p>
                     {/* This form will auto-submit */}
-                    <form ref={payfastFormRef} action="https://sandbox.payfast.co.za/eng/process" method="post">
+                    <form ref={payfastFormRef} action={process.env.NEXT_PUBLIC_PAYFAST_PROCESS_URL || "https://sandbox.payfast.co.za/eng/process"} method="post">
                         {Object.entries(payfastConfig).map(([key, value]) => (
                            <input key={key} type="hidden" name={key} value={value as string} />
                         ))}
