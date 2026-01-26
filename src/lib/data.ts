@@ -1,5 +1,4 @@
-import type { Service, Product, SeedCategory } from './types';
-import { PlaceHolderImages } from './placeholder-images';
+import type { Service, SeedCategory } from './types';
 
 export const services: Service[] = [
     { title: "Veld condition and grazing capacity assessments", description: "In-depth analysis of your veld's health and ability to sustain livestock or game." },
@@ -29,27 +28,6 @@ export const services: Service[] = [
     { title: "Elephant impact assessments", description: "Evaluating the impact of elephant populations on vegetation and ecosystems." },
   ];
   
-  export const products: Product[] = [
-    {
-      id: "dpm-01",
-      name: "Disc Pasture Meter",
-      price: 4620.00,
-      description: "The disc pasture meter (or DPM) is an aluminium instrument used to determine grass biomass per hectare (kg dry grass/ha) in veld. It is an easy alternative to cutting, drying, and weighing grass samples for measuring biomass. The grass biomass data is then typically used for determining the grazing capacity on a property or a single camp/paddock, and to make decisions regarding prescribe burning. The DPM consists of a disc attached to a tube which slides over a rod fitted with measurements in centimetre. The disc and tube unit are dropped onto the grass sward with the rod placed vertically to the ground. The height at which the disc settles is then recorded. Grass biomass is then calculated by using an equation developed by pasture scientists. These equations are supplied with the instrument.",
-      category: "Instruments",
-      image: PlaceHolderImages.find(p => p.id === 'dpm-product-image')?.imageUrl || '',
-      imageHint: PlaceHolderImages.find(p => p.id === 'dpm-product-image')?.imageHint || '',
-    },
-    {
-        id: "seed-01",
-        name: "Custom Seed Mix",
-        price: 550.00,
-        description: "Working on Grass is a registered seed agent for Barenbrug SA. We offer a full range of seed including summer grass and legume pastures, winter pastures, pasture and rehabilitation mixtures, cover crops and turf grasses for various climatic conditions and uses. Contact us for a custom quotation based on your specific needs.",
-        category: "Seeds",
-        image: PlaceHolderImages.find(p => p.id === 'seeds-product-image')?.imageUrl || '',
-        imageHint: PlaceHolderImages.find(p => p.id === 'seeds-product-image')?.imageHint || '',
-      },
-  ];
-
   export const seedCategories: SeedCategory[] = [
     {
       name: "Grasses",

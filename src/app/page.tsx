@@ -1,24 +1,32 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 import {
   ArrowRight,
-  Disc,
   Leaf,
   Sprout,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { services, products } from "@/lib/data";
+import { services } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, orderBy, limit } from "firebase/firestore";
+import type { Product } from "@/lib/types";
 
 export default function Home() {
+  const firestore = useFirestore();
+  const productsQuery = useMemoFirebase(() => query(collection(firestore, 'products'), orderBy('name'), limit(1)), [firestore]);
+  const { data: products } = useCollection<Omit<Product, 'id'>>(productsQuery);
+  const dpmProduct = products?.[0];
+
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero');
   const galleryImages = PlaceHolderImages.filter(p => p.id.startsWith('gallery-'));
-  const dpmProduct = products.find(p => p.id === 'dpm-01');
-
+  
   return (
     <div className="flex flex-col min-h-[100dvh]">
       <section className="relative w-full h-[60vh] md:h-[80vh]">
@@ -110,8 +118,8 @@ export default function Home() {
       
       <section id="products" className="w-full py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            {dpmProduct && (
+          {dpmProduct && (
+            <div className="grid lg:grid-cols-2 gap-16 items-center">
               <div className="flex flex-col items-start">
                 <Badge variant="outline" className="mb-4">Featured Product</Badge>
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">{dpmProduct.name}</h2>
@@ -125,18 +133,18 @@ export default function Home() {
                   </Button>
                 </div>
               </div>
-            )}
-            <div className="flex justify-center">
-              <Image
-                src={dpmProduct?.image || ''}
-                alt="Disc Pasture Meter"
-                width={500}
-                height={500}
-                className="rounded-lg object-contain aspect-square"
-                data-ai-hint="pasture meter"
-              />
+              <div className="flex justify-center">
+                <Image
+                  src={dpmProduct?.image || 'https://picsum.photos/seed/placeholder/500/500'}
+                  alt={dpmProduct.name}
+                  width={500}
+                  height={500}
+                  className="rounded-lg object-contain aspect-square"
+                  data-ai-hint={dpmProduct.imageHint || "product image"}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </section>
 
