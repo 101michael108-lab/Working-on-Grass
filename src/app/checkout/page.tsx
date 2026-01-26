@@ -15,12 +15,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase";
 import { collection, serverTimestamp } from "firebase/firestore";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -39,6 +40,8 @@ export default function CheckoutPage() {
   const { user } = useUser();
   const firestore = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [payfastConfig, setPayfastConfig] = useState<Record<string, string> | null>(null);
+  const payfastFormRef = useRef<HTMLFormElement>(null);
 
 
   const subtotal = cartItems.reduce(
@@ -58,6 +61,13 @@ export default function CheckoutPage() {
       country: "South Africa",
     },
   });
+  
+  useEffect(() => {
+    if (payfastConfig && payfastFormRef.current) {
+        payfastFormRef.current.submit();
+    }
+  }, [payfastConfig]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>>) {
     setIsProcessing(true);
@@ -93,8 +103,23 @@ export default function CheckoutPage() {
         title: "Order Received!",
         description: "Redirecting to payment...",
       });
+      
+      const origin = window.location.origin;
+      const payfastData = {
+        merchant_id: '10000100', // SANDBOX/TEST Merchant ID. This should come from your .env.local file
+        return_url: `${origin}/checkout/success?orderId=${docRef.id}`,
+        cancel_url: `${origin}/cart`,
+        notify_url: `${origin}/api/payfast-itn`, // You will need to build this API route
+        m_payment_id: docRef.id,
+        amount: totalAmount.toFixed(2),
+        item_name: `Working on Grass - Order #${docRef.id.substring(0, 8)}`,
+        // IMPORTANT: The 'signature' is deliberately omitted. It must be generated on your server
+        // using your secret passphrase for security. The PayFast sandbox may allow
+        // transactions without it for basic testing. See the /payfast-guide.
+      };
+
+      setPayfastConfig(payfastData);
       clearCart();
-      router.push(`/checkout/success?orderId=${docRef.id}`);
 
     } catch (error: any) {
        toast({
@@ -107,10 +132,40 @@ export default function CheckoutPage() {
   }
 
   // Redirect if cart is empty on client side
-  if (typeof window !== 'undefined' && cartItems.length === 0) {
+  if (typeof window !== 'undefined' && cartItems.length === 0 && !payfastConfig) {
      router.replace('/shop');
      return null;
   }
+  
+  if (payfastConfig) {
+    return (
+        <div className="container flex min-h-[80vh] items-center justify-center py-12 text-center">
+            <Card className="w-full max-w-lg">
+                <CardHeader>
+                    <CardTitle>Proceeding to Payment</CardTitle>
+                    <CardDescription>You are being redirected to PayFast to complete your payment securely.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground">Please wait...</p>
+                    {/* This form will auto-submit */}
+                    <form ref={payfastFormRef} action="https://sandbox.payfast.co.za/eng/process" method="post">
+                        {Object.entries(payfastConfig).map(([key, value]) => (
+                           <input key={key} type="hidden" name={key} value={value as string} />
+                        ))}
+                    </form>
+                     <Button onClick={() => payfastFormRef.current?.submit()} className="mt-4">
+                        Click here if you are not redirected
+                    </Button>
+                    <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-md text-left text-xs text-amber-800">
+                        <h4 className="font-bold mb-2">Developer Note:</h4>
+                        <p>This form is redirecting to the PayFast Sandbox. For a real transaction, a secure <code className="font-mono">signature</code> must be generated on your backend using your PayFast passphrase. See the <Link href="/payfast-guide" className="underline">PayFast Integration Guide</Link> for details.</p>
+                    </div>
+                </CardContent>
+            </Card>
+        </div>
+    )
+  }
+
 
   return (
     <div className="container py-12 md:py-20">

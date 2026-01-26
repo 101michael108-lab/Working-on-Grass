@@ -5,9 +5,26 @@ import { CodeBlock } from "@/components/code-block"
 import Link from "next/link"
 
 export default function PayfastGuidePage() {
+
+    const envLocalContent = `
+# PayFast Sandbox Credentials
+# IMPORTANT: This file should be named .env.local and placed in the root of your project.
+# It should also be added to your .gitignore file to keep your secrets safe.
+
+# This ID is public and can be exposed on the client.
+NEXT_PUBLIC_PAYFAST_MERCHANT_ID="10000100"
+
+# These are SECRET and must only be used on the server (in API Route Handlers).
+PAYFAST_MERCHANT_KEY="46f0cd694581a"
+PAYFAST_PASSPHRASE="jt7NOE43FZPn"
+
+# The base URL of your application when deployed
+NEXT_PUBLIC_SITE_URL="http://localhost:9002"
+`.trim();
+
   const formHtml = `
 <form action="https://sandbox.payfast.co.za/eng/process" method="post">
-  <input type="hidden" name="merchant_id" value="YOUR_MERCHANT_ID">
+  <input type="hidden" name="merchant_id" value={process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID}>
   <input type="hidden" name="merchant_key" value="YOUR_MERCHANT_KEY">
   <input type="hidden" name="return_url" value="https://your-site.com/checkout/success">
   <input type="hidden" name="cancel_url" value="https://your-site.com/checkout/cancel">
@@ -21,34 +38,31 @@ export default function PayfastGuidePage() {
   <input type="hidden" name="amount" value="100.00">
   <input type="hidden" name="item_name" value="Your Order #12345">
   
-  <input type="hidden" name="signature" value="GENERATED_SIGNATURE">
+  <input type="hidden" name="signature" value="GENERATED_SIGNATURE_ON_SERVER">
   
   <button type="submit">Pay Now</button>
 </form>
   `.trim();
 
   const itnPseudoCode = `
-// /pages/api/payfast-itn.ts
-// This is a Next.js API Route - a server-side endpoint
+// src/app/api/payfast-itn/route.ts
+// This is a Next.js API Route Handler - a server-side endpoint
 
-import { NextApiRequest, NextApiResponse } from 'next';
+import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { doc, updateDoc } from 'firebase/firestore';
 import { firestore } from '@/firebase/server-init'; // You would need a server-side Firebase admin init
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method !== 'POST') {
-    return res.status(405).send('Method Not Allowed');
-  }
-
-  const pfData = req.body;
+export async function POST(req: NextRequest) {
+  const pfData = await req.formData();
+  const pfDataObj = Object.fromEntries(pfData.entries());
   
   // 1. Validate the data came from PayFast
-  //    (Check their server IP addresses)
+  //    (Check their server IP addresses - see PayFast docs)
   
   // 2. Create a signature from the received data (excluding the signature field)
   //    This must be done on the server with your passphrase.
-  const fields = {...pfData};
+  const fields = {...pfDataObj};
   delete fields.signature;
   
   let checkString = '';
@@ -57,14 +71,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           checkString += \`\${key}=\${encodeURIComponent(fields[key]).replace(/%20/g, '+')}&\`;
       }
   }
-  checkString = checkString.slice(0, -1); // remove last '&'
-  
+  checkString += \`passphrase=\${encodeURIComponent(process.env.PAYFAST_PASSPHRASE)}\`;
+
   const serverSignature = crypto.createHash('md5').update(checkString).digest('hex');
 
   // 3. Verify signatures match
-  if (serverSignature !== pfData.signature) {
+  if (serverSignature !== pfDataObj.signature) {
     console.error("Signatures do not match");
-    return res.status(400).send('Invalid signature');
+    return new NextResponse('Invalid signature', { status: 400 });
   }
 
   // 4. Verify the payment status in a separate call to PayFast
@@ -72,17 +86,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   //    You'd make a POST request back to PayFast's validation endpoint.
 
   // 5. If everything checks out, update your database
-  const orderId = pfData.m_payment_id;
+  const orderId = pfDataObj.m_payment_id;
   const orderRef = doc(firestore, 'orders', orderId); // Adjust path as needed
   
-  if (pfData.payment_status === 'COMPLETE') {
+  if (pfDataObj.payment_status === 'COMPLETE') {
     await updateDoc(orderRef, {
       status: 'Processing', // Or 'Fulfilled', 'Paid', etc.
-      paymentInfo: pfData, // Store the payment details
+      paymentInfo: pfDataObj, // Store the payment details
     });
   }
   
-  res.status(200).send('OK');
+  return new NextResponse('OK', { status: 200 });
 }
   `.trim();
 
@@ -93,10 +107,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         <p className="text-lg text-muted-foreground mb-8">
           This is a high-level guide to integrating PayFast into your Next.js application. A full integration requires a backend to securely handle secret keys and process payment notifications.
         </p>
+
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>Step 1: Environment Variables</CardTitle>
+            <CardDescription>
+                Before you begin, create a file named <code>.env.local</code> in the root of your project to store your PayFast credentials. <strong>Never commit this file to version control.</strong>
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+                <p className="mb-2 text-sm">Copy the following into your <code>.env.local</code> file. These are test credentials provided by PayFast.</p>
+                <CodeBlock code={envLocalContent} language="bash" />
+          </CardContent>
+        </Card>
         
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle>Step 1: Backend Required</CardTitle>
+            <CardTitle>Step 2: Backend Required</CardTitle>
             <CardDescription>
               You cannot complete a PayFast integration from the frontend alone. You need a secure, server-side environment for two critical tasks:
             </CardDescription>
@@ -106,15 +133,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
               <li><strong>Generating a Secure Signature:</strong> PayFast requires a unique 'signature' to be sent with each payment request. This signature is an MD5 hash of the payment data combined with your secret PayFast passphrase. This must be generated on a server to keep your passphrase safe.</li>
               <li><strong>Handling the Instant Transaction Notification (ITN):</strong> After a payment is made, PayFast sends a POST request (an ITN callback) to a URL you provide. Your backend must listen for this ITN, validate it, and then update the order status in your Firestore database.</li>
             </ul>
-             <p className="mt-4 text-sm">A good way to implement this in Next.js is using <Link href="https://nextjs.org/docs/app/building-your-application/routing/route-handlers" target="_blank" className="text-primary underline">API Route Handlers</Link>.</p>
+             <p className="mt-4 text-sm">The best way to implement this in Next.js is using <Link href="https://nextjs.org/docs/app/building-your-application/routing/route-handlers" target="_blank" className="text-primary underline">API Route Handlers</Link>.</p>
           </CardContent>
         </Card>
 
         <Card className="mb-8">
             <CardHeader>
-                <CardTitle>Step 2: The Payment Form</CardTitle>
+                <CardTitle>Step 3: The Payment Form</CardTitle>
                 <CardDescription>
-                    On your checkout page, instead of just creating an order, you would generate the signature on the server and then render a form that POSTs directly to PayFast.
+                    On your checkout page, instead of just creating an order, you would generate the signature on the server and then render a form that POSTs directly to PayFast. Your app now does this automatically.
                 </CardDescription>
             </CardHeader>
             <CardContent>
@@ -125,9 +152,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         <Card>
             <CardHeader>
-                <CardTitle>Step 3: Handling the ITN Callback</CardTitle>
+                <CardTitle>Step 4: Handling the ITN Callback</CardTitle>
                 <CardDescription>
-                    This is the most critical part. You need to create an API endpoint (e.g., `/api/payfast-itn`) that PayFast can call. This endpoint is responsible for verifying the payment and updating your database.
+                    This is the most critical part. You need to create an API route (e.g., `/app/api/payfast-itn/route.ts`) that PayFast can call. This endpoint is responsible for verifying the payment and updating your database.
                 </CardDescription>
             </CardHeader>
             <CardContent>
