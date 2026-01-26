@@ -2,12 +2,16 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ShoppingCart, User } from "lucide-react";
+import { Menu, ShoppingCart, User, LogOut } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
+import { useUser, useAuth } from "@/firebase";
+import { signOut } from "firebase/auth";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -22,6 +26,8 @@ export function Header() {
   const pathname = usePathname();
   const { cartItems } = useCart();
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+  const { user } = useUser();
+  const auth = useAuth();
 
   const NavLink = ({ href, label }: { href: string; label: string }) => (
     <Link
@@ -61,12 +67,40 @@ export function Header() {
               <span className="sr-only">Shopping Cart</span>
             </Link>
           </Button>
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/login">
-              <User className="h-5 w-5" />
-              <span className="sr-only">Login</span>
-            </Link>
-          </Button>
+          
+          {user ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || ''} />
+                    <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <DropdownMenuItem disabled>
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+                  </div>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => signOut(auth)}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="/login">
+                <User className="h-5 w-5" />
+                <span className="sr-only">Login</span>
+              </Link>
+            </Button>
+          )}
+
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>

@@ -16,6 +16,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore, useUser } from "@/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -24,19 +29,79 @@ const formSchema = z.object({
 
 export default function LoginPage() {
     const { toast } = useToast();
+    const router = useRouter();
+    const auth = useAuth();
+    const firestore = useFirestore();
+    const { user, isUserLoading } = useUser();
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (!isUserLoading && user) {
+            const userDocRef = doc(firestore, "users", user.uid);
+            getDoc(userDocRef).then(userDocSnap => {
+                if (userDocSnap.exists()) {
+                    const userData = userDocSnap.data();
+                    if (userData.role === 'admin') {
+                        router.push('/admin');
+                    } else {
+                        router.push('/');
+                    }
+                }
+            });
+        }
+    }, [user, isUserLoading, router, firestore]);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: { email: "", password: "" },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
-        toast({
-            title: "Logged In",
-            description: "Welcome back! Redirecting to your dashboard...",
-        });
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsSubmitting(true);
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
+            const user = userCredential.user;
+
+            const userDocRef = doc(firestore, "users", user.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (userDocSnap.exists()) {
+                const userData = userDocSnap.data();
+                toast({
+                    title: "Logged In",
+                    description: "Welcome back! Redirecting...",
+                });
+                if (userData.role === 'admin') {
+                    router.push('/admin');
+                } else {
+                    router.push('/');
+                }
+            } else {
+                 toast({
+                    variant: "destructive",
+                    title: "Login failed.",
+                    description: "User data not found. Please contact support.",
+                });
+            }
+        } catch (error: any) {
+             toast({
+                variant: "destructive",
+                title: "Uh oh! Something went wrong.",
+                description: error.message,
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     }
+
+  if (isUserLoading || user) {
+    return (
+        <div className="container flex min-h-[80vh] items-center justify-center py-12">
+            <p>Loading...</p>
+        </div>
+    );
+  }
+  
   return (
     <div className="container flex min-h-[80vh] items-center justify-center py-12">
       <Card className="w-full max-w-md">
@@ -67,7 +132,9 @@ export default function LoginPage() {
                             Forgot password?
                         </Link>
                     </div>
-                    <Button type="submit" className="w-full" size="lg">Log In</Button>
+                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                        {isSubmitting ? "Logging In..." : "Log In"}
+                    </Button>
                 </form>
             </Form>
              <div className="mt-6 text-center text-sm text-muted-foreground">

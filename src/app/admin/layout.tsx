@@ -14,9 +14,6 @@ import {
   SidebarFooter,
   SidebarInset,
   SidebarTrigger,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
 } from "@/components/ui/sidebar"
 import {
   Settings,
@@ -26,10 +23,13 @@ import {
   LayoutDashboard,
   LogOut,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { Logo } from "@/components/logo"
-import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useAuth, useUser } from "@/firebase"
+import { signOut } from "firebase/auth"
+import { useRouter } from "next/navigation"
+import { doc, getDoc } from "firebase/firestore"
+import { useFirestore } from "@/firebase"
 
 const NavLink = ({ href, children, icon, tooltip }: { href: string; children: React.ReactNode; icon: React.ReactNode; tooltip?: string }) => {
   const pathname = usePathname();
@@ -48,8 +48,34 @@ const NavLink = ({ href, children, icon, tooltip }: { href: string; children: Re
 }
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Use a cookie or other state management to get the default open state
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
+  const { user, isUserLoading } = useUser();
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const router = useRouter();
+
+  React.useEffect(() => {
+    if (!isUserLoading && !user) {
+      router.push('/login');
+    } else if (user) {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      getDoc(userDocRef).then((docSnap) => {
+        if (docSnap.exists() && docSnap.data().role !== 'admin') {
+          router.push('/');
+        } else if (!docSnap.exists()) {
+          router.push('/');
+        }
+      });
+    }
+  }, [user, isUserLoading, router, firestore]);
+
+  if (isUserLoading || !user) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <p>Loading...</p>
+      </div>
+    );
+  }
 
   return (
     <SidebarProvider open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
@@ -71,7 +97,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarMenu>
             <NavLink href="/admin/settings" icon={<Settings />} tooltip="Settings">Settings</NavLink>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton onClick={() => signOut(auth)}>
                 <LogOut />
                 <span>Logout</span>
               </SidebarMenuButton>
@@ -79,12 +105,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </SidebarMenu>
           <div className="flex items-center gap-2 p-2 group-data-[collapsible=icon]:hidden border-t">
               <Avatar>
-                <AvatarImage src="https://picsum.photos/seed/admin/40/40" alt="Admin" />
-                <AvatarFallback>A</AvatarFallback>
+                <AvatarImage src={user.photoURL || `https://picsum.photos/seed/${user.uid}/40/40`} alt={user.displayName || "Admin"} />
+                <AvatarFallback>{user.displayName?.[0] || user.email?.[0] || 'A'}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col">
-                <span className="text-sm font-semibold">Admin User</span>
-                <span className="text-xs text-muted-foreground">admin@wog.co.za</span>
+                <span className="text-sm font-semibold">{user.displayName || 'Admin User'}</span>
+                <span className="text-xs text-muted-foreground">{user.email}</span>
               </div>
           </div>
         </SidebarFooter>

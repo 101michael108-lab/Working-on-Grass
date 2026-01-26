@@ -16,6 +16,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth, useFirestore } from "@/firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { doc, serverTimestamp } from "firebase/firestore";
+import { setDocumentNonBlocking } from "@/firebase";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -25,18 +31,49 @@ const formSchema = z.object({
 
 export default function SignupPage() {
     const { toast } = useToast();
+    const router = useRouter();
+    const auth = useAuth();
+    const firestore = useFirestore();
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: { name: "", email: "", password: "" },
     });
 
-    function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log(values);
-        toast({
-            title: "Account Created!",
-            description: "Welcome! You can now log in.",
-        });
+    async function onSubmit(values: z.infer<typeof formSchema>) {
+        setIsSubmitting(true);
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, values.email, values.password);
+            const user = userCredential.user;
+            await updateProfile(user, { displayName: values.name });
+
+            const userDocRef = doc(firestore, 'users', user.uid);
+            const userData = {
+                id: user.uid,
+                email: user.email,
+                displayName: values.name,
+                role: 'user',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            };
+            
+            setDocumentNonBlocking(userDocRef, userData, { merge: false });
+
+            toast({
+                title: "Account Created!",
+                description: "Welcome! You can now log in.",
+            });
+            router.push('/login');
+        } catch (error: any) {
+             toast({
+                variant: "destructive",
+                title: "Uh oh! Something went wrong.",
+                description: error.message,
+            });
+        } finally {
+            setIsSubmitting(false);
+        }
     }
   return (
     <div className="container flex min-h-[80vh] items-center justify-center py-12">
@@ -69,7 +106,9 @@ export default function SignupPage() {
                             <FormMessage />
                         </FormItem>
                     )} />
-                    <Button type="submit" className="w-full" size="lg">Create Account</Button>
+                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                        {isSubmitting ? "Creating Account..." : "Create Account"}
+                    </Button>
                 </form>
             </Form>
              <div className="mt-6 text-center text-sm text-muted-foreground">
