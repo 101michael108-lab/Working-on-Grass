@@ -19,9 +19,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase";
-import { collection, serverTimestamp } from "firebase/firestore";
+import { useUser, useFirestore, addDocumentNonBlocking, useAuth, setDocumentNonBlocking } from "@/firebase";
+import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
+import { signInAnonymously } from "firebase/auth";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -38,6 +39,7 @@ export default function CheckoutPage() {
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useUser();
+  const auth = useAuth();
   const firestore = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [payfastConfig, setPayfastConfig] = useState<Record<string, string> | null>(null);
@@ -63,6 +65,18 @@ export default function CheckoutPage() {
   });
   
   useEffect(() => {
+    if (user) {
+        form.reset({
+            ...form.getValues(), // keep address, etc. if entered
+            email: user.email || form.getValues().email,
+            firstName: user.displayName?.split(' ')[0] || form.getValues().firstName,
+            lastName: user.displayName?.split(' ')[1] || form.getValues().lastName || "",
+        });
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user]);
+
+  useEffect(() => {
     if (payfastConfig && payfastFormRef.current) {
         payfastFormRef.current.submit();
     }
@@ -71,18 +85,48 @@ export default function CheckoutPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsProcessing(true);
-    if (!user) {
-      toast({ variant: "destructive", title: "You must be logged in to place an order." });
-      router.push('/login');
+    
+    let effectiveUser = user;
+    
+    if (!effectiveUser) {
+        try {
+            const userCredential = await signInAnonymously(auth);
+            effectiveUser = userCredential.user;
+
+            const userDocRef = doc(firestore, 'users', effectiveUser.uid);
+            const userData = {
+                id: effectiveUser.uid,
+                email: values.email,
+                displayName: `${values.firstName} ${values.lastName}`,
+                role: 'user',
+                createdAt: serverTimestamp(),
+                updatedAt: serverTimestamp(),
+            };
+            setDocumentNonBlocking(userDocRef, userData, { merge: false });
+        } catch (error) {
+            console.error("Anonymous sign-in failed:", error);
+            toast({
+                variant: "destructive",
+                title: "Could not create guest session.",
+                description: "Please try again later or log in.",
+            });
+            setIsProcessing(false);
+            return;
+        }
+    }
+
+    if (!effectiveUser) {
+      toast({ variant: "destructive", title: "Authentication error", description: "Could not verify user. Please refresh and try again." });
       setIsProcessing(false);
       return;
     }
 
+
     const totalAmount = subtotal + 150; // Assuming R150 shipping
-    const ordersCollection = collection(firestore, 'users', user.uid, 'orders');
+    const ordersCollection = collection(firestore, 'users', effectiveUser.uid, 'orders');
 
     const orderData = {
-      userId: user.uid,
+      userId: effectiveUser.uid,
       orderDate: serverTimestamp(),
       totalAmount: totalAmount,
       status: 'Pending',
@@ -106,8 +150,8 @@ export default function CheckoutPage() {
       
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const payfastData = {
-        merchant_id: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID || '10000100',
-        merchant_key: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY || '46f0cd694581a',
+        merchant_id: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID!,
+        merchant_key: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY!,
         return_url: `${origin}/checkout/success?orderId=${docRef.id}`,
         cancel_url: `${origin}/cart`,
         notify_url: `${origin}/api/payfast-itn`, // You will need to build this API route
@@ -119,9 +163,7 @@ export default function CheckoutPage() {
         m_payment_id: docRef.id,
         amount: totalAmount.toFixed(2),
         item_name: `Working on Grass - Order #${docRef.id.substring(0, 8)}`,
-        // IMPORTANT: The 'signature' is deliberately omitted. It must be generated on your server
-        // using your secret passphrase for security. The PayFast sandbox may allow
-        // transactions without it for basic testing. See the /payfast-guide.
+        custom_str1: effectiveUser.uid,
       };
 
       setPayfastConfig(payfastData);
@@ -131,7 +173,7 @@ export default function CheckoutPage() {
        toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
-          description: error.message,
+          description: error.message || 'Could not save your order.',
         });
        setIsProcessing(false);
     }
