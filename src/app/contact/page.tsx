@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useFirestore, addDocumentNonBlocking } from "@/firebase"
+import { collection, serverTimestamp } from "firebase/firestore"
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -36,6 +38,7 @@ const formSchema = z.object({
 
 export default function ContactPage() {
   const { toast } = useToast()
+  const firestore = useFirestore()
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,7 +51,13 @@ export default function ContactPage() {
   })
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log(values)
+    const contactFormCollection = collection(firestore, 'contactFormEntries');
+    
+    addDocumentNonBlocking(contactFormCollection, {
+      ...values,
+      submissionDate: serverTimestamp(),
+    });
+
     toast({
       title: "Message Sent!",
       description: "Thank you for contacting us. We will get back to you shortly.",

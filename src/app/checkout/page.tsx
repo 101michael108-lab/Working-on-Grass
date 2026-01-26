@@ -18,8 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore } from "@/firebase";
-import { collection, doc, serverTimestamp, writeBatch } from "firebase/firestore";
+import { useUser, useFirestore, addDocumentNonBlocking } from "@/firebase";
+import { collection, serverTimestamp } from "firebase/firestore";
+import { useState } from "react";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -37,6 +38,8 @@ export default function CheckoutPage() {
   const router = useRouter();
   const { user } = useUser();
   const firestore = useFirestore();
+  const [isProcessing, setIsProcessing] = useState(false);
+
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -47,8 +50,8 @@ export default function CheckoutPage() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       email: user?.email || "",
-      firstName: "",
-      lastName: "",
+      firstName: user?.displayName?.split(' ')[0] || "",
+      lastName: user?.displayName?.split(' ')[1] || "",
       address: "",
       city: "",
       postalCode: "",
@@ -57,14 +60,16 @@ export default function CheckoutPage() {
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>>) {
+    setIsProcessing(true);
     if (!user) {
       toast({ variant: "destructive", title: "You must be logged in to place an order." });
       router.push('/login');
+      setIsProcessing(false);
       return;
     }
 
-    const totalAmount = subtotal + 150;
-    const orderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
+    const totalAmount = subtotal + 150; // Assuming R150 shipping
+    const ordersCollection = collection(firestore, 'users', user.uid, 'orders');
 
     const orderData = {
       userId: user.uid,
@@ -81,27 +86,29 @@ export default function CheckoutPage() {
     };
 
     try {
-      const batch = writeBatch(firestore);
-      batch.set(orderRef, orderData);
-      await batch.commit();
+      // We await here to get the order ID for the redirect
+      const docRef = await addDocumentNonBlocking(ordersCollection, orderData);
 
       toast({
-        title: "Order Placed!",
-        description: "Thank you for your purchase. A confirmation has been sent.",
+        title: "Order Received!",
+        description: "Redirecting to payment...",
       });
       clearCart();
-      router.push("/dashboard/orders");
+      router.push(`/checkout/success?orderId=${docRef.id}`);
+
     } catch (error: any) {
        toast({
           variant: "destructive",
           title: "Uh oh! Something went wrong.",
           description: error.message,
         });
+       setIsProcessing(false);
     }
   }
 
-  if (cartItems.length === 0 && typeof window !== 'undefined') {
-     router.push('/shop');
+  // Redirect if cart is empty on client side
+  if (typeof window !== 'undefined' && cartItems.length === 0) {
+     router.replace('/shop');
      return null;
   }
 
@@ -138,8 +145,8 @@ export default function CheckoutPage() {
                   <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
-              <Button type="submit" size="lg" className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
-                Place Order
+              <Button type="submit" size="lg" className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90" disabled={isProcessing}>
+                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
               </Button>
             </form>
           </Form>
@@ -183,6 +190,9 @@ export default function CheckoutPage() {
               </div>
             </CardContent>
           </Card>
+           <div className="mt-6 text-center text-muted-foreground text-sm">
+            <p>You will be redirected to our secure payment partner to complete your purchase.</p>
+          </div>
         </div>
       </div>
     </div>

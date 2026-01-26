@@ -2,6 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
 
 export default function AdminSettingsPage() {
   return (
@@ -11,7 +12,7 @@ export default function AdminSettingsPage() {
         <CardDescription>Manage your store settings and integrations.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
-        <div className="space-y-2">
+        <div className="space-y-4">
             <h3 className="text-lg font-semibold">General Settings</h3>
             <div className="space-y-4">
                  <div>
@@ -24,9 +25,24 @@ export default function AdminSettingsPage() {
                 </div>
             </div>
         </div>
-         <div className="space-y-2">
+        
+        <Separator />
+
+         <div className="space-y-4">
             <h3 className="text-lg font-semibold">Payment Gateway</h3>
-            <p className="text-sm text-muted-foreground">Payment gateway integration settings will be here.</p>
+            <p className="text-sm text-muted-foreground">
+                Configure your payment gateway settings here. These are for display purposes and are not currently functional.
+            </p>
+            <div className="space-y-4">
+                 <div>
+                    <Label htmlFor="payfast-merchant-id">PayFast Merchant ID</Label>
+                    <Input id="payfast-merchant-id" placeholder="10000100" />
+                </div>
+                 <div>
+                    <Label htmlFor="payfast-merchant-key">PayFast Merchant Key</Label>
+                    <Input id="payfast-merchant-key" type="password" placeholder="••••••••••••••••" />
+                </div>
+            </div>
         </div>
         <Button>Save Changes</Button>
       </CardContent>

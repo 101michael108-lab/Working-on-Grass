@@ -35,7 +35,7 @@ export type Order = {
   userId: string;
   orderDate: any; // Firestore Timestamp
   totalAmount: number;
-  status: 'Pending' | 'Processing' | 'Shipped' | 'Fulfilled' | 'Delivered';
+  status: 'Pending' | 'Processing' | 'Shipped' | 'Fulfilled' | 'Delivered' | 'Cancelled';
   shippingInfo: any;
   items: OrderItem[];
 };

@@ -6,6 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Order, User } from "@/lib/types";
+import { cva } from "class-variance-authority";
+
+const badgeVariants = cva(
+    "",
+    {
+      variants: {
+        status: {
+          Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          Processing: "bg-blue-100 text-blue-800 border-blue-200",
+          Shipped: "bg-cyan-100 text-cyan-800 border-cyan-200",
+          Fulfilled: "bg-green-100 text-green-800 border-green-200",
+          Delivered: "bg-green-100 text-green-800 border-green-200",
+          Cancelled: "bg-red-100 text-red-800 border-red-200",
+        },
+      },
+      defaultVariants: {},
+    }
+  )
 
 export default function AdminOrdersPage() {
     const firestore = useFirestore();
@@ -13,6 +31,8 @@ export default function AdminOrdersPage() {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+        if (!firestore) return;
+
         const fetchAllOrders = async () => {
             setIsLoading(true);
             
@@ -72,7 +92,7 @@ export default function AdminOrdersPage() {
                                     <TableCell>{order.customerName}</TableCell>
                                     <TableCell>{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString() : 'N/A'}</TableCell>
                                     <TableCell>
-                                        <Badge variant={order.status === 'Fulfilled' ? 'default' : 'secondary'}>{order.status}</Badge>
+                                        <Badge variant="outline" className={badgeVariants({ status: order.status })}>{order.status}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right">R{order.totalAmount.toFixed(2)}</TableCell>
                                 </TableRow>
