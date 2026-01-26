@@ -114,12 +114,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
         </SidebarFooter>
       </Sidebar>
-      <div className="flex flex-1 flex-col h-screen overflow-hidden">
+      <div className="flex flex-1 flex-col">
           <header className="flex h-14 shrink-0 items-center justify-between gap-4 border-b bg-background px-6">
               <SidebarTrigger />
               <h1 className="text-lg font-semibold">Admin Dashboard</h1>
           </header>
-          <main className="flex-1 overflow-auto p-6">
+          <main className="flex-1 overflow-y-auto p-6">
               {children}
           </main>
       </div>
