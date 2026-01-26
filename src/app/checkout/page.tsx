@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
+import { useUser, useFirestore } from "@/firebase";
+import { collection, doc, serverTimestamp, writeBatch } from "firebase/firestore";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -33,6 +35,8 @@ export default function CheckoutPage() {
   const { cartItems, clearCart } = useCart();
   const { toast } = useToast();
   const router = useRouter();
+  const { user } = useUser();
+  const firestore = useFirestore();
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -42,7 +46,7 @@ export default function CheckoutPage() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
+      email: user?.email || "",
       firstName: "",
       lastName: "",
       address: "",
@@ -52,14 +56,48 @@ export default function CheckoutPage() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    console.log("Order submitted:", values);
-    toast({
-      title: "Order Placed!",
-      description: "Thank you for your purchase. A confirmation email has been sent.",
-    });
-    clearCart();
-    router.push("/");
+  async function onSubmit(values: z.infer<typeof formSchema>>) {
+    if (!user) {
+      toast({ variant: "destructive", title: "You must be logged in to place an order." });
+      router.push('/login');
+      return;
+    }
+
+    const totalAmount = subtotal + 150;
+    const orderRef = doc(collection(firestore, 'users', user.uid, 'orders'));
+
+    const orderData = {
+      userId: user.uid,
+      orderDate: serverTimestamp(),
+      totalAmount: totalAmount,
+      status: 'Pending',
+      shippingInfo: values,
+      items: cartItems.map(item => ({
+        productId: item.product.id,
+        name: item.product.name,
+        quantity: item.quantity,
+        price: item.product.price
+      }))
+    };
+
+    try {
+      const batch = writeBatch(firestore);
+      batch.set(orderRef, orderData);
+      await batch.commit();
+
+      toast({
+        title: "Order Placed!",
+        description: "Thank you for your purchase. A confirmation has been sent.",
+      });
+      clearCart();
+      router.push("/dashboard/orders");
+    } catch (error: any) {
+       toast({
+          variant: "destructive",
+          title: "Uh oh! Something went wrong.",
+          description: error.message,
+        });
+    }
   }
 
   if (cartItems.length === 0 && typeof window !== 'undefined') {
@@ -76,7 +114,7 @@ export default function CheckoutPage() {
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField name="email" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} disabled /></FormControl><FormMessage /></FormItem>
               )} />
               <div className="grid grid-cols-2 gap-4">
                 <FormField name="firstName" control={form.control} render={({ field }) => (

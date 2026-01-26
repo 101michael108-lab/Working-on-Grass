@@ -22,3 +22,29 @@ export type SeedCategory = {
   name: string;
   types: string[];
 };
+
+export type OrderItem = {
+  productId: string;
+  name: string;
+  quantity: number;
+  price: number;
+};
+
+export type Order = {
+  id: string;
+  userId: string;
+  orderDate: any; // Firestore Timestamp
+  totalAmount: number;
+  status: 'Pending' | 'Processing' | 'Shipped' | 'Fulfilled' | 'Delivered';
+  shippingInfo: any;
+  items: OrderItem[];
+};
+
+export type User = {
+    id: string;
+    email: string;
+    displayName: string;
+    role: 'user' | 'admin';
+    createdAt: any; // Firestore timestamp
+    updatedAt: any; // Firestore timestamp
+};

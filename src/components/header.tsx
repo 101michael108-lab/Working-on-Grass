@@ -2,16 +2,18 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, ShoppingCart, User, LogOut } from "lucide-react";
+import React from "react";
+import { Menu, ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
-import { useUser, useAuth } from "@/firebase";
+import { useUser, useAuth, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { doc, getDoc } from "firebase/firestore";
 
 const navLinks = [
   { href: "/", label: "Home" },
@@ -28,6 +30,23 @@ export function Header() {
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const { user } = useUser();
   const auth = useAuth();
+  const firestore = useFirestore();
+  const [isAdmin, setIsAdmin] = React.useState(false);
+
+  React.useEffect(() => {
+    if (user && firestore) {
+      const userDocRef = doc(firestore, 'users', user.uid);
+      getDoc(userDocRef).then((docSnap) => {
+        if (docSnap.exists() && docSnap.data().role === 'admin') {
+          setIsAdmin(true);
+        } else {
+          setIsAdmin(false);
+        }
+      });
+    } else {
+      setIsAdmin(false);
+    }
+  }, [user, firestore]);
 
   const NavLink = ({ href, label }: { href: string; label: string }) => (
     <Link
@@ -85,6 +104,13 @@ export function Header() {
                     <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                   </div>
                 </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <Link href={isAdmin ? "/admin" : "/dashboard"}>
+                  <DropdownMenuItem>
+                    <LayoutDashboard className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </DropdownMenuItem>
+                </Link>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => signOut(auth)}>
                   <LogOut className="mr-2 h-4 w-4" />

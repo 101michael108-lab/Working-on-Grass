@@ -210,5 +210,10 @@ service cloud.firestore {
         }
       }
     }
+    
+    // Allow admins to perform collection group queries on orders
+    match /{path=**}/orders/{orderId} {
+        allow list: if isAdmin();
+    }
   }
 }

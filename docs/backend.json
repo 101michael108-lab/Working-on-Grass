@@ -141,12 +141,36 @@
           "type": "string",
           "description": "Status of the order (e.g., 'pending', 'processing', 'shipped', 'delivered')."
         },
-        "orderItemIds": {
+        "items": {
           "type": "array",
-          "description": "References to OrderItems. (Relationship: Order 1:N OrderItem)",
+          "description": "The items included in the order.",
           "items": {
-            "type": "string"
+            "type": "object",
+            "properties": {
+              "productId": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "quantity": {
+                "type": "number"
+              },
+              "price": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "productId",
+              "name",
+              "quantity",
+              "price"
+            ]
           }
+        },
+        "shippingInfo": {
+          "type": "object",
+          "description": "Shipping information for the order."
         }
       },
       "required": [
@@ -155,37 +179,7 @@
         "orderDate",
         "totalAmount",
         "status",
-        "orderItemIds"
-      ]
-    },
-    "OrderItem": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "OrderItem",
-      "type": "object",
-      "description": "Represents an item within an order.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the order item."
-        },
-        "productId": {
-          "type": "string",
-          "description": "Reference to Product. (Relationship: Product 1:N OrderItem)"
-        },
-        "quantity": {
-          "type": "number",
-          "description": "Quantity of the product in the order item."
-        },
-        "price": {
-          "type": "number",
-          "description": "Price of the product at the time of the order."
-        }
-      },
-      "required": [
-        "id",
-        "productId",
-        "quantity",
-        "price"
+        "items"
       ]
     },
     "GalleryImage": {
@@ -315,7 +309,7 @@
           "schema": {
             "$ref": "#/backend/entities/Order"
           },
-          "description": "Stores order information for each user, including order date, total amount, status, and references to order items. Path-based ownership ensures secure access to user-specific orders.",
+          "description": "Stores order information for each user, including order date, total amount, status, and embedded order items. Path-based ownership ensures secure access to user-specific orders.",
           "params": [
             {
               "name": "userId",
@@ -324,30 +318,6 @@
             {
               "name": "orderId",
               "description": "The unique identifier for the order."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/orders/{orderId}/orderItems/{orderItemId}",
-        "definition": {
-          "entityName": "OrderItem",
-          "schema": {
-            "$ref": "#/backend/entities/OrderItem"
-          },
-          "description": "Stores individual order items within an order, including product ID, quantity, and price. Nested hierarchy maintains clear ownership.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "orderId",
-              "description": "The unique identifier for the order."
-            },
-            {
-              "name": "orderItemId",
-              "description": "The unique identifier for the order item."
             }
           ]
         }
