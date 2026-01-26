@@ -69,7 +69,7 @@ export default function CheckoutPage() {
   }, [payfastConfig]);
 
 
-  async function onSubmit(values: z.infer<typeof formSchema>>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsProcessing(true);
     if (!user) {
       toast({ variant: "destructive", title: "You must be logged in to place an order." });
