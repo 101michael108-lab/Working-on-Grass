@@ -1,0 +1,214 @@
+/**
+ * # Firestore Security Rules
+ *
+ * ## Core Philosophy
+ * This ruleset enforces a dual security model based on user ownership and role-based access control (RBAC).
+ * Standard users have strict control over their own data, while a special 'admin' role is granted
+ * broad read and management privileges over application-wide data like products, services, and user accounts.
+ *
+ * ## Data Structure
+ * - `/users/{userId}`: Contains user profile data, including the critical 'role' field.
+ * - `/users/{userId}/orders/...`: A subcollection tree containing a user's private order history.
+ * - `/products`, `/services`, `/galleryImages`: Top-level collections for publicly readable data, managed exclusively by admins.
+ * - `/contactFormEntries`: A top-level "dropbox" collection, allowing anyone to write but only admins to read.
+ *
+ * ## Key Security Decisions
+ * - **Admin Supremacy**: Users with `role == 'admin'` can manage all public-facing content and view all user data.
+ * - **User Privacy**: Normal users can only access their own data tree under `/users/{userId}`. Listing all users in the `/users` collection is prohibited for non-admins to protect privacy.
+ * - **Role Integrity**: Users are prevented from escalating their own privileges. The `role` field can only be changed by an admin. New users are always assigned the 'user' role by default.
+ * - **Immutable Ownership**: Once created, the ownership links (e.g., `userId` field in an order) and document IDs cannot be changed.
+ *
+ * ## Denormalization for Authorization
+ * - **User Roles**: The `role` field is stored directly on each document in the `/users` collection. This requires a `get()` call within the rules to check a user's role, which is an explicit and necessary design choice to fulfill the admin role requirement. This check is encapsulated in the `isAdmin()` helper function.
+ *
+ * ## Structural Segregation
+ * - Private user data (like `orders`) is nested in a user-specific subcollection (`/users/{userId}/orders`).
+ * - Publicly queryable data (like `products` and `services`) is stored in separate top-level collections. This separation makes list operations both secure and performant.
+ */
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ------------------------------------------------------------------
+    // Helper Functions
+    // ------------------------------------------------------------------
+
+    /**
+     * Checks if a user is authenticated.
+     */
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    /**
+     * Checks if the currently authenticated user is the owner of a document
+     * identified by the provided userId.
+     */
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+    
+    /**
+     * Checks if a document exists before an update or delete operation.
+     * This is a critical check to ensure operations are not performed on non-existent data.
+     */
+    function isExistingDoc() {
+        return resource != null;
+    }
+
+    /**
+     * Checks if the authenticated user has the 'admin' role.
+     * This performs a read on the user's own profile document.
+     */
+    function isAdmin() {
+      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    // ------------------------------------------------------------------
+    // User Profiles (/users)
+    // ------------------------------------------------------------------
+
+    /**
+     * @description
+     * Secures user profile documents. Users can create their own profile, read and update their own data,
+     * but cannot change their own role. Admins can view and update any user profile, including changing their role,
+     * but cannot delete user accounts.
+     * @path /users/{userId}
+     * @allow (create) An authenticated user creating their own profile with a default 'user' role.
+     * @deny (list) A non-admin user trying to list all user documents.
+     * @principle Enforces user ownership and provides admin override for management.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && request.resource.data.id == userId && request.resource.data.role == 'user';
+      allow update: if (isOwner(userId) && isExistingDoc() && request.resource.data.role == resource.data.role) || (isAdmin() && isExistingDoc());
+      allow delete: if isOwner(userId) && isExistingDoc();
+    }
+
+    // ------------------------------------------------------------------
+    // Products (/products)
+    // ------------------------------------------------------------------
+
+    /**
+     * @description
+     * Manages product listings. All users (including unauthenticated ones) can read products.
+     * Only administrators can create, update, or delete product entries.
+     * @path /products/{productId}
+     * @allow (get) Any user, signed in or not, retrieving a single product.
+     * @deny (create) A non-admin user trying to add a new product.
+     * @principle Public read access with restricted, role-based write access.
+     */
+    match /products/{productId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && isExistingDoc();
+      allow delete: if isAdmin() && isExistingDoc();
+    }
+
+    // ------------------------------------------------------------------
+    // Services (/services)
+    // ------------------------------------------------------------------
+
+    /**
+     * @description
+     * Manages service listings. All users (including unauthenticated ones) can read services.
+     * Only administrators can create, update, or delete service entries.
+     * @path /services/{serviceId}
+     * @allow (list) Any user, signed in or not, listing all available services.
+     * @deny (update) A regular authenticated user trying to modify a service description.
+     * @principle Public read access with restricted, role-based write access.
+     */
+    match /services/{serviceId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && isExistingDoc();
+      allow delete: if isAdmin() && isExistingDoc();
+    }
+
+    // ------------------------------------------------------------------
+    // Gallery Images (/galleryImages)
+    // ------------------------------------------------------------------
+
+    /**
+     * @description
+     * Manages gallery images. All users can view the gallery. Only administrators can add,
+     * update, or remove images.
+     * @path /galleryImages/{galleryImageId}
+     * @allow (get) Any user, signed in or not, viewing a gallery image.
+     * @deny (delete) A non-admin user trying to remove an image from the gallery.
+     * @principle Public read access with restricted, role-based write access.
+     */
+    match /galleryImages/{galleryImageId} {
+      allow get: if true;
+      allow list: if true;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && isExistingDoc();
+      allow delete: if isAdmin() && isExistingDoc();
+    }
+
+    // ------------------------------------------------------------------
+    // Contact Form Entries (/contactFormEntries)
+    // ------------------------------------------------------------------
+
+    /**
+     * @description
+     * A write-only "dropbox" for contact form submissions. Anyone can create an entry.
+     * Entries are immutable and can only be read or deleted by administrators.
+     * @path /contactFormEntries/{contactFormEntryId}
+     * @allow (create) An unauthenticated user submitting the contact form.
+     * @deny (get) A regular user trying to read someone else's form submission.
+     * @principle Provides a secure dropbox where data can be submitted publicly but read privately.
+     */
+    match /contactFormEntries/{contactFormEntryId} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if true;
+      allow update: if false;
+      allow delete: if isAdmin() && isExistingDoc();
+    }
+
+    // ------------------------------------------------------------------
+    // User-Owned Data (/users/{userId}/...)
+    // ------------------------------------------------------------------
+
+    match /users/{userId} {
+
+      /**
+       * @description
+       * Secures a user's order history. A user can manage their own orders. An administrator
+       * can view any user's orders for support purposes but cannot modify them.
+       * @path /users/{userId}/orders/{orderId}
+       * @allow (create) An authenticated user creating a new order for themselves.
+       * @deny (update) An administrator trying to change the status of a user's order.
+       * @principle Enforces strict data ownership for writes, with admin read-only access.
+       */
+      match /orders/{orderId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if isOwner(userId) && request.resource.data.userId == userId;
+        allow update: if isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId;
+        allow delete: if isOwner(userId) && isExistingDoc();
+
+        /**
+         * @description
+         * Secures the items within an order. Access is inherited from the parent order,
+         * restricted to the owner of the data tree.
+         * @path /users/{userId}/orders/{orderId}/orderItems/{orderItemId}
+         * @allow (get) The user who owns the parent order retrieving an order item.
+         * @deny (create) A different user trying to add an item to someone else's order.
+         * @principle Restricts access to a user's own data tree through path-based security.
+         */
+        match /orderItems/{orderItemId} {
+          allow get: if isOwner(userId) || isAdmin();
+          allow list: if isOwner(userId) || isAdmin();
+          allow create: if isOwner(userId);
+          allow update: if isOwner(userId) && isExistingDoc();
+          allow delete: if isOwner(userId) && isExistingDoc();
+        }
+      }
+    }
+  }
+}
