@@ -217,7 +217,7 @@ export default function CheckoutPage() {
                   <div key={product.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        <Image src={product.image} alt={product.name} width={64} height={64} className="rounded-md object-contain bg-secondary/50"/>
+                        <Image src={product.image || `https://picsum.photos/seed/${product.id}/64/64`} alt={product.name} width={64} height={64} className="rounded-md object-contain bg-secondary/50"/>
                         <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-sm">{quantity}</span>
                       </div>
                       <div>

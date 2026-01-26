@@ -63,7 +63,7 @@ export default function ProductPage({ params }: ProductPageProps) {
       <div className="grid md:grid-cols-2 gap-8 md:gap-12">
         <div className="bg-secondary/50 rounded-lg flex items-center justify-center p-8">
           <Image
-            src={product.image || 'https://picsum.photos/seed/placeholder/500/500'}
+            src={product.image || `https://picsum.photos/seed/${product.id}/500/500`}
             alt={product.name}
             width={500}
             height={500}

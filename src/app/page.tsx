@@ -135,7 +135,7 @@ export default function Home() {
               </div>
               <div className="flex justify-center">
                 <Image
-                  src={dpmProduct?.image || 'https://picsum.photos/seed/placeholder/500/500'}
+                  src={dpmProduct?.image || `https://picsum.photos/seed/${dpmProduct.id}/500/500`}
                   alt={dpmProduct.name}
                   width={500}
                   height={500}

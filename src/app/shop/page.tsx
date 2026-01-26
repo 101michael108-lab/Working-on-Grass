@@ -35,7 +35,7 @@ export default function ShopPage() {
                 <Link href={`/shop/${product.id}`}>
                   <div className="aspect-square bg-secondary/50 rounded-md overflow-hidden flex items-center justify-center">
                     <Image
-                      src={product.image || 'https://picsum.photos/seed/placeholder/300/300'}
+                      src={product.image || `https://picsum.photos/seed/${product.id}/300/300`}
                       alt={product.name}
                       width={300}
                       height={300}
