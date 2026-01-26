@@ -1,3 +1,88 @@
 {
-  "placeholderImages": []
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "Vast green fields under a clear blue sky",
+      "imageUrl": "https://images.unsplash.com/photo-1650802218127-3b9c06de0d29?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3Jhc3NsYW5kJTIwc2F2YW5uYXxlbnwwfHx8fDE3NjkzMzk0NzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grassland savanna"
+    },
+    {
+      "id": "about-frits",
+      "description": "Portrait of Frits van Oudtshoorn in the field",
+      "imageUrl": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxtYW4lMjBwb3J0cmFpdHxlbnwwfHx8fDE3Njk0NDE4OTV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "man portrait"
+    },
+    {
+      "id": "gallery-1",
+      "description": "Cattle grazing in a field",
+      "imageUrl": "https://images.unsplash.com/photo-1728335776469-5165d27892c8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxjYXR0bGUlMjBncmF6aW5nfGVufDB8fHx8MTc2OTQ0NDg0MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cattle grazing"
+    },
+    {
+      "id": "gallery-2",
+      "description": "Close up of different types of grass",
+      "imageUrl": "https://images.unsplash.com/photo-1745166214689-b406635de94f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxncmFzcyUyMGNsb3NldXB8ZW58MHx8fHwxNzY5NDQ0ODQxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grass closeup"
+    },
+    {
+      "id": "gallery-3",
+      "description": "Savanna landscape at sunset",
+      "imageUrl": "https://images.unsplash.com/photo-1629034115055-a19662468d35?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8c2F2YW5uYSUyMHN1bnNldHxlbnwwfHx8fDE3Njk0NDQ4NDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "savanna sunset"
+    },
+    {
+      "id": "gallery-4",
+      "description": "Erosion gully in a field",
+      "imageUrl": "https://images.unsplash.com/photo-1647861944604-428e076ecd6e?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8c29pbCUyMGVyb3Npb258ZW58MHx8fHwxNzY5NDQ0ODQxfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "soil erosion"
+    },
+    {
+      "id": "gallery-5",
+      "description": "Team conducting a veld assessment",
+      "imageUrl": "https://images.unsplash.com/photo-1600570146487-34b4e0c4080a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxwZW9wbGUlMjBmaWVsZHxlbnwwfHx8fDE3Njk0NDQ4NDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "people field"
+    },
+    {
+      "id": "gallery-6",
+      "description": "A prescribed burn in progress",
+      "imageUrl": "https://images.unsplash.com/photo-1729904884750-949d50748ff2?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxwcmVzY3JpYmVkJTIwZmlyZXxlbnwwfHx8fDE3Njk0NDQ4NDF8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "prescribed fire"
+    },
+    {
+      "id": "gallery-7",
+      "description": "Lush planted pasture",
+      "imageUrl": "https://images.unsplash.com/photo-1619818615517-ae88db223d13?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw5fHxncmVlbiUyMHBhc3R1cmV8ZW58MHx8fHwxNzY5NDI4NTMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "green pasture"
+    },
+    {
+      "id": "gallery-8",
+      "description": "Elephants in a savanna habitat",
+      "imageUrl": "https://images.unsplash.com/photo-1738508819731-b41b04109834?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxlbGVwaGFudHMlMjBzYXZhbm5hfGVufDB8fHx8MTc2OTQ0NDg0MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "elephants savanna"
+    },
+    {
+      "id": "dpm-product-image",
+      "description": "The Disc Pasture Meter instrument",
+      "imageUrl": "https://images.unsplash.com/photo-1721918848888-2763fe1040b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8bWV0YWwlMjBpbnN0cnVtZW50fGVufDB8fHx8MTc2OTQ0NDg0MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "metal instrument"
+    },
+    {
+      "id": "seeds-product-image",
+      "description": "A variety of seeds in hand",
+      "imageUrl": "https://images.unsplash.com/photo-1639256359389-22a65417a70c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzZWVkcyUyMGhhbmR8ZW58MHx8fHwxNzY5NDI4NTMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "seeds hand"
+    },
+    {
+      "id": "cart-item-1",
+      "description": "Disc pasture meter in box",
+      "imageUrl": "https://images.unsplash.com/photo-1628794397139-a45fc3286892?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwcm9kdWN0JTIwYm94fGVufDB8fHx8MTc2OTQxODcwOHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "product box"
+    },
+    {
+      "id": "cart-item-2",
+      "description": "Bag of grass seeds",
+      "imageUrl": "https://images.unsplash.com/photo-1654202752477-22b5bc52d4da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzZWVkJTIwYmFnfGVufDB8fHx8MTc2OTQ0NDg0MXww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "seed bag"
+    }
+  ]
 }
