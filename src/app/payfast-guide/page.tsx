@@ -7,18 +7,20 @@ import Link from "next/link"
 export default function PayfastGuidePage() {
 
     const envLocalContent = `
-# PayFast Sandbox Credentials
+# PayFast Credentials
 # IMPORTANT: This file should be named .env.local and placed in the root of your project.
 # It should also be added to your .gitignore file to keep your secrets safe.
 
-# This ID is public and can be exposed on the client.
-NEXT_PUBLIC_PAYFAST_MERCHANT_ID="10000100"
+# Replace with your PayFast Merchant ID (public).
+NEXT_PUBLIC_PAYFAST_MERCHANT_ID="YOUR_MERCHANT_ID"
 
-# These are SECRET and must only be used on the server (in API Route Handlers).
-PAYFAST_MERCHANT_KEY="46f0cd694581a"
-PAYFAST_PASSPHRASE="jt7NOE43FZPn"
+# Replace with your PayFast Merchant Key (secret, for server-side use only).
+PAYFAST_MERCHANT_KEY="YOUR_MERCHANT_KEY"
 
-# The base URL of your application when deployed
+# Replace with your PayFast Passphrase (secret, for server-side use only).
+PAYFAST_PASSPHRASE="YOUR_PASSPHRASE"
+
+# The base URL of your application when deployed.
 NEXT_PUBLIC_SITE_URL="http://localhost:9002"
 `.trim();
 
@@ -116,7 +118,7 @@ export async function POST(req: NextRequest) {
             </CardDescription>
           </CardHeader>
           <CardContent>
-                <p className="mb-2 text-sm">Copy the following into your <code>.env.local</code> file. These are test credentials provided by PayFast.</p>
+                <p className="mb-2 text-sm">Copy the following into your <code>.env.local</code> file and replace the placeholders with your actual credentials from your PayFast dashboard.</p>
                 <CodeBlock code={envLocalContent} language="bash" />
           </CardContent>
         </Card>
@@ -143,7 +145,7 @@ export async function POST(req: NextRequest) {
                 <CardDescription>
                     On your checkout page, instead of just creating an order, you would generate the signature on the server and then render a form that POSTs directly to PayFast. Your app now does this automatically.
                 </CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent>
                 <p className="mb-2 text-sm">Here's a basic example of the HTML form. The `signature` field must be generated on your backend right before displaying this form.</p>
                 <CodeBlock code={formHtml} language="html" />
@@ -156,7 +158,7 @@ export async function POST(req: NextRequest) {
                 <CardDescription>
                     This is the most critical part. You need to create an API route (e.g., `/app/api/payfast-itn/route.ts`) that PayFast can call. This endpoint is responsible for verifying the payment and updating your database.
                 </CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent>
                 <p className="mb-2 text-sm">Below is pseudo-code for what this API route might look like. It outlines the validation steps required.</p>
                 <CodeBlock code={itnPseudoCode} language="typescript" />

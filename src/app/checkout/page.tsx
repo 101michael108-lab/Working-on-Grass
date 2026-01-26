@@ -104,9 +104,9 @@ export default function CheckoutPage() {
         description: "Redirecting to payment...",
       });
       
-      const origin = window.location.origin;
+      const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const payfastData = {
-        merchant_id: '10000100', // SANDBOX/TEST Merchant ID. This should come from your .env.local file
+        merchant_id: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID || '10000100',
         return_url: `${origin}/checkout/success?orderId=${docRef.id}`,
         cancel_url: `${origin}/cart`,
         notify_url: `${origin}/api/payfast-itn`, // You will need to build this API route
