@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -19,7 +20,7 @@ const navLinks = [
   { href: "/", label: "Home" },
   { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
-  { href: "/shop", label: "Shop" },
+  { href: "/products", label: "Products" },
   { href: "/courses", label: "Courses" },
   { href: "/resources", label: "Resources" },
   { href: "/contact", label: "Contact" },
@@ -120,10 +121,9 @@ export function Header() {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button variant="ghost" size="icon" asChild>
+             <Button asChild size="sm">
               <Link href="/login">
-                <User className="h-5 w-5" />
-                <span className="sr-only">Login</span>
+                Login
               </Link>
             </Button>
           )}

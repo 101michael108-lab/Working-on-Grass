@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -5,78 +6,179 @@ import Link from "next/link";
 import {
   ArrowRight,
   Leaf,
-  Sprout,
-  Quote
+  Quote,
+  BookOpen,
+  Globe,
+  Award
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { services } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, where, limit } from "firebase/firestore";
-import type { Product } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Home() {
-  const firestore = useFirestore();
-  const courseQuery = useMemoFirebase(() => query(collection(firestore, 'products'), where('category', '==', 'Courses'), limit(1)), [firestore]);
-  const { data: courses } = useCollection<Omit<Product, 'id'>>(courseQuery);
-  const featuredCourse = courses?.[0];
-
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero');
-  
+
+  const trustPillars = [
+      {
+          icon: Award,
+          text: "Decades of on-the-ground experience"
+      },
+      {
+          icon: BookOpen,
+          text: "Author of 'Guide to Grasses of Southern Africa'"
+      },
+      {
+          icon: Leaf,
+          text: "Specialist in veld ecology & rehabilitation"
+      },
+      {
+          icon: Globe,
+          text: "Based in Limpopo, serving Southern Africa"
+      }
+  ]
+
   return (
     <div className="flex flex-col min-h-[100dvh]">
-      <section className="relative w-full h-[60vh] md:h-[80vh]">
+      {/* Hero Section */}
+      <section className="relative w-full h-[70vh] md:h-[80vh]">
         {heroImage && (
           <Image
             src={heroImage.imageUrl}
-            alt="Vast green fields under a clear blue sky"
+            alt="Vast green fields of South African veld under a clear blue sky"
             fill
             priority
             className="object-cover"
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
         <div className="relative h-full flex flex-col items-center justify-center text-center text-primary-foreground p-4">
-          <div className="bg-black/30 backdrop-blur-sm p-8 rounded-xl max-w-4xl">
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white">
-              Expert Veld & Grassland Management for Farmers, Ranches & Conservation
+          <div className="bg-black/40 backdrop-blur-sm p-8 rounded-xl max-w-4xl">
+            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white font-headline">
+              Expert Grassland & Veld Management for Sustainable Land Use
             </h1>
-            <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-gray-200">
-              Sustainable & Regenerative Land Use Advisory
+            <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl text-gray-200 font-body">
+              Science-based assessments, grazing management, rehabilitation, and training — led by grassland specialist Frits van Oudtshoorn.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                <Link href="/contact">Request a Quote</Link>
+              <Button asChild size="lg">
+                <Link href="/contact?service=Professional+Assessment">Request a Professional Assessment</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href="/shop">Shop Now</Link>
-              </Button>
-               <Button asChild size="lg" variant="outline" className="bg-background/20 text-white border-white hover:bg-white hover:text-foreground">
-                <Link href="/about">Learn More</Link>
+                <Link href="/services">View Services</Link>
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      <section id="about" className="w-full py-12 md:py-24 lg:py-32">
+      {/* Trust Strip */}
+      <section className="bg-background border-b">
+          <div className="container px-4 md:px-6 py-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                  {trustPillars.map((pillar, index) => (
+                      <div key={index} className="flex flex-col items-center justify-center gap-2">
+                          <pillar.icon className="w-7 h-7 text-primary"/>
+                          <p className="text-sm font-medium text-muted-foreground">{pillar.text}</p>
+                      </div>
+                  ))}
+              </div>
+          </div>
+      </section>
+
+      {/* What We Do */}
+      <section id="services" className="w-full py-12 md:py-24 bg-secondary/30">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What We Do</h2>
+            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+              We provide expert advisory, assessment, and planning services to help you achieve sustainable and productive land use.
+            </p>
+          </div>
+          <div className="mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-12">
+            {services.slice(0, 6).map((service) => (
+              <Card key={service.title} className="hover:shadow-lg transition-shadow flex flex-col">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2"><Leaf className="text-primary"/>{service.title}</CardTitle>
+                </CardHeader>
+                <CardContent className="flex-grow">
+                  <p className="text-muted-foreground text-sm">{service.description}</p>
+                </CardContent>
+                <CardFooter>
+                    <Button asChild variant="link" className="p-0">
+                       <Link href="/services">Learn More <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                    </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+      
+      {/* Featured Products / Knowledge */}
+       <section className="w-full py-12 md:py-24">
+         <div className="container px-4 md:px-6">
+            <div className="grid md:grid-cols-2 gap-12 items-center">
+              <div>
+                <h2 className="text-3xl font-bold tracking-tight mb-4">Products & Knowledge</h2>
+                <p className="text-muted-foreground mb-8">
+                  Beyond consultation, we offer essential tools, publications, and training developed from decades of in-the-field experience.
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Products</CardTitle>
+                      <CardDescription>Tools, books, and seeds to support your land management goals.</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                       <Button asChild>
+                          <Link href="/shop">Visit Shop</Link>
+                       </Button>
+                    </CardFooter>
+                  </Card>
+                   <Card>
+                    <CardHeader>
+                      <CardTitle>Courses & Training</CardTitle>
+                      <CardDescription>Learn from an expert with our in-depth online and in-person courses.</CardDescription>
+                    </CardHeader>
+                    <CardFooter>
+                       <Button asChild>
+                          <Link href="/courses">View Training</Link>
+                       </Button>
+                    </CardFooter>
+                  </Card>
+                </div>
+              </div>
+               <div className="flex justify-center">
+                <Image
+                  src={PlaceHolderImages.find(p => p.id === 'book-guide')?.imageUrl || ''}
+                  alt="A collection of books and tools for grassland management"
+                  width={500}
+                  height={500}
+                  className="rounded-lg object-cover aspect-square shadow-lg"
+                  data-ai-hint="books tools"
+                />
+              </div>
+            </div>
+         </div>
+       </section>
+
+      {/* About Frits */}
+      <section id="about" className="w-full py-12 md:py-24 bg-secondary/30">
         <div className="container px-4 md:px-6">
           <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
             <div>
-              <Badge variant="outline" className="mb-4">About Us</Badge>
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Pioneering Regenerative Land Use in Africa
+                Meet the Founder
               </h2>
-              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-                Founded by renowned author and environmentalist Frits van Oudtshoorn, Working on Grass is an environmental and agricultural services company with a passion for sustainable land management. We are based in South Africa and serve clients across the continent.
+              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed">
+                Frits van Oudtshoorn is a grassland ecologist and land-use specialist with decades of experience in veld management, ecological assessments, and rehabilitation across Southern Africa.
               </p>
                <Button asChild className="mt-6">
-                <Link href="/about">Meet The Founder <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
             <div className="flex justify-center">
@@ -93,72 +195,8 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="services" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/50">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <Badge variant="default" className="bg-primary text-primary-foreground">Our Expertise</Badge>
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Advisory Services</h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
-              Led by Frits van Oudtshoorn and a team of specialists, we provide expert consultation on a wide range of topics related to veld and grazing management.
-            </p>
-          </div>
-          <div className="mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-12">
-            {services.slice(0, 6).map((service) => (
-              <Card key={service.title} className="hover:shadow-lg transition-shadow">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2"><Leaf className="text-primary"/>{service.title}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground text-sm">{service.description.substring(0, 100)}...</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <Button asChild>
-              <Link href="/services">View All Services</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
-      
-      <section id="featured-course" className="w-full py-12 md:py-24 lg:py-32">
-        <div className="container">
-          <Card className="bg-primary text-primary-foreground">
-            <div className="grid md:grid-cols-2 items-center">
-              <div className="p-8 md:p-12">
-                <Badge variant="secondary" className="mb-4">Online Learning</Badge>
-                {featuredCourse ? (
-                    <>
-                        <h3 className="text-3xl font-bold">{featuredCourse.name}</h3>
-                        <p className="mt-2 text-primary-foreground/80">
-                         {featuredCourse.description.substring(0,100)}...
-                        </p>
-                         <Button asChild variant="secondary" className="mt-6">
-                          <Link href={`/shop/${featuredCourse.id}`}>Learn More</Link>
-                        </Button>
-                    </>
-                ) : (
-                     <>
-                        <h3 className="text-3xl font-bold">Veld Management Courses</h3>
-                        <p className="mt-2 text-primary-foreground/80">
-                          Digital courses for advanced pasture management. Available soon on all platforms.
-                        </p>
-                        <Button variant="secondary" className="mt-6" disabled>
-                          More Info Coming Soon...
-                        </Button>
-                     </>
-                )}
-              </div>
-              <div className="hidden md:flex justify-center p-8">
-                 <Sprout className="w-32 h-32 text-primary-foreground/50"/>
-              </div>
-            </div>
-          </Card>
-        </div>
-      </section>
-
-       <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/50">
+       {/* Social Proof */}
+       <section id="testimonials" className="w-full py-12 md:py-24">
         <div className="container px-4 md:px-6">
            <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Clients Say</h2>
@@ -218,6 +256,22 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* Final CTA */}
+      <section className="w-full py-12 md:py-20 bg-secondary/30">
+          <div className="container text-center">
+            <h2 className="text-3xl font-bold">Need expert guidance on your land or veld?</h2>
+            <div className="mt-6 flex justify-center gap-4">
+               <Button asChild size="lg">
+                  <Link href="/contact?service=Quote+Request">Request a Quote</Link>
+               </Button>
+                 <Button asChild size="lg" variant="outline">
+                  <Link href="/contact">Contact Us</Link>
+               </Button>
+            </div>
+          </div>
+      </section>
+
     </div>
   );
 }
