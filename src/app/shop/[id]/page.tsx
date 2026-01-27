@@ -1,74 +1,31 @@
 
-import { notFound } from 'next/navigation';
-import { admin } from '@/firebase/server-init';
-import type { Product } from '@/lib/types';
-import type { Metadata } from 'next';
-import ProductDetailsClient from '@/components/shop/product-details';
+'use client';
 
-// Define props for the page
+import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
+import { doc } from 'firebase/firestore';
+import type { Product } from '@/lib/types';
+import ProductDetailsClient from '@/components/shop/product-details';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent } from '@/components/ui/card';
+
 type ProductPageProps = {
   params: {
     id: string;
   };
 };
 
-// Function to fetch a single product from Firestore on the server
-async function getProduct(id: string): Promise<Product | null> {
-  try {
-    const productRef = admin.firestore().collection('products').doc(id);
-    const docSnap = await productRef.get();
-
-    if (!docSnap.exists) {
-      return null;
-    }
-
-    const data = docSnap.data() as Omit<Product, 'id'>;
-    return { ...data, id: docSnap.id };
-  } catch (error) {
-    console.error("Error fetching product:", error);
-    return null;
-  }
-}
-
-// Generate dynamic metadata for SEO
-export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
-  const product = await getProduct(params.id);
-
-  if (!product) {
-    return {
-      title: 'Product Not Found',
-    };
-  }
-
-  return {
-    title: `${product.name} | Working on Grass`,
-    description: product.description.substring(0, 160), // Truncate for meta description
-    openGraph: {
-      title: product.name,
-      description: product.description.substring(0, 160),
-      images: [
-        {
-          url: product.image || 'https://picsum.photos/seed/default/1200/630',
-          width: 1200,
-          height: 630,
-          alt: product.name,
-        },
-      ],
-      type: 'product',
-    },
-  };
-}
-
 // The main page component
-export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await getProduct(params.id);
+export default function ProductPage({ params }: ProductPageProps) {
+  const firestore = useFirestore();
+  const productRef = useMemoFirebase(() => {
+    if (!firestore || !params.id) return null;
+    return doc(firestore, 'products', params.id);
+  }, [firestore, params.id]);
 
-  if (!product) {
-    notFound();
-  }
+  const { data: product, isLoading, error } = useDoc<Product>(productRef);
 
   // JSON-LD for Google Rich Snippets & Merchant Center
-  const jsonLd = {
+  const jsonLd = product ? {
     '@context': 'https://schema.org',
     '@type': 'Product',
     name: product.name,
@@ -86,14 +43,71 @@ export default async function ProductPage({ params }: ProductPageProps) {
       availability: 'https://schema.org/InStock',
       url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:9002'}/shop/${product.id}`,
     },
-  };
+  } : null;
+
+  if (isLoading) {
+    // Show a skeleton loader while the product data is being fetched
+    return (
+        <div className="container py-12 md:py-20">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12">
+                <div>
+                    <Skeleton className="w-full aspect-square rounded-lg" />
+                </div>
+                <div className="space-y-4">
+                    <Skeleton className="h-6 w-1/4" />
+                    <Skeleton className="h-10 w-3/4" />
+                    <Skeleton className="h-8 w-1/3" />
+                    <Skeleton className="h-24 w-full" />
+                    <Card className="mt-8 bg-background/50">
+                        <CardContent className="pt-6">
+                            <div className="flex items-center gap-4">
+                                <Skeleton className="h-12 w-32" />
+                                <Skeleton className="h-12 flex-grow" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+             <div className="mt-16">
+                <Skeleton className="h-10 w-1/4 mb-4" />
+                <Skeleton className="h-40 w-full" />
+            </div>
+        </div>
+    );
+  }
+
+  if (error) {
+    // This could be a permissions error or network issue
+    return (
+      <div className="container flex min-h-[50vh] items-center justify-center text-center">
+        <div>
+            <h2 className="text-2xl font-bold">Error Loading Product</h2>
+            <p className="text-muted-foreground mt-2">Could not fetch product details. Please try again later.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!product) {
+    // After loading, if product is still null, it means it doesn't exist.
+    return (
+        <div className="container flex min-h-[50vh] items-center justify-center text-center">
+            <div>
+                <h2 className="text-2xl font-bold">Product Not Found</h2>
+                <p className="text-muted-foreground mt-2">The product you are looking for does not exist.</p>
+            </div>
+        </div>
+    );
+  }
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
+      {jsonLd && (
+         <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          />
+      )}
       <ProductDetailsClient product={product} />
     </>
   );
