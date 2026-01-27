@@ -149,12 +149,17 @@ export default function CheckoutPage() {
       });
       
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+
+      const returnUrl = new URL(`/checkout/success?orderId=${docRef.id}`, origin);
+      const cancelUrl = new URL('/cart', origin);
+      const notifyUrl = new URL('/api/payfast-itn', origin);
+
       const payfastData = {
         merchant_id: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID!,
         merchant_key: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY!,
-        return_url: `${origin}/checkout/success?orderId=${docRef.id}`,
-        cancel_url: `${origin}/cart`,
-        notify_url: `${origin}/api/payfast-itn`, // You will need to build this API route
+        return_url: returnUrl.href,
+        cancel_url: cancelUrl.href,
+        notify_url: notifyUrl.href,
         
         name_first: values.firstName,
         name_last: values.lastName,
