@@ -29,6 +29,8 @@ const formSchema = z.object({
   category: z.string().min(2, "Category is required"),
   image: z.string().url("Must be a valid URL").optional().or(z.literal('')),
   imageHint: z.string().optional(),
+  sku: z.string().optional(),
+  brand: z.string().optional(),
 });
 
 const productCategories = ["Instruments", "Books & Guides", "Seeds", "Courses"];
@@ -51,6 +53,8 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             category: product?.category || "Instruments",
             image: product?.image || "",
             imageHint: product?.imageHint || "",
+            sku: product?.sku || "",
+            brand: product?.brand || "",
         },
     });
 
@@ -108,6 +112,14 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                 <FormField name="imageHint" control={form.control} render={({ field }) => (
                     <FormItem><FormLabel>Image Hint</FormLabel><FormControl><Input placeholder="e.g. metal instrument" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
+                 <div className="grid grid-cols-2 gap-4">
+                    <FormField name="sku" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>SKU (Optional)</FormLabel><FormControl><Input placeholder="DPM-001" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                    <FormField name="brand" control={form.control} render={({ field }) => (
+                        <FormItem><FormLabel>Brand (Optional)</FormLabel><FormControl><Input placeholder="Working on Grass" {...field} /></FormControl><FormMessage /></FormItem>
+                    )} />
+                </div>
                 <Button type="submit">{product ? "Save Changes" : "Create Product"}</Button>
             </form>
         </Form>

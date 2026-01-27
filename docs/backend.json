@@ -64,7 +64,7 @@
           "type": "number",
           "description": "Price of the product."
         },
-        "imageUrl": {
+        "image": {
           "type": "string",
           "description": "URL of the product image.",
           "format": "uri"
@@ -72,6 +72,14 @@
         "category": {
           "type": "string",
           "description": "Category of the product (e.g., 'Seed', 'Equipment')."
+        },
+        "sku": {
+          "type": "string",
+          "description": "Stock Keeping Unit (SKU) for the product."
+        },
+        "brand": {
+          "type": "string",
+          "description": "Brand of the product."
         }
       },
       "required": [
@@ -79,7 +87,6 @@
         "name",
         "description",
         "price",
-        "imageUrl",
         "category"
       ]
     },

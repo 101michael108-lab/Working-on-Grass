@@ -12,6 +12,8 @@ export type Product = {
   category: string;
   image?: string;
   imageHint?: string;
+  sku?: string;
+  brand?: string;
 };
 
 export type CartItem = {
