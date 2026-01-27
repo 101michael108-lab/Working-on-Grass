@@ -2,7 +2,7 @@
   "placeholderImages": [
     {
       "id": "hero",
-      "description": "Vast green fields under a clear blue sky",
+      "description": "Vast green fields of South African veld under a clear blue sky",
       "imageUrl": "https://images.unsplash.com/photo-1650802218127-3b9c06de0d29?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxMHx8Z3Jhc3NsYW5kJTIwc2F2YW5uYXxlbnwwfHx8fDE3NjkzMzk0NzB8MA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "grassland savanna"
     },
@@ -25,22 +25,34 @@
       "imageHint": "seeds hand"
     },
     {
-      "id": "cart-item-1",
-      "description": "Disc pasture meter in box",
-      "imageUrl": "https://images.unsplash.com/photo-1628794397139-a45fc3286892?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxwcm9kdWN0JTIwYm94fGVufDB8fHx8MTc2OTQxODcwOHww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "product box"
-    },
-    {
-      "id": "cart-item-2",
-      "description": "Bag of grass seeds",
-      "imageUrl": "https://images.unsplash.com/photo-1654202752477-22b5bc52d4da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzZWVkJTIwYmFnfGVufDB8fHx8MTc2OTQ0NDg0MXww&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "seed bag"
-    },
-    {
       "id": "book-guide",
       "description": "A book about grasses on a wooden table",
       "imageUrl": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxib29rJTIwY292ZXJ8ZW58MHx8fHwxNzY5NDQ5NzI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "book cover"
+    },
+    {
+      "id": "grass-research",
+      "description": "A scientist inspecting grass in a field",
+      "imageUrl": "https://images.unsplash.com/photo-1627920463131-01642877a2e5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw0fHxncmFzc2xhbmQlMjByZXNlYXJjaHxlbnwwfHx8fDE3MjE4OTc4ODV8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grassland research"
+    },
+    {
+      "id": "gallery-1",
+      "description": "Cattle grazing in a field of tall grass.",
+      "imageUrl": "https://images.unsplash.com/photo-1629819125345-427118227b6c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw1fHxjYXR0bGUlMjBncmF6aW5nJTIwYWZyaWNhaGVufDB8fHx8MTcyMTg5Nzk5N3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "cattle grazing"
+    },
+    {
+      "id": "gallery-2",
+      "description": "Close-up of a hand holding soil with a small sprout.",
+      "imageUrl": "https://images.unsplash.com/photo-1597871029198-a3297a7e80a5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxzb2lsJTIwaGVhbHRofGVufDB8fHx8MTcyMTg5ODAxN3ww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "soil health"
+    },
+    {
+      "id": "gallery-3",
+      "description": "A rehabilitated mining area with new green growth.",
+      "imageUrl": "https://images.unsplash.com/photo-1658424564887-f83196f3b553?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwyfHxtaW5lJTIwcmVoYWJpbGl0YXRpb258ZW58MHx8fHwxNzIxODk4MDQ1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "mine rehabilitation"
     }
   ]
 }
