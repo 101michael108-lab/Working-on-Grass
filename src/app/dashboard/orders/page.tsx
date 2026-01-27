@@ -6,25 +6,23 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import type { Order } from "@/lib/types";
-import { cva } from 'class-variance-authority'
 
-const badgeVariants = cva(
-    "",
-    {
-      variants: {
-        status: {
-          Pending: "bg-yellow-100 text-yellow-800 border-yellow-200",
-          Processing: "bg-blue-100 text-blue-800 border-blue-200",
-          Shipped: "bg-cyan-100 text-cyan-800 border-cyan-200",
-          Fulfilled: "bg-green-100 text-green-800 border-green-200",
-          Delivered: "bg-green-100 text-green-800 border-green-200",
-          Cancelled: "bg-red-100 text-red-800 border-red-200",
-        },
-      },
-      defaultVariants: {},
+const getStatusVariant = (status: Order['status']): "secondary" | "default" | "success" | "destructive" | "outline" => {
+    switch (status) {
+        case 'Pending':
+            return 'secondary';
+        case 'Processing':
+        case 'Shipped':
+            return 'default';
+        case 'Fulfilled':
+        case 'Delivered':
+            return 'success';
+        case 'Cancelled':
+            return 'destructive';
+        default:
+            return 'outline';
     }
-  )
-
+}
 
 export default function UserOrdersPage() {
     const { user } = useUser();
@@ -62,7 +60,7 @@ export default function UserOrdersPage() {
                                     <TableCell className="font-mono text-xs">{order.id}</TableCell>
                                     <TableCell>{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString() : 'N/A'}</TableCell>
                                     <TableCell>
-                                        <Badge variant="outline" className={badgeVariants({ status: order.status })}>{order.status}</Badge>
+                                        <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                                     </TableCell>
                                     <TableCell className="text-right">R{order.totalAmount.toFixed(2)}</TableCell>
                                 </TableRow>
