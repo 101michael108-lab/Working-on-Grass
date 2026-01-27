@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from 'react';
+import { useState, use } from 'react';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
@@ -14,16 +15,17 @@ import type { Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
 type ProductPageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 export default function ProductPage({ params }: ProductPageProps) {
+  const resolvedParams = use(params);
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
   const firestore = useFirestore();
-  const productRef = useMemoFirebase(() => doc(firestore, 'products', params.id), [firestore, params.id]);
+  const productRef = useMemoFirebase(() => doc(firestore, 'products', resolvedParams.id), [firestore, resolvedParams.id]);
   const { data: product, isLoading } = useDoc<Omit<Product, 'id'>>(productRef);
   
   const handleQuantityChange = (amount: number) => {
