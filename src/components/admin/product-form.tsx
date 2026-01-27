@@ -31,7 +31,7 @@ const formSchema = z.object({
   imageHint: z.string().optional(),
 });
 
-const productCategories = ["Instruments", "Books", "Seeds", "Guides", "Courses"];
+const productCategories = ["Instruments", "Books & Guides", "Seeds", "Courses"];
 
 interface ProductFormProps {
     product?: Product | null;

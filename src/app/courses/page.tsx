@@ -57,7 +57,7 @@ export default function CoursesPage() {
                         R{course.price.toFixed(2)}
                     </p>
                     <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(course, 1)}>
-                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                        <ShoppingCart className="mr-2 h-4 w-4" /> Enroll Now
                     </Button>
                 </CardFooter>
                 </Card>
