@@ -16,9 +16,9 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
 
+  // Load cart from localStorage on initial client-side render
   useEffect(() => {
     try {
       const storedCart = localStorage.getItem('cartItems');
@@ -27,20 +27,20 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
       }
     } catch (error) {
       console.error("Failed to parse cart from localStorage", error);
-    } finally {
-      setIsLoading(false);
     }
   }, []);
 
+  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (!isLoading) {
-      try {
+    try {
+      // Only run on client
+      if (typeof window !== 'undefined') {
         localStorage.setItem('cartItems', JSON.stringify(cartItems));
-      } catch (error) {
-        console.error("Failed to save cart to localStorage", error);
       }
+    } catch (error) {
+      console.error("Failed to save cart to localStorage", error);
     }
-  }, [cartItems, isLoading]);
+  }, [cartItems]);
 
   const addToCart = (product: Product, quantity: number) => {
     setCartItems(prevItems => {
@@ -83,10 +83,6 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   const clearCart = () => {
     setCartItems([]);
   };
-  
-  if (isLoading) {
-    return null; // Or a loading spinner
-  }
 
   return (
     <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity, clearCart }}>
