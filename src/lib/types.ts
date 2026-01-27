@@ -1,6 +1,7 @@
 export type Service = {
   title: string;
   description: string;
+  cta: string;
 };
 
 export type Product = {
