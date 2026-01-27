@@ -227,6 +227,14 @@
           "description": "Email address of the person submitting the form.",
           "format": "email"
         },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the person submitting the form."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location or Farm Name of the person submitting the form."
+        },
         "serviceInterestedIn": {
           "type": "string",
           "description": "The service the user is interested in."

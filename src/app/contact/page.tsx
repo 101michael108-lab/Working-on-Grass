@@ -32,12 +32,14 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
+  phone: z.string().optional(),
+  location: z.string().optional(),
    serviceInterestedIn: z.string({
     required_error: "Please select a service.",
   }),
   message: z.string().min(10, {
     message: "Message must be at least 10 characters.",
-  }).optional(),
+  }).optional().or(z.literal('')),
 })
 
 function ContactForm() {
@@ -51,6 +53,8 @@ function ContactForm() {
     defaultValues: {
       name: "",
       email: "",
+      phone: "",
+      location: "",
       serviceInterestedIn: serviceQuery || undefined,
       message: "",
     },
@@ -71,8 +75,8 @@ function ContactForm() {
     });
 
     toast({
-      title: "Message Sent!",
-      description: "Thank you for contacting us. We will get back to you shortly.",
+      title: "Inquiry Sent!",
+      description: "Thank you for your interest. We will get back to you shortly.",
     })
     form.reset()
   }
@@ -80,32 +84,62 @@ function ContactForm() {
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <FormField
-          control={form.control}
-          name="name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="John Doe" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email Address</FormLabel>
-              <FormControl>
-                <Input placeholder="you@example.com" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Full Name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="John Doe" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email Address</FormLabel>
+                  <FormControl>
+                    <Input placeholder="you@example.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
+         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone <span className="text-muted-foreground">(Optional)</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Your contact number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="location"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Location / Farm Name <span className="text-muted-foreground">(Optional)</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g. Near Bela-Bela" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </div>
         <FormField
           control={form.control}
           name="serviceInterestedIn"
@@ -136,15 +170,15 @@ function ContactForm() {
           name="message"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Message (Optional)</FormLabel>
+              <FormLabel>Message <span className="text-muted-foreground">(Optional)</span></FormLabel>
               <FormControl>
-                <Textarea placeholder="Tell us more about your needs..." {...field} rows={6} />
+                <Textarea placeholder="Tell us more about your land or project needs..." {...field} rows={6} />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg">Send Message</Button>
+        <Button type="submit" size="lg">Request a Quote</Button>
       </form>
     </Form>
   )
@@ -154,44 +188,43 @@ export default function ContactPage() {
   return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Get in Touch</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Contact Working on Grass</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Have a question or need a consultation? We'd love to hear from you.
+          Get expert advice or request a personalized assessment for your land.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-2 gap-12">
-        <div>
-          <h2 className="text-2xl font-bold mb-6">Contact Form</h2>
+      <div className="grid md:grid-cols-5 gap-12">
+        <div className="md:col-span-3">
+          <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
            <Suspense fallback={<div>Loading...</div>}>
             <ContactForm />
            </Suspense>
         </div>
-        <div>
-            <h2 className="text-2xl font-bold mb-6">Our Information</h2>
+        <div className="md:col-span-2">
+            <h2 className="text-2xl font-bold mb-6">Direct Contact Info</h2>
             <Card>
                 <CardHeader>
                     <CardTitle>Working on Grass</CardTitle>
                     <CardDescription>Environmental & Agricultural Services</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-6">
                     <div className="flex items-start gap-4">
-                        <MapPin className="h-5 w-5 mt-1 text-primary"/>
+                        <MapPin className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
                         <div>
                             <p className="font-semibold">Address</p>
                             <p className="text-muted-foreground">Modimolle, Limpopo, 0510, South Africa</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">
-                        <Phone className="h-5 w-5 mt-1 text-primary"/>
+                        <Phone className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
                         <div>
-                            <p className="font-semibold">Phone</p>
-                            <p className="text-muted-foreground">Office: +27 71 866 1331</p>
+                            <p className="font-semibold">Phone / WhatsApp</p>
                             <p className="text-muted-foreground">Frits van Oudtshoorn: +27 78 228 0008</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">
-                        <Mail className="h-5 w-5 mt-1 text-primary"/>
+                        <Mail className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
                         <div>
                             <p className="font-semibold">Email</p>
                             <p className="text-muted-foreground">courses@alut.co.za</p>
