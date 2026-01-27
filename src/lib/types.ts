@@ -9,8 +9,8 @@ export type Product = {
   price: number;
   description: string;
   category: string;
-  image: string;
-  imageHint: string;
+  image?: string;
+  imageHint?: string;
 };
 
 export type CartItem = {

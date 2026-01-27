@@ -10,21 +10,21 @@ import {
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { services } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, limit } from "firebase/firestore";
+import { collection, query, where, limit } from "firebase/firestore";
 import type { Product } from "@/lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Home() {
   const firestore = useFirestore();
-  const productsQuery = useMemoFirebase(() => query(collection(firestore, 'products'), orderBy('name'), limit(1)), [firestore]);
-  const { data: products } = useCollection<Omit<Product, 'id'>>(productsQuery);
-  const dpmProduct = products?.[0];
+  const courseQuery = useMemoFirebase(() => query(collection(firestore, 'products'), where('category', '==', 'Courses'), limit(1)), [firestore]);
+  const { data: courses } = useCollection<Omit<Product, 'id'>>(courseQuery);
+  const featuredCourse = courses?.[0];
 
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero');
   const galleryImages = PlaceHolderImages.filter(p => p.id.startsWith('gallery-'));
@@ -123,8 +123,44 @@ export default function Home() {
           </div>
         </div>
       </section>
+      
+      <section id="featured-course" className="w-full py-12 md:py-24 lg:py-32">
+        <div className="container">
+          <Card className="bg-primary text-primary-foreground">
+            <div className="grid md:grid-cols-2 items-center">
+              <div className="p-8 md:p-12">
+                <Badge variant="secondary" className="mb-4">Online Learning</Badge>
+                {featuredCourse ? (
+                    <>
+                        <h3 className="text-3xl font-bold">{featuredCourse.name}</h3>
+                        <p className="mt-2 text-primary-foreground/80">
+                         {featuredCourse.description.substring(0,100)}...
+                        </p>
+                         <Button asChild variant="secondary" className="mt-6">
+                          <Link href={`/shop/${featuredCourse.id}`}>Learn More</Link>
+                        </Button>
+                    </>
+                ) : (
+                     <>
+                        <h3 className="text-3xl font-bold">Veld Management Courses</h3>
+                        <p className="mt-2 text-primary-foreground/80">
+                          Digital courses for advanced pasture management. Available soon on all platforms.
+                        </p>
+                        <Button variant="secondary" className="mt-6" disabled>
+                          More Info Coming Soon...
+                        </Button>
+                     </>
+                )}
+              </div>
+              <div className="hidden md:flex justify-center p-8">
+                 <Sprout className="w-32 h-32 text-primary-foreground/50"/>
+              </div>
+            </div>
+          </Card>
+        </div>
+      </section>
 
-       <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32">
+       <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/50">
         <div className="container px-4 md:px-6">
            <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Clients Say</h2>
@@ -185,7 +221,7 @@ export default function Home() {
         </div>
       </section>
 
-       <section id="gallery" className="w-full py-12 md:py-24 lg:py-32 bg-secondary/50">
+       <section id="gallery" className="w-full py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
             <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Gallery</h2>
@@ -224,28 +260,6 @@ export default function Home() {
               <Link href="/gallery">View Full Gallery</Link>
             </Button>
           </div>
-        </div>
-      </section>
-
-      <section className="w-full py-12 md:py-24 lg:py-32">
-        <div className="container">
-          <Card className="bg-primary text-primary-foreground">
-            <div className="grid md:grid-cols-2 items-center">
-              <div className="p-8 md:p-12">
-                <Badge variant="secondary" className="mb-4">Get The App</Badge>
-                <h3 className="text-3xl font-bold">GrassPro App</h3>
-                <p className="mt-2 text-primary-foreground/80">
-                  Your digital companion for advanced pasture management. Available soon on all platforms.
-                </p>
-                <Button variant="secondary" className="mt-6" disabled>
-                  More Info Coming Soon...
-                </Button>
-              </div>
-              <div className="hidden md:flex justify-center p-8">
-                 <Sprout className="w-32 h-32 text-primary-foreground/50"/>
-              </div>
-            </div>
-          </Card>
         </div>
       </section>
     </div>
