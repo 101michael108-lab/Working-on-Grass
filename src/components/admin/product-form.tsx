@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,6 +19,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { Product } from "@/lib/types";
 
 const formSchema = z.object({
@@ -28,6 +30,8 @@ const formSchema = z.object({
   image: z.string().url("Must be a valid URL").optional().or(z.literal('')),
   imageHint: z.string().optional(),
 });
+
+const productCategories = ["Instruments", "Books", "Seeds", "Guides"];
 
 interface ProductFormProps {
     product?: Product | null;
@@ -80,7 +84,22 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         <FormItem><FormLabel>Price</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
                     )} />
                     <FormField name="category" control={form.control} render={({ field }) => (
-                        <FormItem><FormLabel>Category</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                       <FormItem>
+                         <FormLabel>Category</FormLabel>
+                         <Select onValueChange={field.onChange} defaultValue={field.value}>
+                           <FormControl>
+                             <SelectTrigger>
+                               <SelectValue placeholder="Select a category" />
+                             </SelectTrigger>
+                           </FormControl>
+                           <SelectContent>
+                             {productCategories.map(cat => (
+                               <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                             ))}
+                           </SelectContent>
+                         </Select>
+                         <FormMessage />
+                       </FormItem>
                     )} />
                 </div>
                  <FormField name="image" control={form.control} render={({ field }) => (

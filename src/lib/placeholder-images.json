@@ -83,6 +83,12 @@
       "description": "Bag of grass seeds",
       "imageUrl": "https://images.unsplash.com/photo-1654202752477-22b5bc52d4da?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzZWVkJTIwYmFnfGVufDB8fHx8MTc2OTQ0NDg0MXww&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "seed bag"
+    },
+    {
+      "id": "book-guide",
+      "description": "A book about grasses on a wooden table",
+      "imageUrl": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxib29rJTIwY292ZXJ8ZW58MHx8fHwxNzY5NDQ5NzI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book cover"
     }
   ]
 }

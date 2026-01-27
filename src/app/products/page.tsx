@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -5,10 +6,11 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { seedCategories } from "@/lib/data";
-import { CheckCircle, ShoppingCart } from "lucide-react";
+import { CheckCircle, ShoppingCart, BookOpen } from "lucide-react";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import type { Product } from "@/lib/types";
+import { PlaceHolderImages } from "@/lib/placeholder-images";
 
 export default function ProductsPage() {
   const firestore = useFirestore();
@@ -21,12 +23,14 @@ export default function ProductsPage() {
   const { data: dpmProducts } = useCollection<Omit<Product, 'id'>>(dpmQuery);
   const dpm = dpmProducts?.[0];
 
+  const bookImage = PlaceHolderImages.find(p => p.id === 'book-guide');
+
   return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Our Products</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          High-quality tools and seeds to support your sustainable land management practices.
+          High-quality tools, seeds, and guides to support your sustainable land management practices.
         </p>
       </div>
 
@@ -65,6 +69,42 @@ export default function ProductsPage() {
           </Card>
         </section>
       )}
+
+       <section id="books" className="mb-20">
+         <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold">Books & Guides</h2>
+            <p className="mt-3 max-w-2xl mx-auto text-muted-foreground">
+                Authored by Frits van Oudtshoorn, these guides are essential resources for farmers, conservationists, and students.
+            </p>
+        </div>
+        <Card className="overflow-hidden">
+             <div className="grid md:grid-cols-2 items-center">
+                 <div className="p-8 md:p-12">
+                    <CardTitle className="text-3xl mb-2">Guide to Grasses of Southern Africa</CardTitle>
+                    <CardDescription className="text-base text-muted-foreground mb-4">
+                        The definitive field guide for identifying grasses in the region, featuring high-quality photographs and detailed descriptions.
+                    </CardDescription>
+                     <div className="flex flex-wrap items-center gap-4 mt-6">
+                       <Button asChild size="lg">
+                         <Link href="/shop"><BookOpen className="mr-2 h-5 w-5" /> Browse Books</Link>
+                       </Button>
+                    </div>
+                 </div>
+                 {bookImage && (
+                    <div className="bg-secondary/50 h-full flex items-center justify-center p-8">
+                        <Image
+                            src={bookImage.imageUrl}
+                            alt={bookImage.description}
+                            width={450}
+                            height={450}
+                            className="object-contain rounded-lg shadow-md"
+                            data-ai-hint={bookImage.imageHint}
+                        />
+                    </div>
+                 )}
+            </div>
+        </Card>
+       </section>
 
       <section id="seeds">
         <div className="text-center mb-12">
