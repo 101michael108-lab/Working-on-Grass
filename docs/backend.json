@@ -227,6 +227,10 @@
           "description": "Email address of the person submitting the form.",
           "format": "email"
         },
+        "serviceInterestedIn": {
+          "type": "string",
+          "description": "The service the user is interested in."
+        },
         "message": {
           "type": "string",
           "description": "Message submitted through the form."
@@ -241,7 +245,7 @@
         "id",
         "name",
         "email",
-        "message",
+        "serviceInterestedIn",
         "submissionDate"
       ]
     }

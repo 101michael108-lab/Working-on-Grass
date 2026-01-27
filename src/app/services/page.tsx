@@ -1,6 +1,9 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { services } from "@/lib/data";
-import { Leaf } from "lucide-react";
+import { Leaf, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
 
 export default function ServicesPage() {
   return (
@@ -21,9 +24,16 @@ export default function ServicesPage() {
               </div>
               <CardTitle className="text-lg">{service.title}</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="flex-grow">
               <CardDescription>{service.description}</CardDescription>
             </CardContent>
+            <CardFooter>
+                <Button asChild className="w-full">
+                    <Link href={`/contact?service=${encodeURIComponent(service.title)}`}>
+                        Request a Quote <ArrowRight className="ml-2 h-4 w-4" />
+                    </Link>
+                </Button>
+            </CardFooter>
           </Card>
         ))}
       </div>

@@ -4,6 +4,8 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
 import { Mail, MapPin, Phone } from "lucide-react"
+import { useSearchParams } from 'next/navigation'
+import React, { Suspense } from 'react'
 
 import { Button } from "@/components/ui/button"
 import {
@@ -20,6 +22,8 @@ import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useFirestore, addDocumentNonBlocking } from "@/firebase"
 import { collection, serverTimestamp } from "firebase/firestore"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { services } from "@/lib/data"
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -28,27 +32,35 @@ const formSchema = z.object({
   email: z.string().email({
     message: "Please enter a valid email address.",
   }),
-  subject: z.string().min(5, {
-    message: "Subject must be at least 5 characters.",
+   serviceInterestedIn: z.string({
+    required_error: "Please select a service.",
   }),
   message: z.string().min(10, {
     message: "Message must be at least 10 characters.",
-  }),
+  }).optional(),
 })
 
-export default function ContactPage() {
+function ContactForm() {
   const { toast } = useToast()
   const firestore = useFirestore()
+  const searchParams = useSearchParams()
+  const serviceQuery = searchParams.get('service')
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
       email: "",
-      subject: "",
+      serviceInterestedIn: serviceQuery || undefined,
       message: "",
     },
   })
+
+  React.useEffect(() => {
+    if (serviceQuery) {
+      form.setValue('serviceInterestedIn', serviceQuery);
+    }
+  }, [serviceQuery, form]);
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     const contactFormCollection = collection(firestore, 'contactFormEntries');
@@ -66,6 +78,80 @@ export default function ContactPage() {
   }
 
   return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Full Name</FormLabel>
+              <FormControl>
+                <Input placeholder="John Doe" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email Address</FormLabel>
+              <FormControl>
+                <Input placeholder="you@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="serviceInterestedIn"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Service Interested In</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a service..." />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {services.map((service, index) => (
+                    <SelectItem key={index} value={service.title}>
+                      {service.title}
+                    </SelectItem>
+                  ))}
+                  <SelectItem value="General Inquiry">General Inquiry</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="message"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Message (Optional)</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Tell us more about your needs..." {...field} rows={6} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <Button type="submit" size="lg">Send Message</Button>
+      </form>
+    </Form>
+  )
+}
+
+export default function ContactPage() {
+  return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Get in Touch</h1>
@@ -77,63 +163,9 @@ export default function ContactPage() {
       <div className="grid md:grid-cols-2 gap-12">
         <div>
           <h2 className="text-2xl font-bold mb-6">Contact Form</h2>
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Full Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email Address</FormLabel>
-                    <FormControl>
-                      <Input placeholder="you@example.com" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="subject"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Subject</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Veld Assessment Inquiry" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="message"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Message</FormLabel>
-                    <FormControl>
-                      <Textarea placeholder="Tell us more about your needs..." {...field} rows={6} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit" size="lg">Send Message</Button>
-            </form>
-          </Form>
+           <Suspense fallback={<div>Loading...</div>}>
+            <ContactForm />
+           </Suspense>
         </div>
         <div>
             <h2 className="text-2xl font-bold mb-6">Our Information</h2>
