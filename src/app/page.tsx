@@ -14,7 +14,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { services } from "@/lib/data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where, limit } from "firebase/firestore";
 import type { Product } from "@/lib/types";
@@ -27,7 +26,6 @@ export default function Home() {
   const featuredCourse = courses?.[0];
 
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero');
-  const galleryImages = PlaceHolderImages.filter(p => p.id.startsWith('gallery-'));
   
   return (
     <div className="flex flex-col min-h-[100dvh]">
@@ -217,48 +215,6 @@ export default function Home() {
                 </div>
               </CardContent>
             </Card>
-          </div>
-        </div>
-      </section>
-
-       <section id="gallery" className="w-full py-12 md:py-24 lg:py-32">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">Gallery</h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-              A glimpse into our work and the beautiful landscapes we help manage.
-            </p>
-          </div>
-          <div className="py-12">
-            <Carousel opts={{ loop: true }} className="w-full max-w-4xl mx-auto">
-              <CarouselContent>
-                {galleryImages.map((image, index) => (
-                  <CarouselItem key={index} className="md:basis-1/2 lg:basis-1/3">
-                    <div className="p-1">
-                      <Card className="overflow-hidden">
-                        <CardContent className="p-0">
-                          <Image
-                            src={image.imageUrl}
-                            alt={image.description}
-                            width={400}
-                            height={300}
-                            className="aspect-[4/3] w-full object-cover transition-transform hover:scale-105"
-                            data-ai-hint={image.imageHint}
-                          />
-                        </CardContent>
-                      </Card>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
-              <CarouselPrevious />
-              <CarouselNext />
-            </Carousel>
-          </div>
-          <div className="text-center">
-            <Button asChild>
-              <Link href="/gallery">View Full Gallery</Link>
-            </Button>
           </div>
         </div>
       </section>
