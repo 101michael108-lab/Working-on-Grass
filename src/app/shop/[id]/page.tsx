@@ -1,6 +1,7 @@
 
 'use client';
 
+import React from 'react';
 import { useDoc, useFirestore, useMemoFirebase } from '@/firebase';
 import { doc } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
@@ -9,14 +10,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 
 type ProductPageProps = {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 };
 
 // The main page component
-export default function ProductPage({ params }: ProductPageProps) {
+export default function ProductPage({ params: paramsPromise }: ProductPageProps) {
+  const params = React.use(paramsPromise);
   const firestore = useFirestore();
+  
   const productRef = useMemoFirebase(() => {
     if (!firestore || !params.id) return null;
     return doc(firestore, 'products', params.id);
