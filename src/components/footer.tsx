@@ -1,4 +1,5 @@
 import { Logo } from "@/components/logo";
+import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
 
 export function Footer() {
@@ -39,11 +40,12 @@ export function Footer() {
           </div>
           <div className="space-y-2">
             <h4 className="font-semibold font-headline">Quick Links</h4>
-            <ul className="space-y-2 text-sm">
-                <li><a href="/services" className="hover:underline">Services</a></li>
-                <li><a href="/products" className="hover:underline">Products</a></li>
-                <li><a href="/shop" className="hover:underline">Shop</a></li>
-                <li><a href="/contact" className="hover:underline">Contact Us</a></li>
+            <ul className="space-y-2 text-sm text-muted-foreground">
+                <li><Link href="/about" className="hover:text-foreground">About</Link></li>
+                <li><Link href="/services" className="hover:text-foreground">Services</Link></li>
+                <li><Link href="/shop" className="hover:text-foreground">Shop</Link></li>
+                <li><Link href="/resources" className="hover:text-foreground">Resources</Link></li>
+                <li><Link href="/contact" className="hover:text-foreground">Contact Us</Link></li>
             </ul>
           </div>
         </div>

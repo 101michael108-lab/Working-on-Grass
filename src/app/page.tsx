@@ -6,6 +6,7 @@ import {
   ArrowRight,
   Leaf,
   Sprout,
+  Quote
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy, limit } from "firebase/firestore";
 import type { Product } from "@/lib/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Home() {
   const firestore = useFirestore();
@@ -42,19 +44,22 @@ export default function Home() {
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="relative h-full flex flex-col items-center justify-center text-center text-primary-foreground p-4">
-          <div className="bg-black/30 backdrop-blur-sm p-8 rounded-xl">
+          <div className="bg-black/30 backdrop-blur-sm p-8 rounded-xl max-w-4xl">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white">
-              Working on Grass
+              Expert Veld & Grassland Management for Farmers, Ranches & Conservation
             </h1>
-            <p className="mt-4 max-w-2xl text-lg md:text-xl text-gray-200">
+            <p className="mt-4 max-w-2xl mx-auto text-lg md:text-xl text-gray-200">
               Sustainable & Regenerative Land Use Advisory
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link href="/services">Our Services <ArrowRight className="ml-2" /></Link>
+              <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Link href="/contact">Request a Quote</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href="/contact">Contact Us</Link>
+                <Link href="/shop">Shop Now</Link>
+              </Button>
+               <Button asChild size="lg" variant="outline" className="bg-background/20 text-white border-white hover:bg-white hover:text-foreground">
+                <Link href="/about">Learn More</Link>
               </Button>
             </div>
           </div>
@@ -72,6 +77,9 @@ export default function Home() {
               <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed lg:text-base/relaxed xl:text-xl/relaxed">
                 Founded by renowned author and environmentalist Frits van Oudtshoorn, Working on Grass is an environmental and agricultural services company with a passion for sustainable land management. We are based in South Africa and serve clients across the continent.
               </p>
+               <Button asChild className="mt-6">
+                <Link href="/about">Meet The Founder <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
             </div>
             <div className="flex justify-center">
               <Image
@@ -115,36 +123,65 @@ export default function Home() {
           </div>
         </div>
       </section>
-      
-      <section id="products" className="w-full py-12 md:py-24 lg:py-32">
+
+       <section id="testimonials" className="w-full py-12 md:py-24 lg:py-32">
         <div className="container px-4 md:px-6">
-          {dpmProduct && (
-            <div className="grid lg:grid-cols-2 gap-16 items-center">
-              <div className="flex flex-col items-start">
-                <Badge variant="outline" className="mb-4">Featured Product</Badge>
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">{dpmProduct.name}</h2>
-                <p className="mt-4 text-muted-foreground md:text-xl/relaxed">
-                  {dpmProduct.description.split('.')[0]}. An easy alternative to cutting, drying, and weighing grass samples for measuring biomass.
-                </p>
-                <div className="mt-6 flex items-center gap-4">
-                  <span className="text-3xl font-bold text-accent">R{dpmProduct.price.toFixed(2)}</span>
-                  <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                    <Link href={`/shop/${dpmProduct.id}`}>Buy Now</Link>
-                  </Button>
+           <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Clients Say</h2>
+            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+              Real results from farmers, ranchers, and conservationists across Africa.
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12">
+            <Card>
+              <CardContent className="pt-6">
+                <Quote className="w-8 h-8 text-primary mb-4" />
+                <p className="text-muted-foreground mb-4">"The grazing management plan developed by Frits has transformed our ranch. Our veld has never been healthier, and our livestock are thriving."</p>
+                <div className="flex items-center gap-4">
+                   <Avatar>
+                      <AvatarImage src="https://picsum.photos/seed/client1/40/40" />
+                      <AvatarFallback>JD</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">John D.</p>
+                      <p className="text-sm text-muted-foreground">Cattle Farmer, North West</p>
+                    </div>
                 </div>
-              </div>
-              <div className="flex justify-center">
-                <Image
-                  src={dpmProduct?.image || `https://picsum.photos/seed/${dpmProduct.id}/500/500`}
-                  alt={dpmProduct.name}
-                  width={500}
-                  height={500}
-                  className="rounded-lg object-contain aspect-square"
-                  data-ai-hint={dpmProduct.imageHint || "product image"}
-                />
-              </div>
-            </div>
-          )}
+              </CardContent>
+            </Card>
+             <Card>
+              <CardContent className="pt-6">
+                <Quote className="w-8 h-8 text-primary mb-4" />
+                <p className="text-muted-foreground mb-4">"Working on Grass provided an invaluable ecological assessment for our conservation area. Their expertise is second to none."</p>
+                <div className="flex items-center gap-4">
+                   <Avatar>
+                      <AvatarImage src="https://picsum.photos/seed/client2/40/40" />
+                      <AvatarFallback>SM</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">Sarah M.</p>
+                      <p className="text-sm text-muted-foreground">Conservation Manager, Kenya</p>
+                    </div>
+                </div>
+              </CardContent>
+            </Card>
+             <Card>
+              <CardContent className="pt-6">
+                <Quote className="w-8 h-8 text-primary mb-4" />
+                <p className="text-muted-foreground mb-4">"The insights from the veld condition assessment were a game-changer. We're now making data-driven decisions."</p>
+                <div className="flex items-center gap-4">
+                   <Avatar>
+                      <AvatarImage src="https://picsum.photos/seed/client3/40/40" />
+                      <AvatarFallback>BV</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="font-semibold">Bennie van der Merwe</p>
+                      <p className="text-sm text-muted-foreground">Game Rancher, Limpopo</p>
+                    </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         </div>
       </section>
 
