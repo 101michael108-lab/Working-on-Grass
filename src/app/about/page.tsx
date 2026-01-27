@@ -32,7 +32,7 @@ export default function AboutPage() {
       <div className="container py-12 md:py-20 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">About Working on Grass</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Science-based grassland and veld management, grounded in decades of practical experience across Southern Africa.
+          Science-based grassland and veld management, grounded in decades of practical experience.
         </p>
       </div>
 
@@ -56,10 +56,10 @@ export default function AboutPage() {
               <h2 className="text-3xl font-bold mb-4">Meet the Founder</h2>
               <div className="prose max-w-none text-muted-foreground space-y-4 text-base">
                 <p>
-                  <strong>Frits van Oudtshoorn</strong> is a grassland ecologist and land-use specialist with extensive experience in veld condition assessment, grazing management, and ecological restoration. Holding a Master’s degree in Nature Conservation, Frits has dedicated his career to bridging the gap between scientific principles and on-the-ground application.
+                  <strong>Frits van Oudtshoorn</strong> is a grassland ecologist and land-use specialist with extensive experience in veld condition assessment, grazing management, and ecological restoration.
                 </p>
                 <p>
-                  He has worked with a diverse range of clients, including commercial farmers, conservation bodies, mining houses, and environmental consultants across Southern Africa, providing practical, site-specific solutions for sustainable land management.
+                  He holds a Master’s degree in Nature Conservation and has worked with farmers, conservation bodies, and rehabilitation projects across Southern Africa.
                 </p>
               </div>
             </div>
@@ -111,9 +111,6 @@ export default function AboutPage() {
                   <p>
                     Working on Grass was established to bridge the gap between scientific knowledge and practical land management. Healthy grasslands are the foundation of sustainable agriculture, conservation, and rehabilitation — and they require informed, long-term decision-making.
                   </p>
-                  <p>
-                    Our mission is to empower land managers with the tools and understanding to read their veld, make data-driven grazing decisions, and restore ecological balance. We believe that economic viability and environmental health are not mutually exclusive, but deeply interconnected.
-                  </p>
                 </div>
             </div>
              <div className="flex justify-center">
@@ -132,43 +129,46 @@ export default function AboutPage() {
         </div>
       </div>
 
-       {/* Section 4 & 5: Principles & Clients */}
-       <div className="container py-12 md:py-20">
-        <div className="grid md:grid-cols-2 gap-12">
-           <div>
-              <h3 className="text-2xl font-bold mb-6">Our Approach & Principles</h3>
-              <ul className="space-y-3 text-muted-foreground">
+       {/* Section 4: Our Approach & Principles */}
+       <section className="container py-12 md:py-20">
+            <div className="max-w-3xl mx-auto">
+              <h3 className="text-3xl font-bold mb-6 text-center">Our Approach & Principles</h3>
+              <ul className="space-y-4 text-muted-foreground">
                 {principles.map((principle, index) => (
-                   <li key={index} className="flex items-start gap-3">
+                   <li key={index} className="flex items-start gap-4">
                     <Check className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
                     <span>{principle}</span>
                    </li>
                 ))}
               </ul>
             </div>
-             <div>
-              <h3 className="text-2xl font-bold mb-6">Who We Work With</h3>
-              <div className="flex flex-wrap gap-2">
-                 {clientTypes.map((client, index) => (
-                    <div key={index} className="bg-secondary text-secondary-foreground text-sm font-medium px-3 py-1 rounded-full">{client}</div>
-                 ))}
-              </div>
+       </section>
+
+        {/* Section 5: Who We Work With */}
+        <section className="bg-secondary/30 py-12 md:py-20">
+            <div className="container">
+                <h3 className="text-3xl font-bold mb-8 text-center">Who We Work With</h3>
+                <div className="max-w-4xl mx-auto flex flex-wrap justify-center gap-3">
+                    {clientTypes.map((client, index) => (
+                        <div key={index} className="bg-background text-secondary-foreground text-base font-medium px-4 py-2 rounded-full shadow-sm border">{client}</div>
+                    ))}
+                </div>
             </div>
-        </div>
-      </div>
+        </section>
+
 
       {/* Optional: Gallery */}
-      <div className="container pb-12 md:pb-20">
+      <div className="container py-12 md:py-20">
         <h3 className="text-2xl font-bold mb-6 text-center">A Glimpse of Our Work</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {galleryImages.map((image) => (
-            <div key={image.id} className="overflow-hidden rounded-lg">
+            <div key={image.id} className="overflow-hidden rounded-lg group">
                <Image
                   src={image.imageUrl}
                   alt={image.description}
                   width={600}
                   height={400}
-                  className="w-full h-auto object-cover aspect-[3/2] hover:scale-105 transition-transform"
+                  className="w-full h-auto object-cover aspect-[3/2] transition-transform duration-300 group-hover:scale-105"
                   data-ai-hint={image.imageHint}
                 />
             </div>
