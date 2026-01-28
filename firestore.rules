@@ -171,6 +171,26 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // Consultation Requests (/consultationRequests)
+    // ------------------------------------------------------------------
+    /**
+     * @description
+     * A write-only "dropbox" for consultation requests. Anyone can create an entry.
+     * Entries are immutable and can only be read or deleted by administrators.
+     * @path /consultationRequests/{consultationRequestId}
+     * @allow (create) Any user submitting a consultation request.
+     * @deny (get) A regular user trying to read someone else's request.
+     * @principle Provides a secure dropbox where data can be submitted publicly but read privately.
+     */
+    match /consultationRequests/{consultationRequestId} {
+      allow get: if isAdmin();
+      allow list: if isAdmin();
+      allow create: if true;
+      allow update: if false;
+      allow delete: if isAdmin() && isExistingDoc();
+    }
+
+    // ------------------------------------------------------------------
     // User-Owned Data (/users/{userId}/...)
     // ------------------------------------------------------------------
 

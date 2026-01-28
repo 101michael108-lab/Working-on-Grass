@@ -189,32 +189,6 @@
         "items"
       ]
     },
-    "GalleryImage": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "GalleryImage",
-      "type": "object",
-      "description": "Represents an image in the gallery.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the gallery image."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL of the gallery image.",
-          "format": "uri"
-        },
-        "description": {
-          "type": "string",
-          "description": "Description of the image."
-        }
-      },
-      "required": [
-        "id",
-        "imageUrl",
-        "description"
-      ]
-    },
     "ContactFormEntry": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ContactFormEntry",
@@ -261,6 +235,50 @@
         "name",
         "email",
         "serviceInterestedIn",
+        "submissionDate"
+      ]
+    },
+    "ConsultationRequest": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ConsultationRequest",
+      "type": "object",
+      "description": "Represents an inquiry for a consultation submitted through the website.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the request."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the person requesting the consultation."
+        },
+        "contactDetail": {
+          "type": "string",
+          "description": "Email or phone number of the person."
+        },
+        "location": {
+          "type": "string",
+          "description": "Location or farm name provided by the user."
+        },
+        "needs": {
+          "type": "string",
+          "description": "Description of what the user needs help with."
+        },
+        "service": {
+          "type": "string",
+          "description": "The specific service the user is interested in, if any."
+        },
+        "submissionDate": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of the submission."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "contactDetail",
+        "needs",
         "submissionDate"
       ]
     }
@@ -369,6 +387,22 @@
             {
               "name": "contactFormEntryId",
               "description": "The unique identifier for the contact form entry."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/consultationRequests/{consultationRequestId}",
+        "definition": {
+          "entityName": "ConsultationRequest",
+          "schema": {
+            "$ref": "#/backend/entities/ConsultationRequest"
+          },
+          "description": "Stores user inquiries for expert consultations, submitted through the services page modal.",
+          "params": [
+            {
+              "name": "consultationRequestId",
+              "description": "The unique identifier for the consultation request."
             }
           ]
         }

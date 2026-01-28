@@ -2,6 +2,7 @@ export type Service = {
   title: string;
   description: string;
   cta: string;
+  whoIsItFor: string;
 };
 
 export type Product = {
