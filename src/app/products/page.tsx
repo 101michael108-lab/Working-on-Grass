@@ -41,7 +41,7 @@ export default function ProductsPage() {
               <div className="p-8 md:p-12">
                 <CardTitle className="text-3xl mb-2">{dpm.name}</CardTitle>
                 <CardDescription className="text-base text-muted-foreground mb-4">
-                  The essential tool for accurately determining grass biomass per hectare (kg dry grass/ha).
+                  The disc pasture meter (or DPM) is an aluminium instrument used to determine grass biomass per hectare (kg dry grass/ha) in veld. It is an easy alternative to cutting, drying, and weighing grass samples for measuring biomass.
                 </CardDescription>
                 
                 <div className="space-y-3 text-sm text-foreground/80 mb-6">
@@ -82,11 +82,11 @@ export default function ProductsPage() {
                  <div className="p-8 md:p-12">
                     <CardTitle className="text-3xl mb-2">Guide to Grasses of Southern Africa</CardTitle>
                     <CardDescription className="text-base text-muted-foreground mb-4">
-                        The definitive field guide for identifying grasses in the region, featuring high-quality photographs and detailed descriptions.
+                        The ultimate photographic guide to grasses in southern Africa, containing descriptions and illustrations of 320 common and important grasses.
                     </CardDescription>
                      <div className="flex flex-wrap items-center gap-4 mt-6">
                        <Button asChild size="lg">
-                         <Link href="/shop"><BookOpen className="mr-2 h-5 w-5" /> Browse Books</Link>
+                         <Link href="/shop"><BookOpen className="mr-2 h-5 w-5" /> Browse All Books</Link>
                        </Button>
                     </div>
                  </div>
@@ -137,7 +137,7 @@ export default function ProductsPage() {
          <div className="text-center mt-12">
               <p className="text-muted-foreground mb-4">Feel free to contact us for more information or a personalized quotation.</p>
               <Button asChild>
-                  <Link href="/contact">Request a Quote</Link>
+                  <Link href="/contact?service=Seed+Quotation">Request a Quote</Link>
               </Button>
          </div>
       </section>

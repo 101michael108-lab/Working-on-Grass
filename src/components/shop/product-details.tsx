@@ -12,15 +12,6 @@ import type { Product } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-// Features for the DPM product for demonstration
-const dpmFeatures = [
-    "Accurately measures grass biomass per hectare (kg DM/ha).",
-    "Calibrated for various grass types and conditions.",
-    "Durable, corrosion-resistant construction for field use.",
-    "Simple to operate, providing instant readings.",
-    "Essential for data-driven grazing management and planning."
-];
-
 export default function ProductDetailsClient({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
@@ -99,7 +90,8 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
         <Tabs defaultValue="details" className="w-full">
             <TabsList>
                 <TabsTrigger value="details">Product Details</TabsTrigger>
-                {isDPM && <TabsTrigger value="features">Features & Benefits</TabsTrigger>}
+                {isDPM && <TabsTrigger value="how-it-works">How It Works</TabsTrigger>}
+                {isDPM && <TabsTrigger value="how-to-calculate">Calculating Biomass</TabsTrigger>}
                 {product.category === "Books & Guides" && <TabsTrigger value="author">About the Author</TabsTrigger>}
             </TabsList>
             <TabsContent value="details" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
@@ -127,16 +119,15 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
                  </table>
             </TabsContent>
             {isDPM && (
-                 <TabsContent value="features" className="mt-4 border p-6 rounded-md">
-                    <h3 className="text-xl font-bold text-foreground mb-4">Key Features</h3>
-                    <ul className="space-y-3">
-                        {dpmFeatures.map((feature, index) => (
-                             <li key={index} className="flex items-start gap-3">
-                                <CheckCircle className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
-                                <span className="text-muted-foreground">{feature}</span>
-                            </li>
-                        ))}
-                    </ul>
+                 <TabsContent value="how-it-works" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
+                    <h3 className="text-foreground">How The Disc Pasture Meter Works</h3>
+                    <p>The DPM consists of a disc attached to a tube which slides over a rod fitted with measurements in centimetre (see illustration). The disc and tube unit are dropped onto the grass sward with the rod placed vertically to the ground. The height (in centimetres) at which the disc settles is then recorded where the rod meets with the upper fringe of the tube. At least fifty such recordings are made at one sample site after which the average (in cm) is calculated. Recordings are usually done on a straight transect at one-step or one-meter intervals.</p>
+                 </TabsContent>
+            )}
+             {isDPM && (
+                 <TabsContent value="how-to-calculate" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
+                    <h3 className="text-foreground">How Biomass is Determined</h3>
+                    <p>Grass biomass, or standing crop, in kilogram dry grass per hectare (kg/ha), is then calculated by using an equation. Various equations are developed by pasture scientists through calibrating the DPM for certain grassland and savanna regions. These equations are supplied with the instrument or can be downloaded from our resources page.</p>
                  </TabsContent>
             )}
             {product.category === "Books & Guides" && (

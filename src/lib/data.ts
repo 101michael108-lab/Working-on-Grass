@@ -37,26 +37,26 @@ export const services: Service[] = [
     {
       name: "Grasses",
       types: [
-        "Perennial summer grass pastures – Smuts finger grass, Eragrostis, Rhodes grass, Blue buffalo grass, White buffalo grass, Small buffalo grass, Brachiaria’s (including hybrids), Wool grass and Perennial signal grass.",
-        "Annual summer grass pastures – Teff, Fodder sorghums, Babala, and Japanese millet.",
-        "Annual winter grass pastures – Annual rye grass, Forage oats, Forage rye, Forage barley, Triticale",
-        "Perennial winter grass pastures – Perennial rye, Tall fescues, Cocksfoot, Phalaris (perennial canary grass)",
+        "Perennial summer grass pastures: Smuts finger grass, Eragrostis, Rhodes grass, Blue buffalo grass, White buffalo grass, Small buffalo grass, Brachiaria’s (including hybrids), Wool grass and Perennial signal grass.",
+        "Annual summer grass pastures: Teff, Fodder sorghums, Babala, and Japanese millet.",
+        "Annual winter grass pastures: Annual rye grass, Forage oats, Forage rye, Forage barley, Triticale.",
+        "Perennial winter grass pastures: Perennial rye, Tall fescues, Cocksfoot, Phalaris (perennial canary grass)."
       ],
     },
     {
       name: "Legumes",
       types: [
-        "Perennial summer legumes – Poor man’s lucerne and Desmodiums, Stylo",
-        "Annual summer legumes – Dolichos beans, Cow peas, Sunnhemp, Red hemp, Burgundy bean",
-        "Annual winter legumes – Annual clovers, Annual medicago’s, Serradella, Lupins, Vetch, Fodder peas",
-        "Perennial winter legumes – Lucerne (all dormancy’s), Perennial clovers (white, red, strawberry), Birdsfoot trefoil",
+        "Perennial summer legumes: Poor man’s lucerne and Desmodiums, Stylo.",
+        "Annual summer legumes: Dolichos beans, Cow peas, Sunnhemp, Red hemp, Burgundy bean.",
+        "Annual winter legumes: Annual clovers, Annual medicago’s, Serradella, Lupins, Vetch, Fodder peas.",
+        "Perennial winter legumes: Lucerne (all dormancy’s), Perennial clovers (white, red, strawberry), Birdsfoot trefoil."
       ],
     },
     {
       name: "Other",
       types: [
-        "Root crops – Forage turnips, Forage rape, Radishes",
-        "Broadleaf crops – Chicory, Plantain, Buchweed, Coriander, Phacelia, Flaxseed, Sunflower",
+        "Root crops: Forage turnips, Forage rape, Radishes.",
+        "Broadleaf crops: Chicory, Plantain, Buchweed, Coriander, Phacelia, Flaxseed, Sunflower."
       ],
     },
   ];
