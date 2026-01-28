@@ -9,7 +9,7 @@ export const services: Service[] = [
     },
     {
         title: "Grassland & Veld Restoration Planning",
-        description: "Our team designs practical, actionable plans to restore degraded grasslands or pastures, which enhances biodiversity, improves soil health, and increases livestock yield.",
+        description: "Our team designs practical, actionable plans to restore degraded grasslands or pastures, which enhances biodiversity, improves soil health, and supports livestock productivity.",
         cta: "Discuss a Plan",
         whoIsItFor: "For properties with degraded land or pastures"
     },
@@ -27,13 +27,13 @@ export const services: Service[] = [
     },
     {
         title: "Grazing Management & Infrastructure Planning",
-        description: "Receive expert advice on rotational grazing systems, water point placement, and fencing layouts to improve livestock health, yield, and ensure long-term sustainability.",
+        description: "Access expert advice on rotational grazing systems, water point placement, and fencing layouts to support livestock health and ensure long-term sustainability.",
         cta: "Book Consultation",
         whoIsItFor: "For livestock producers seeking to optimize their systems"
     },
     {
         title: "Training & Advisory Services",
-        description: "Benefit from on-site or remote training in grass identification, veld management, and ecological monitoring to build critical knowledge within your team or organization.",
+        description: "Access on-site or remote training in grass identification, veld management, and ecological monitoring to build critical knowledge within your team or organization.",
         cta: "View Courses",
         whoIsItFor: "For teams, organizations, and individuals"
     }

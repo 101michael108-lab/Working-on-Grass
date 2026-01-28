@@ -65,7 +65,7 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Button asChild size="lg">
-                <Link href="/contact?service=Professional+Assessment">Request a Professional Assessment</Link>
+                <Link href="/contact?service=Professional+Assessment">Inquire About an Assessment</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
                 <Link href="/services">View Services</Link>
@@ -208,7 +208,7 @@ export default function Home() {
             <Card>
               <CardContent className="pt-6">
                 <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"The grazing management plan developed by Frits has transformed our ranch. Our veld has never been healthier, and our livestock are thriving."</p>
+                <p className="text-muted-foreground mb-4">"Frits's grazing management plan has made a significant difference. Our veld is healthier and our livestock are doing well."</p>
                 <div className="flex items-center gap-4">
                    <Avatar>
                       <AvatarImage src="https://picsum.photos/seed/client1/40/40" />
@@ -224,7 +224,7 @@ export default function Home() {
              <Card>
               <CardContent className="pt-6">
                 <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"Working on Grass provided an invaluable ecological assessment for our conservation area. Their expertise is second to none."</p>
+                <p className="text-muted-foreground mb-4">"The ecological assessment from Working on Grass was invaluable for our conservation area. Their expertise is evident in their work."</p>
                 <div className="flex items-center gap-4">
                    <Avatar>
                       <AvatarImage src="https://picsum.photos/seed/client2/40/40" />
@@ -240,7 +240,7 @@ export default function Home() {
              <Card>
               <CardContent className="pt-6">
                 <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"The insights from the veld condition assessment were a game-changer. We're now making data-driven decisions."</p>
+                <p className="text-muted-foreground mb-4">"The veld condition assessment provided the insights we needed to start making data-driven decisions."</p>
                 <div className="flex items-center gap-4">
                    <Avatar>
                       <AvatarImage src="https://picsum.photos/seed/client3/40/40" />
@@ -263,7 +263,7 @@ export default function Home() {
             <h2 className="text-3xl font-bold">Need expert guidance on your land or veld?</h2>
             <div className="mt-6 flex justify-center gap-4">
                <Button asChild size="lg">
-                  <Link href="/contact?service=Quote+Request">Request a Quote</Link>
+                  <Link href="/contact?service=Quote+Request">Request a Consultation</Link>
                </Button>
                  <Button asChild size="lg" variant="outline">
                   <Link href="/contact">Contact Us</Link>

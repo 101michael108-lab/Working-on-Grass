@@ -11,9 +11,11 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, where, orderBy } from "firebase/firestore";
 import type { Product } from "@/lib/types";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useCart } from "@/context/cart-context";
 
 export default function ProductsPage() {
   const firestore = useFirestore();
+  const { addToCart } = useCart();
 
   const dpmQuery = useMemoFirebase(() => query(
     collection(firestore, 'products'), 
@@ -52,8 +54,8 @@ export default function ProductsPage() {
                 
                 <div className="flex flex-wrap items-center gap-4">
                    <span className="text-3xl font-bold text-accent">R{dpm.price.toFixed(2)}</span>
-                   <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                     <Link href={`/shop/${dpm.id}`}><ShoppingCart className="mr-2 h-5 w-5" /> Buy Now</Link>
+                   <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => dpm && addToCart(dpm, 1)}>
+                     <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
                    </Button>
                 </div>
               </div>
@@ -148,4 +150,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-

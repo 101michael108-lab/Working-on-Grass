@@ -50,7 +50,7 @@ function CategorySection({ title, products, id }: { title: string; products: Pro
             <CardFooter>
               <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, 1)}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                {product.category === 'Courses' ? 'Enroll Now' : 'Add to Cart'}
+                Add to Cart
               </Button>
             </CardFooter>
           </Card>
@@ -69,6 +69,7 @@ export default function ShopPage() {
   const instruments = products?.filter(p => p.category === 'Instruments') || [];
   const books = products?.filter(p => p.category === 'Books & Guides') || [];
   const seeds = products?.filter(p => p.category === 'Seeds') || [];
+  const courses = products?.filter(p => p.category === 'Online Courses') || [];
 
 
   return (
@@ -96,6 +97,7 @@ export default function ShopPage() {
         <div className="space-y-16">
           <CategorySection title="Measurement & Tools" products={instruments} id="tools" />
           <CategorySection title="Books & Field Guides" products={books} id="books" />
+          <CategorySection title="Online Courses" products={courses} id="courses" />
           <CategorySection title="Seeds & Pasture Products" products={seeds} id="seeds" />
         </div>
       ) : null}

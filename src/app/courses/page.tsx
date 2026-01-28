@@ -14,7 +14,7 @@ import type { Product } from "@/lib/types"
 export default function CoursesPage() {
   const { addToCart } = useCart()
   const firestore = useFirestore()
-  const coursesQuery = useMemoFirebase(() => query(collection(firestore, 'products'), where('category', '==', 'Courses'), orderBy('name')), [firestore]);
+  const coursesQuery = useMemoFirebase(() => query(collection(firestore, 'products'), where('category', '==', 'Online Courses'), orderBy('name')), [firestore]);
   const { data: courses, isLoading } = useCollection<Omit<Product, 'id'>>(coursesQuery);
 
   return (
@@ -57,7 +57,7 @@ export default function CoursesPage() {
                         R{course.price.toFixed(2)}
                     </p>
                     <Button className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(course, 1)}>
-                        <ShoppingCart className="mr-2 h-4 w-4" /> Enroll Now
+                        <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
                     </Button>
                 </CardFooter>
                 </Card>

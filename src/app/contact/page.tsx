@@ -178,7 +178,7 @@ function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg">Request a Quote</Button>
+        <Button type="submit" size="lg">Send Inquiry</Button>
       </form>
     </Form>
   )
