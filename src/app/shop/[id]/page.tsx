@@ -54,6 +54,7 @@ export default function ProductPage() {
     if (!product) {
         // This will show the not-found page.
         notFound();
+        return null;
     }
 
     // JSON-LD for Google Rich Snippets & Merchant Center
