@@ -20,7 +20,7 @@ export default function ProductCard({ product }: { product: Product }) {
               alt={product.name}
               width={300}
               height={300}
-              className="object-contain h-48 w-auto group-hover:scale-105 transition-transform"
+              className="object-contain h-full w-auto group-hover:scale-105 transition-transform"
               data-ai-hint={product.imageHint}
             />
           </div>
