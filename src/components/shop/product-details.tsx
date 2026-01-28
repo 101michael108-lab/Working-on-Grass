@@ -26,13 +26,13 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
     <div className="container py-12 md:py-20">
       <div className="grid md:grid-cols-2 gap-8 md:gap-12">
         {/* Image Column */}
-        <div className="bg-secondary/50 rounded-lg flex items-center justify-center p-8">
+        <div className="bg-secondary/50 rounded-lg flex items-center justify-center p-8 aspect-square">
           <Image
             src={product.image || `https://picsum.photos/seed/${product.id}/500/500`}
             alt={product.name}
             width={500}
             height={500}
-            className="object-contain"
+            className="object-contain w-full h-full"
             data-ai-hint={product.imageHint}
           />
         </div>
