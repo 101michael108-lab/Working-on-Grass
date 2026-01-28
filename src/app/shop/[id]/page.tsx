@@ -1,18 +1,18 @@
 import React from 'react';
-import { getProduct, products } from '@/lib/data';
+import { getProduct, getProducts } from '@/lib/data';
 import ProductDetailsClient from '@/components/shop/product-details';
 import { notFound } from 'next/navigation';
-import type { Metadata, ResolvingMetadata } from 'next'
+import type { Metadata } from 'next'
+import type { Product } from '@/lib/types';
 
 type Props = {
   params: { id: string }
 }
 
 export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
+  { params }: Props
 ): Promise<Metadata> {
-  const product = getProduct(params.id);
+  const product = await getProduct(params.id);
 
   if (!product) {
     return {
@@ -28,7 +28,7 @@ export async function generateMetadata(
       description: product.description,
       images: [
         {
-          url: product.image || '',
+          url: product.image || `https://picsum.photos/seed/${product.id}/1200/630`,
           width: 1200,
           height: 630,
           alt: product.name,
@@ -39,14 +39,15 @@ export async function generateMetadata(
 }
 
 export async function generateStaticParams() {
+  const products = await getProducts();
   return products.map((product) => ({
     id: product.id,
   }))
 }
 
 // The main page component
-export default function ProductPage({ params }: Props) {
-  const product = getProduct(params.id);
+export default async function ProductPage({ params }: Props) {
+  const product = await getProduct(params.id);
 
   if (!product) {
     notFound();
@@ -75,12 +76,10 @@ export default function ProductPage({ params }: Props) {
 
   return (
     <>
-      {jsonLd && (
-         <script
-            type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-          />
-      )}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <ProductDetailsClient product={product} />
     </>
   );

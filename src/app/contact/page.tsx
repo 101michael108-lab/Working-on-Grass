@@ -23,7 +23,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useFirestore, addDocumentNonBlocking } from "@/firebase"
 import { collection, serverTimestamp } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { services } from "@/lib/data"
+import { services } from "@/lib/static-data"
 
 const formSchema = z.object({
   name: z.string().min(2, {
