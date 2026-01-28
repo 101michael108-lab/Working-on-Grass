@@ -20,7 +20,7 @@ export default function CoursesPage() {
   return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Online Courses</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Online Courses & Training</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
           Learn from leading expert Frits van Oudtshoorn at your own pace. Our online courses provide in-depth knowledge on sustainable veld and pasture management.
         </p>

@@ -24,13 +24,15 @@ export default function ProductsPage() {
   const dpm = dpmProducts?.[0];
 
   const bookImage = PlaceHolderImages.find(p => p.id === 'book-guide');
+  const dpmImage = PlaceHolderImages.find(p => p.id === 'dpm-product-image');
+
 
   return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Our Products</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Tools, Seeds & Guides</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          High-quality tools, seeds, and guides to support your sustainable land management practices.
+          High-quality tools, seeds, and guides to support your sustainable land management practices. Selected and supplied by grassland specialist Frits van Oudtshoorn.
         </p>
       </div>
 
@@ -41,7 +43,7 @@ export default function ProductsPage() {
               <div className="p-8 md:p-12">
                 <CardTitle className="text-3xl mb-2">{dpm.name}</CardTitle>
                 <CardDescription className="text-base text-muted-foreground mb-4">
-                  The disc pasture meter (or DPM) is an aluminium instrument used to determine grass biomass per hectare (kg dry grass/ha) in veld. It is an easy alternative to cutting, drying, and weighing grass samples for measuring biomass.
+                  The disc pasture meter (or DPM) is an aluminium instrument used to accurately estimate grass biomass per hectare (kg dry grass/ha) in veld.
                 </CardDescription>
                 
                 <div className="space-y-3 text-sm text-foreground/80 mb-6">
@@ -56,14 +58,16 @@ export default function ProductsPage() {
                 </div>
               </div>
               <div className="bg-secondary/50 h-full flex items-center justify-center p-8">
-                <Image
-                  src={dpm.image || 'https://picsum.photos/seed/placeholder/450/450'}
-                  alt={dpm.name}
-                  width={450}
-                  height={450}
-                  className="object-contain rounded-lg"
-                  data-ai-hint={dpm.imageHint}
-                />
+                {dpmImage && (
+                  <Image
+                    src={dpmImage.imageUrl}
+                    alt={dpm.name}
+                    width={450}
+                    height={450}
+                    className="object-contain rounded-lg"
+                    data-ai-hint={dpmImage.imageHint}
+                  />
+                )}
               </div>
             </div>
           </Card>
@@ -72,7 +76,7 @@ export default function ProductsPage() {
 
        <section id="books" className="mb-20">
          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold">Books & Guides</h2>
+            <h2 className="text-3xl md:text-4xl font-bold">Books & Field Guides</h2>
             <p className="mt-3 max-w-2xl mx-auto text-muted-foreground">
                 Authored by Frits van Oudtshoorn, these guides are essential resources for farmers, conservationists, and students.
             </p>
@@ -108,9 +112,9 @@ export default function ProductsPage() {
 
       <section id="seeds">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold">Pasture & Cover Crop Seed</h2>
+          <h2 className="text-3xl md:text-4xl font-bold">Seeds & Pasture Products</h2>
           <p className="mt-3 max-w-2xl mx-auto text-muted-foreground">
-            As a registered seed agent for Barenbrug SA, we offer a full range of high-quality seeds for various climatic conditions and uses.
+            As a registered seed agent for Barenbrug SA, we offer a full range of pasture and forage seed for various climatic conditions and uses. Seed selection depends on veld type, climate, and land use.
           </p>
         </div>
 
@@ -135,12 +139,13 @@ export default function ProductsPage() {
         </div>
 
          <div className="text-center mt-12">
-              <p className="text-muted-foreground mb-4">Feel free to contact us for more information or a personalized quotation.</p>
+              <p className="text-muted-foreground mb-4">If unsure, request guidance before purchasing.</p>
               <Button asChild>
-                  <Link href="/contact?service=Seed+Quotation">Request a Quote</Link>
+                  <Link href="/contact?service=Seed+Quotation">Request Expert Advice</Link>
               </Button>
          </div>
       </section>
     </div>
   );
 }
+
