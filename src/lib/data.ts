@@ -41,32 +41,32 @@ export const services: Service[] = [
 ];
   
 export const seedCategories: SeedCategory[] = [
-  {
-    name: "Grasses",
-    types: [
-      "Perennial summer grasses",
-      "Annual summer grasses",
-      "Annual winter grasses",
-      "Perennial winter grasses"
-    ],
-  },
-  {
-    name: "Legumes",
-    types: [
-      "Perennial summer legumes",
-      "Annual summer legumes",
-      "Annual winter legumes",
-      "Perennial winter legumes"
-    ],
-  },
-  {
-    name: "Forage & Cover Crops",
-    types: [
-      "Root crops (Turnips, Rape, Radishes)",
-      "Broadleaf crops (Chicory, Plantain, etc.)",
-    ],
-  },
-];
+    {
+      name: "Grasses",
+      types: [
+        "Perennial summer grasses",
+        "Annual summer grasses",
+        "Annual winter grasses",
+        "Perennial winter grasses"
+      ],
+    },
+    {
+      name: "Legumes",
+      types: [
+        "Perennial summer legumes",
+        "Annual summer legumes",
+        "Annual winter legumes",
+        "Perennial winter legumes"
+      ],
+    },
+    {
+      name: "Forage & Cover Crops",
+      types: [
+        "Root crops (Turnips, Rape, Radishes)",
+        "Broadleaf crops (Chicory, Plantain, etc.)",
+      ],
+    },
+  ];
   
 export const products: Product[] = [
   // Tools
@@ -75,7 +75,7 @@ export const products: Product[] = [
     name: 'Disc Pasture Meter (DPM)',
     price: 3450.00,
     description: 'An aluminium instrument used to accurately estimate grass biomass per hectare (kg dry grass/ha) in veld. A reliable alternative to cutting, drying, and weighing samples.',
-    category: 'Instruments',
+    category: 'Measurement & Tools',
     image: PlaceHolderImages.find(p => p.id === 'dpm-product-image')?.imageUrl || `https://picsum.photos/seed/dpm-001/300/300`,
     imageHint: "metal instrument",
     sku: 'DPM-001',
@@ -87,7 +87,7 @@ export const products: Product[] = [
     name: 'Guide to Grasses of Southern Africa',
     price: 450.00,
     description: 'The ultimate photographic guide to 320 common and important grasses in southern Africa. Includes an easy-to-use identification key and over 1,000 colour photos.',
-    category: 'Books & Guides',
+    category: 'Books & Field Guides',
     image: PlaceHolderImages.find(p => p.id === 'book-guide')?.imageUrl || `https://picsum.photos/seed/book-gtgsa-en/300/300`,
     imageHint: "book cover",
     sku: 'BRIZA-978-1-920217-35-8',
@@ -98,7 +98,7 @@ export const products: Product[] = [
     name: 'Veld Management: Principles and Practices',
     price: 420.00,
     description: 'This book simplifies a technical subject with over 380 photos and illustrations, covering the natural resources and ecological principles needed for good veld management.',
-    category: 'Books & Guides',
+    category: 'Books & Field Guides',
     image: PlaceHolderImages.find(p => p.id === 'book-vmp-en')?.imageUrl || `https://picsum.photos/seed/book-vmp-en/300/300`,
     imageHint: "book veld",
     sku: 'BRIZA-978-1-920217-79-2',
@@ -133,7 +133,7 @@ export const products: Product[] = [
     name: 'Smuts Finger Grass Seed (1kg)',
     price: 180.00,
     description: 'A perennial summer grass ideal for grazing and hay production. Well-adapted to various soil types.',
-    category: 'Seeds',
+    category: 'Seeds & Pasture Products',
     image: PlaceHolderImages.find(p => p.id === 'seed-smuts-finger')?.imageUrl || `https://picsum.photos/seed/seed-smuts-finger/300/300`,
     imageHint: "grass seeds",
     sku: 'SEED-SFG-1KG',
@@ -144,7 +144,7 @@ export const products: Product[] = [
     name: 'Rhodes Grass Seed (1kg)',
     price: 220.00,
     description: 'A fast-growing perennial summer grass, excellent for pasture establishment and erosion control.',
-    category: 'Seeds',
+    category: 'Seeds & Pasture Products',
     image: PlaceHolderImages.find(p => p.id === 'seed-rhodes-grass')?.imageUrl || `https://picsum.photos/seed/seed-rhodes-grass/300/300`,
     imageHint: "seed packet",
     sku: 'SEED-RRG-1KG',
@@ -155,7 +155,7 @@ export const products: Product[] = [
     name: 'Blue Buffalo Grass Seed (1kg)',
     price: 250.00,
     description: 'A drought-tolerant perennial grass, highly palatable and suitable for grazing in arid and semi-arid regions.',
-    category: 'Seeds',
+    category: 'Seeds & Pasture Products',
     image: PlaceHolderImages.find(p => p.id === 'seed-blue-buffalo')?.imageUrl || `https://picsum.photos/seed/seed-blue-buffalo/300/300`,
     imageHint: "dry grass seed",
     sku: 'SEED-BBG-1KG',
