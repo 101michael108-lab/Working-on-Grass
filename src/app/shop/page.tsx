@@ -39,9 +39,9 @@ export default function ShopPage() {
   return (
     <div className="container py-12 md:py-16">
        <div className="mb-8 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Shop</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Products & Tools</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Browse our curated selection of professional tools, guides, and seeds.
+          A curated selection of tools, books, and seeds, field-tested and recommended by Working on Grass.
         </p>
       </div>
 

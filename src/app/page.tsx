@@ -58,14 +58,14 @@ export default function Home() {
         <div className="relative h-full flex flex-col items-center justify-center text-center text-primary-foreground p-4">
           <div className="bg-black/40 backdrop-blur-sm p-8 rounded-xl max-w-4xl">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white font-headline">
-              Expert Grassland & Veld Management for Sustainable Land Use
+              Sustainable Veld Management, Guided by Experience
             </h1>
             <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl text-gray-200 font-body">
-              Science-based assessments, grazing management, rehabilitation, and training — led by grassland specialist Frits van Oudtshoorn.
+              Practical, science-based guidance for managing and restoring your land. Led by grassland ecologist Frits van Oudtshoorn.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button asChild size="lg">
-                <Link href="/contact?service=Professional+Assessment">Inquire About an Assessment</Link>
+              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Link href="/contact?service=Professional+Assessment">Request a Consultation</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
                 <Link href="/services">View Services</Link>
@@ -134,7 +134,7 @@ export default function Home() {
                       <CardDescription>Tools, books, and seeds to support your land management goals.</CardDescription>
                     </CardHeader>
                     <CardFooter>
-                       <Button asChild>
+                       <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
                           <Link href="/shop">Visit Shop</Link>
                        </Button>
                     </CardFooter>
@@ -145,7 +145,7 @@ export default function Home() {
                       <CardDescription>Learn from an expert with our in-depth online and in-person courses.</CardDescription>
                     </CardHeader>
                     <CardFooter>
-                       <Button asChild>
+                       <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
                           <Link href="/courses">View Training</Link>
                        </Button>
                     </CardFooter>
@@ -177,7 +177,7 @@ export default function Home() {
               <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed">
                 Frits van Oudtshoorn is a grassland ecologist and land-use specialist with decades of experience in veld management, ecological assessments, and rehabilitation across Southern Africa.
               </p>
-               <Button asChild className="mt-6">
+               <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
             </div>
@@ -208,7 +208,7 @@ export default function Home() {
             <Card>
               <CardContent className="pt-6">
                 <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"Frits's grazing management plan has made a significant difference. Our veld is healthier and our livestock are doing well."</p>
+                <p className="text-muted-foreground mb-4">"Frits's grazing plan helped us see our veld in a new way. The grass is healthier, and our livestock have benefited greatly."</p>
                 <div className="flex items-center gap-4">
                    <Avatar>
                       <AvatarImage src="https://picsum.photos/seed/client1/40/40" />
@@ -224,7 +224,7 @@ export default function Home() {
              <Card>
               <CardContent className="pt-6">
                 <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"The ecological assessment from Working on Grass was invaluable for our conservation area. Their expertise is evident in their work."</p>
+                <p className="text-muted-foreground mb-4">"The ecological assessment we received was incredibly thorough. It formed the foundation of our new conservation strategy. Truly expert work."</p>
                 <div className="flex items-center gap-4">
                    <Avatar>
                       <AvatarImage src="https://picsum.photos/seed/client2/40/40" />
@@ -240,7 +240,7 @@ export default function Home() {
              <Card>
               <CardContent className="pt-6">
                 <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"The veld condition assessment provided the insights we needed to start making data-driven decisions."</p>
+                <p className="text-muted-foreground mb-4">"We were managing our veld based on intuition. The condition assessment gave us the data to make confident, long-term decisions."</p>
                 <div className="flex items-center gap-4">
                    <Avatar>
                       <AvatarImage src="https://picsum.photos/seed/client3/40/40" />
@@ -262,7 +262,7 @@ export default function Home() {
           <div className="container text-center">
             <h2 className="text-3xl font-bold">Need expert guidance on your land or veld?</h2>
             <div className="mt-6 flex justify-center gap-4">
-               <Button asChild size="lg">
+               <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                   <Link href="/contact?service=Quote+Request">Request a Consultation</Link>
                </Button>
                  <Button asChild size="lg" variant="outline">

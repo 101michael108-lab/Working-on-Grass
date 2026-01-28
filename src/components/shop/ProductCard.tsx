@@ -14,13 +14,13 @@ export default function ProductCard({ product }: { product: Product }) {
     <Card className="flex flex-col group">
       <CardHeader className="p-0">
         <Link href={`/shop/${product.id}`}>
-          <div className="aspect-square bg-secondary/50 rounded-t-lg overflow-hidden flex items-center justify-center p-4">
+          <div className="aspect-[4/3] bg-secondary/50 rounded-t-lg overflow-hidden flex items-center justify-center p-4">
             <Image
               src={product.image || `https://picsum.photos/seed/${product.id}/300/300`}
               alt={product.name}
               width={300}
-              height={300}
-              className="object-contain h-full w-auto group-hover:scale-105 transition-transform"
+              height={225}
+              className="object-cover h-full w-full group-hover:scale-105 transition-transform"
               data-ai-hint={product.imageHint}
             />
           </div>
@@ -36,7 +36,7 @@ export default function ProductCard({ product }: { product: Product }) {
          <p className="text-xl font-bold text-accent">
             R{product.price.toFixed(2)}
         </p>
-        <Button size="icon" variant="outline" onClick={() => addToCart(product, 1)}>
+        <Button size="icon" variant="outline" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, 1)}>
             <ShoppingCart className="h-5 w-5" />
         </Button>
       </CardFooter>
