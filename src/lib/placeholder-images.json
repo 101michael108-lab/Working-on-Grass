@@ -19,16 +19,46 @@
       "imageHint": "metal instrument"
     },
     {
-      "id": "seeds-product-image",
-      "description": "A variety of seeds in hand",
-      "imageUrl": "https://images.unsplash.com/photo-1639256359389-22a65417a70c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw2fHxzZWVkcyUyMGhhbmR8ZW58MHx8fHwxNzY5NDI4NTMyfDA&ixlib=rb-4.1.0&q=80&w=1080",
-      "imageHint": "seeds hand"
-    },
-    {
       "id": "book-guide",
       "description": "A book about grasses on a wooden table",
       "imageUrl": "https://images.unsplash.com/photo-1544947950-fa07a98d237f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxib29rJTIwY292ZXJ8ZW58MHx8fHwxNzY5NDQ5NzI5fDA&ixlib=rb-4.1.0&q=80&w=1080",
       "imageHint": "book cover"
+    },
+    {
+      "id": "book-vmp-en",
+      "description": "The cover of the Veld Management book",
+      "imageUrl": "https://images.unsplash.com/photo-1718975592728-7b594fb035b8?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHwxfHxib29rJTIwdmVsZHxlbnwwfHx8fDE3Njk1ODM4MzR8MA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "book veld"
+    },
+    {
+      "id": "course-grass-id",
+      "description": "An interface for an online grass identification course",
+      "imageUrl": "https://images.unsplash.com/photo-1588196749597-9ff075ee6b5b?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxvbmxpbmUlMjBjb3Vyc2V8ZW58MHx8fHwxNzY5NTgzODM1fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "online course"
+    },
+    {
+      "id": "course-veld-management",
+      "description": "An interface for an online veld management course",
+      "imageUrl": "https://picsum.photos/seed/course-veld-management/400/225",
+      "imageHint": "veld management"
+    },
+    {
+      "id": "seed-smuts-finger",
+      "description": "A pile of Smuts Finger Grass seeds",
+      "imageUrl": "https://images.unsplash.com/photo-1759015558551-a8781c1ef728?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw3fHxncmFzcyUyMHNlZWRzfGVufDB8fHx8MTc2OTU4MzgzNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "grass seeds"
+    },
+    {
+      "id": "seed-rhodes-grass",
+      "description": "A packet of Rhodes Grass seeds",
+      "imageUrl": "https://images.unsplash.com/photo-1731970820302-09e3c6b2d016?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxzZWVkJTIwcGFja2V0fGVufDB8fHx8MTc2OTQ5NjIwNHww&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "seed packet"
+    },
+    {
+      "id": "seed-blue-buffalo",
+      "description": "A handful of Blue Buffalo grass seeds",
+      "imageUrl": "https://images.unsplash.com/photo-1762277753730-bc9100791e07?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3NDE5ODJ8MHwxfHNlYXJjaHw4fHxkcnklMjBncmFzcyUyMHNlZWR8ZW58MHx8fHwxNzY5NTgzODM0fDA&ixlib=rb-4.1.0&q=80&w=1080",
+      "imageHint": "dry grass seed"
     },
     {
       "id": "grass-research",

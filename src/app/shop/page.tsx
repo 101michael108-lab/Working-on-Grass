@@ -8,8 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { useCart } from "@/context/cart-context"
 import { ShoppingCart } from "lucide-react"
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
-import { collection, query, orderBy } from "firebase/firestore"
+import { products } from "@/lib/data"
 import type { Product } from "@/lib/types"
 
 function CategorySection({ title, products, id }: { title: string; products: Product[], id: string }) {
@@ -27,13 +26,13 @@ function CategorySection({ title, products, id }: { title: string; products: Pro
           <Card key={product.id} className="flex flex-col group">
             <CardHeader>
               <Link href={`/shop/${product.id}`}>
-                <div className="aspect-square bg-secondary/50 rounded-md overflow-hidden flex items-center justify-center">
+                <div className="aspect-square bg-secondary/50 rounded-md overflow-hidden flex items-center justify-center p-4">
                   <Image
                     src={product.image || `https://picsum.photos/seed/${product.id}/300/300`}
                     alt={product.name}
                     width={300}
                     height={300}
-                    className="object-contain group-hover:scale-105 transition-transform"
+                    className="object-contain group-hover:scale-105 transition-transform h-48 w-auto"
                     data-ai-hint={product.imageHint}
                   />
                 </div>
@@ -50,7 +49,7 @@ function CategorySection({ title, products, id }: { title: string; products: Pro
             <CardFooter>
               <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, 1)}>
                 <ShoppingCart className="mr-2 h-4 w-4" />
-                Add to Cart
+                {product.category === 'Online Courses' ? 'Enroll Now' : 'Add to Cart'}
               </Button>
             </CardFooter>
           </Card>
@@ -62,14 +61,10 @@ function CategorySection({ title, products, id }: { title: string; products: Pro
 
 
 export default function ShopPage() {
-  const firestore = useFirestore();
-  const productsQuery = useMemoFirebase(() => query(collection(firestore, 'products'), orderBy('name')), [firestore]);
-  const { data: products, isLoading } = useCollection<Omit<Product, 'id'>>(productsQuery);
-
-  const instruments = products?.filter(p => p.category === 'Instruments') || [];
-  const books = products?.filter(p => p.category === 'Books & Guides') || [];
-  const seeds = products?.filter(p => p.category === 'Seeds') || [];
-  const courses = products?.filter(p => p.category === 'Online Courses') || [];
+  const instruments = products.filter(p => p.category === 'Instruments');
+  const books = products.filter(p => p.category === 'Books & Guides');
+  const seeds = products.filter(p => p.category === 'Seeds');
+  const courses = products.filter(p => p.category === 'Online Courses');
 
 
   return (
@@ -91,23 +86,13 @@ export default function ShopPage() {
             </CardContent>
         </Card>
 
-      {isLoading && <p className="text-center">Loading products...</p>}
-
-      {!isLoading && products && products.length > 0 ? (
         <div className="space-y-16">
           <CategorySection title="Measurement & Tools" products={instruments} id="tools" />
           <CategorySection title="Books & Field Guides" products={books} id="books" />
           <CategorySection title="Online Courses" products={courses} id="courses" />
           <CategorySection title="Seeds & Pasture Products" products={seeds} id="seeds" />
         </div>
-      ) : null}
-
-      {!isLoading && (!products || products.length === 0) && (
-         <div className="text-center text-muted-foreground py-20">
-          <h3 className="text-xl font-semibold">The shop is currently empty.</h3>
-          <p>Please check back later or contact us for a custom order.</p>
-        </div>
-      )}
+      
     </div>
   );
 }
