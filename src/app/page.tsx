@@ -68,7 +68,7 @@ export default function Home() {
                 <Link href="/contact?service=Professional+Assessment">Request a Consultation</Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href="/services">View Services</Link>
+                <Link href="/shop">Explore the Shop</Link>
               </Button>
             </div>
           </div>
@@ -99,7 +99,7 @@ export default function Home() {
             </p>
           </div>
           <div className="mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pt-12">
-            {services.slice(0, 6).map((service) => (
+            {services.map((service) => (
               <Card key={service.title} className="hover:shadow-lg transition-shadow flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2"><Leaf className="text-primary"/>{service.title}</CardTitle>
@@ -123,30 +123,19 @@ export default function Home() {
          <div className="container px-4 md:px-6">
             <div className="grid md:grid-cols-2 gap-12 items-center">
               <div>
-                <h2 className="text-3xl font-bold tracking-tight mb-4">Products & Knowledge</h2>
+                <h2 className="text-3xl font-bold tracking-tight mb-4">Our Shop & Expertise</h2>
                 <p className="text-muted-foreground mb-8">
-                  Beyond consultation, we offer essential tools, publications, and training developed from decades of in-the-field experience.
+                  Beyond consultation, we offer essential tools and publications developed from decades of in-the-field experience.
                 </p>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 gap-6">
                   <Card>
                     <CardHeader>
-                      <CardTitle>Products</CardTitle>
-                      <CardDescription>Tools, books, and seeds to support your land management goals.</CardDescription>
+                      <CardTitle>Shop Products</CardTitle>
+                      <CardDescription>Find tools, books, and seeds to support your land management goals.</CardDescription>
                     </CardHeader>
                     <CardFooter>
                        <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
                           <Link href="/shop">Visit Shop</Link>
-                       </Button>
-                    </CardFooter>
-                  </Card>
-                   <Card>
-                    <CardHeader>
-                      <CardTitle>Courses & Training</CardTitle>
-                      <CardDescription>Learn from an expert with our in-depth online and in-person courses.</CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                       <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                          <Link href="/courses">View Training</Link>
                        </Button>
                     </CardFooter>
                   </Card>

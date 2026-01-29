@@ -30,12 +30,6 @@ export const services: Service[] = [
         description: "Access expert advice on rotational grazing systems, water point placement, and fencing layouts to support livestock health and ensure long-term sustainability.",
         cta: "Book Consultation",
         whoIsItFor: "For livestock producers seeking to optimize their systems"
-    },
-    {
-        title: "Training & Advisory Services",
-        description: "Access on-site or remote training in grass identification, veld management, and ecological monitoring to build critical knowledge within your team or organization.",
-        cta: "View Courses",
-        whoIsItFor: "For teams, organizations, and individuals"
     }
 ];
   

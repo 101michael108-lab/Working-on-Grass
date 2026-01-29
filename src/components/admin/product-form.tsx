@@ -33,7 +33,7 @@ const formSchema = z.object({
   brand: z.string().optional(),
 });
 
-const productCategories = ["Measurement & Tools", "Books & Field Guides", "Seeds & Pasture Products", "Online Courses"];
+const productCategories = ["Measurement & Tools", "Books & Field Guides", "Seeds & Pasture Products"];
 
 interface ProductFormProps {
     product?: Product | null;

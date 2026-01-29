@@ -77,7 +77,7 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
                     onClick={() => addToCart(product, quantity)}
                 >
                     <ShoppingCart className="mr-2 h-5 w-5" /> 
-                    {product.category === 'Courses' ? 'Enroll Now' : 'Add to Cart'}
+                    Add to Cart
                 </Button>
                 </div>
             </CardContent>
@@ -92,7 +92,7 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
                 <TabsTrigger value="details">Product Details</TabsTrigger>
                 {isDPM && <TabsTrigger value="how-it-works">How It Works</TabsTrigger>}
                 {isDPM && <TabsTrigger value="how-to-calculate">Calculating Biomass</TabsTrigger>}
-                {product.category === "Books & Guides" && <TabsTrigger value="author">About the Author</TabsTrigger>}
+                {product.category === "Books & Field Guides" && <TabsTrigger value="author">About the Author</TabsTrigger>}
             </TabsList>
             <TabsContent value="details" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
                 <h3 className="text-foreground">Full Description</h3>
