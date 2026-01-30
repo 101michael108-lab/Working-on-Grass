@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
+import { collection, query, doc, orderBy } from "firebase/firestore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import type { SiteImage, MediaLibraryItem } from "@/lib/types";
 import { PlusCircle, ImagePlus, CheckCircle, Pencil } from "lucide-react";
