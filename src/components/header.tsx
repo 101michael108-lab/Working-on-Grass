@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -7,12 +6,26 @@ import React from "react";
 import { Menu, ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+  SheetClose,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
 import { useUser, useAuth, useFirestore } from "@/firebase";
 import { signOut } from "firebase/auth";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -136,24 +149,75 @@ export function Header() {
                   <span className="sr-only">Toggle navigation menu</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left">
-                <div className="py-6">
-                  <Logo />
-                </div>
-                <div className="grid gap-4 py-4">
-                  {navLinks.map((link) => (
-                     <Link
-                      key={link.href}
-                      href={link.href}
-                      className={cn(
-                        "flex w-full items-center py-2 text-lg font-semibold",
-                        pathname === link.href ? "text-foreground" : "text-muted-foreground",
+              <SheetContent side="left" className="p-0">
+                <SheetHeader className="border-b p-4">
+                  <SheetTitle>
+                    <SheetClose asChild>
+                      <Logo />
+                    </SheetClose>
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="flex h-full flex-col justify-between">
+                    <nav className="grid gap-2 p-4 text-lg font-medium">
+                      {navLinks.map((link) => (
+                        <SheetClose asChild key={link.href}>
+                          <Link
+                            href={link.href}
+                            className={cn(
+                              "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
+                              pathname === link.href
+                                ? "bg-muted text-primary font-semibold"
+                                : "text-muted-foreground hover:text-primary",
+                            )}
+                            prefetch={false}
+                          >
+                            {link.label}
+                          </Link>
+                        </SheetClose>
+                      ))}
+                    </nav>
+                    <div className="mt-auto p-4 border-t">
+                       {user ? (
+                         <div className="grid gap-2 text-base font-medium">
+                            <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+                              <Avatar className="h-9 w-9">
+                                  <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || ''} />
+                                  <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                              </Avatar>
+                              <div className="flex flex-col">
+                                  <span className="text-sm font-semibold">{user.displayName || 'User'}</span>
+                                  <span className="text-xs text-muted-foreground">{user.email}</span>
+                              </div>
+                            </div>
+                            <Separator className="my-2"/>
+                            <SheetClose asChild>
+                              <Link
+                                  href={isAdmin ? "/admin" : "/dashboard"}
+                                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                              >
+                                  <LayoutDashboard className="h-5 w-5" />
+                                  Dashboard
+                              </Link>
+                             </SheetClose>
+                            <Button onClick={() => signOut(auth)} variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start w-full text-left font-normal h-auto">
+                                <LogOut className="h-5 w-5" />
+                                <span>Log out</span>
+                            </Button>
+                         </div>
+                      ) : (
+                        <div className="grid gap-2 text-base font-medium">
+                          <SheetClose asChild>
+                              <Link
+                                  href="/login"
+                                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                              >
+                                  <User className="h-5 w-5" />
+                                  Login / Sign Up
+                              </Link>
+                          </SheetClose>
+                        </div>
                       )}
-                      prefetch={false}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
+                    </div>
                 </div>
               </SheetContent>
             </Sheet>
