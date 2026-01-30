@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -79,15 +80,18 @@ export function Header() {
   return (
     <header className="w-full border-b bg-background">
       <div className="container flex h-16 items-center">
-        <div className="mr-4 hidden md:flex">
-          <Logo />
+        <div className="flex items-center gap-6">
+            <Logo />
+            <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
+            {navLinks.map((link) => (
+                <NavLink key={link.href} {...link} />
+            ))}
+            </nav>
         </div>
-        <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
-          {navLinks.map((link) => (
-            <NavLink key={link.href} {...link} />
-          ))}
-        </nav>
-        <div className="flex flex-1 items-center justify-end space-x-2">
+        
+        <div className="flex-1" />
+
+        <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/cart">
               <div className="relative">
@@ -227,3 +231,5 @@ export function Header() {
     </header>
   );
 }
+
+    
