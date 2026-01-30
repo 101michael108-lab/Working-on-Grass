@@ -306,6 +306,36 @@
         "description",
         "imageUrl"
       ]
+    },
+    "MediaLibraryItem": {
+      "title": "Media Library Item",
+      "type": "object",
+      "description": "Represents an image in the media library.",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The name or title of the image."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the image.",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the image for alt text."
+        },
+        "uploadedAt": {
+          "type": "string",
+          "description": "Timestamp of when the image was uploaded.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "name",
+        "imageUrl",
+        "uploadedAt"
+      ]
     }
   },
   "auth": {
@@ -391,13 +421,29 @@
           "schema": {
             "$ref": "#/backend/entities/SiteImage"
           },
-          "description": "Stores managed images for use across the website. The document ID (e.g., 'hero', 'about-frits') is used to reference the image in the code.",
+          "description": "Stores assigned images for specific spots on the website. The document ID (e.g., 'hero', 'about-frits') is the spot name and is used to reference the image in the code.",
           "params": [
             {
               "name": "siteImageId",
-              "description": "The unique slug for the image."
+              "description": "The unique slug for the image spot."
             }
           ]
+        }
+      },
+      {
+        "path": "/mediaLibrary/{mediaId}",
+        "definition": {
+            "entityName": "MediaLibraryItem",
+            "schema": {
+                "$ref": "#/backend/entities/MediaLibraryItem"
+            },
+            "description": "A collection of all uploaded media assets. These can be assigned to various 'spots' on the site.",
+            "params": [
+                {
+                    "name": "mediaId",
+                    "description": "The unique identifier for the media item."
+                }
+            ]
         }
       },
       {

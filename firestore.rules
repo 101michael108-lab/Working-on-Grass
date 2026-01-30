@@ -149,6 +149,23 @@ service cloud.firestore {
       allow update: if isAdmin() && isExistingDoc();
       allow delete: if isAdmin() && isExistingDoc();
     }
+    
+    // ------------------------------------------------------------------
+    // Media Library (/mediaLibrary)
+    // ------------------------------------------------------------------
+    /**
+     * @description
+     * A library of all uploaded media. All users can read, but only admins
+     * can manage the library content.
+     * @path /mediaLibrary/{mediaId}
+     * @allow (list) Any user can list all media items.
+     * @deny (create) A non-admin trying to upload a new image.
+     * @principle Public read access with restricted, role-based write access for library management.
+     */
+    match /mediaLibrary/{mediaId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
 
     // ------------------------------------------------------------------
     // Contact Form Entries (/contactFormEntries)

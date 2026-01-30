@@ -60,3 +60,11 @@ export type SiteImage = {
   imageUrl: string;
   imageHint: string;
 };
+
+export type MediaLibraryItem = {
+    id: string;
+    name: string;
+    imageUrl: string;
+    description?: string;
+    uploadedAt: any; // Firestore Timestamp
+};
