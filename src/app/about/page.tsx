@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useMedia } from '@/context/media-context';
 import { Button } from '@/components/ui/button';
 import { Check } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AboutPage() {
   const { getImage } = useMedia();
@@ -35,7 +36,7 @@ export default function AboutPage() {
         <div className="container">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
             <div className="flex justify-center">
-              {aboutImage && (
+              {aboutImage ? (
                 <Image
                   src={aboutImage.imageUrl}
                   alt={aboutImage.description}
@@ -44,6 +45,8 @@ export default function AboutPage() {
                   className="rounded-lg object-cover shadow-lg aspect-square"
                   data-ai-hint={aboutImage.imageHint}
                 />
+              ) : (
+                <Skeleton className="h-[400px] w-[400px] rounded-lg" />
               )}
             </div>
             <div className="text-base text-muted-foreground space-y-4">

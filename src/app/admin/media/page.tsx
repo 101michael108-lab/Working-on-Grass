@@ -5,7 +5,7 @@ import Image from "next/image";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy, doc } from "firebase/firestore";
+import { collection, query, doc } from "firebase/firestore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import type { SiteImage, MediaLibraryItem } from "@/lib/types";
 import { PlusCircle, ImagePlus, CheckCircle, Pencil } from "lucide-react";
@@ -13,6 +13,13 @@ import { MediaLibraryForm } from "@/components/admin/media-library-form";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+
+const PREDEFINED_SPOTS: Omit<SiteImage, 'imageUrl' | 'imageHint'>[] = [
+  { id: 'hero', description: 'The main hero image on the homepage.' },
+  { id: 'about-frits', description: 'The portrait of Frits van Oudtshoorn on the about and services pages.' },
+  { id: 'grass-app-promo', description: 'The mobile phone mockup for the grass app promo section.' },
+];
 
 // --- Main Page Component ---
 export default function AdminMediaPage() {
@@ -26,13 +33,25 @@ export default function AdminMediaPage() {
   const [assigningToSpot, setAssigningToSpot] = useState<SiteImage | null>(null);
 
   // Data fetching
-  const spotsQuery = useMemoFirebase(() => query(collection(firestore, 'siteImages'), orderBy('__name__')), [firestore]);
-  const { data: spots, isLoading: isLoadingSpots } = useCollection<Omit<SiteImage, 'id'>>(spotsQuery);
+  const spotDocsQuery = useMemoFirebase(() => query(collection(firestore, 'siteImages')), [firestore]);
+  const { data: spotDocs, isLoading: isLoadingSpots } = useCollection<Omit<SiteImage, 'id'>>(spotDocsQuery);
 
   const libraryQuery = useMemoFirebase(() => query(collection(firestore, 'mediaLibrary'), orderBy('uploadedAt', 'desc')), [firestore]);
   const { data: library, isLoading: isLoadingLibrary } = useCollection<Omit<MediaLibraryItem, 'id'>>(libraryQuery);
 
-  const assignedImageUrls = useMemo(() => spots?.map(spot => spot.imageUrl) || [], [spots]);
+  const spots: SiteImage[] = useMemo(() => {
+    return PREDEFINED_SPOTS.map(predefinedSpot => {
+      const doc = spotDocs?.find(d => d.id === predefinedSpot.id);
+      return {
+        id: predefinedSpot.id,
+        description: doc?.description || predefinedSpot.description,
+        imageUrl: doc?.imageUrl || `https://placehold.co/400x400/e2e8f0/64748b?text=${predefinedSpot.id}`,
+        imageHint: doc?.imageHint || '',
+      };
+    });
+  }, [spotDocs]);
+  
+  const assignedImageUrls = useMemo(() => spotDocs?.map(spot => spot.imageUrl) || [], [spotDocs]);
 
   // Handlers
   const handleOpenUploadDialog = (item: MediaLibraryItem | null = null) => {
@@ -74,10 +93,11 @@ export default function AdminMediaPage() {
         <CardContent>
           {isLoadingSpots ? <p>Loading spots...</p> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {spots?.map(spot => (
+              {spots.map(spot => (
                 <Card key={spot.id}>
                   <CardHeader className="p-3">
                     <p className="font-mono text-xs text-muted-foreground">{spot.id}</p>
+                    <p className="text-xs text-muted-foreground truncate">{spot.description}</p>
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
                     <Image src={spot.imageUrl} alt={spot.description} width={200} height={200} className="rounded-md object-cover aspect-square w-full bg-secondary"/>

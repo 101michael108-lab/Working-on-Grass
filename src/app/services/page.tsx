@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ConsultationForm } from "@/components/consultation-form";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -48,7 +49,7 @@ export default function ServicesPage() {
             </div>
           </div>
           <div className="flex justify-center">
-            {heroImage && (
+            {heroImage ? (
               <Image
                 src={heroImage.imageUrl}
                 alt={heroImage.description}
@@ -57,6 +58,8 @@ export default function ServicesPage() {
                 className="rounded-lg object-cover shadow-lg aspect-square"
                 data-ai-hint={heroImage.imageHint}
               />
+            ) : (
+              <Skeleton className="h-[400px] w-[400px] rounded-lg" />
             )}
           </div>
         </div>

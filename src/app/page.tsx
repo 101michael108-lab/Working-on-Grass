@@ -74,15 +74,17 @@ export default function Home() {
       {/* Hero Section */}
       <section className="relative w-full">
         <div className="absolute inset-0">
-          {heroImage && (
+          {heroImage ? (
             <Image
               src={heroImage.imageUrl}
-              alt="Vast green fields of South African veld under a clear blue sky"
+              alt={heroImage.description || "Vast green fields of South African veld under a clear blue sky"}
               fill
               priority
               className="object-cover"
               data-ai-hint={heroImage.imageHint}
             />
+          ) : (
+             <div className="w-full h-full bg-secondary animate-pulse" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         </div>
@@ -229,14 +231,18 @@ export default function Home() {
         <div className="container px-4 md:px-6">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             <div className="flex justify-center lg:order-last">
-              {aboutImage && <Image
-                src={aboutImage.imageUrl}
-                alt={aboutImage.description}
-                width={450}
-                height={450}
-                className="rounded-lg object-cover aspect-square shadow-lg"
-                data-ai-hint={aboutImage.imageHint}
-              />}
+              {aboutImage ? (
+                <Image
+                  src={aboutImage.imageUrl}
+                  alt={aboutImage.description}
+                  width={450}
+                  height={450}
+                  className="rounded-lg object-cover aspect-square shadow-lg"
+                  data-ai-hint={aboutImage.imageHint}
+                />
+              ) : (
+                <Skeleton className="w-[450px] h-[450px] rounded-lg" />
+              )}
             </div>
             <div className="text-center sm:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">
@@ -290,14 +296,18 @@ export default function Home() {
                       </Button>
                   </div>
                    <div className="flex justify-center">
-                        {appPromoImage && <Image
+                        {appPromoImage ? (
+                          <Image
                             src={appPromoImage.imageUrl}
                             alt={appPromoImage.description}
                             width={350}
                             height={700}
                             className="rounded-xl object-cover shadow-2xl"
                             data-ai-hint={appPromoImage.imageHint}
-                        />}
+                          />
+                        ) : (
+                          <Skeleton className="w-[350px] h-[700px] rounded-xl" />
+                        )}
                   </div>
               </div>
           </div>
