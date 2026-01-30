@@ -69,37 +69,38 @@ export default function Home() {
   return (
     <div className="flex flex-col min-h-[100dvh]">
       {/* Hero Section */}
-      <section className="relative w-full h-[70vh] md:h-[80vh]">
-        {heroImage && (
-          <Image
-            src={heroImage.imageUrl}
-            alt="Vast green fields of South African veld under a clear blue sky"
-            fill
-            priority
-            className="object-cover"
-            data-ai-hint={heroImage.imageHint}
-          />
-        )}
-        {/* Darker gradient for better text contrast */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        {/* Container for content, aligned to bottom-left */}
-        <div className="relative h-full flex flex-col items-center justify-center text-center sm:text-left p-8 md:justify-end md:items-start md:p-16 lg:p-24">
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white font-headline">
-              Sustainable Veld Management, Guided by Experience
-            </h1>
-            <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90 font-body">
-              Practical, science-based guidance for managing and restoring your land. Led by grassland ecologist Frits van Oudtshoorn.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
-              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
-                <Link href="/contact?service=Professional+Assessment">Request a Consultation</Link>
-              </Button>
-              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
-                <Link href="/shop">Explore the Shop</Link>
-              </Button>
+      <section className="relative w-full">
+        <div className="absolute inset-0">
+          {heroImage && (
+            <Image
+              src={heroImage.imageUrl}
+              alt="Vast green fields of South African veld under a clear blue sky"
+              fill
+              priority
+              className="object-cover"
+              data-ai-hint={heroImage.imageHint}
+            />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        </div>
+
+        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl py-32 sm:py-48 lg:py-56 text-center sm:text-left">
+                <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white font-headline">
+                Sustainable Veld Management, Guided by Experience
+                </h1>
+                <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90 font-body mx-auto sm:mx-0">
+                Practical, science-based guidance for managing and restoring your land. Led by grassland ecologist Frits van Oudtshoorn.
+                </p>
+                <div className="mt-8 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
+                <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
+                    <Link href="/contact?service=Professional+Assessment">Request a Consultation</Link>
+                </Button>
+                <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+                    <Link href="/shop">Explore the Shop</Link>
+                </Button>
+                </div>
             </div>
-          </div>
         </div>
       </section>
 
@@ -238,7 +239,7 @@ export default function Home() {
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">
                 Meet the Founder
               </h2>
-              <div className="mt-4 prose max-w-none text-muted-foreground mx-auto lg:mx-0">
+              <div className="mt-4 prose max-w-none text-muted-foreground mx-auto sm:mx-0">
                 <blockquote className="border-l-4 border-primary pl-4 italic">
                   "My goal is to bridge the gap between science and the farmer. Sustainable land management isn't just about conservation; it's about building resilient, profitable agricultural businesses for generations to come."
                 </blockquote>
