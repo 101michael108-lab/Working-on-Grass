@@ -1,35 +1,24 @@
+
 import type { Service, SeedCategory } from './types';
 
 export const services: Service[] = [
     { 
-        title: "Veld Condition & Grazing Capacity Assessments", 
-        description: "We evaluate the health of your veld, measure its productivity, and estimate sustainable grazing limits to prevent overgrazing and protect long-term productivity.",
+        title: "Veld & Ecological Assessments", 
+        description: "Comprehensive evaluation of veld condition, grazing capacity, and detailed vegetation surveys for farm planning, EIAs, or conservation compliance.",
         cta: "Request Assessment",
-        whoIsItFor: "For farmers, ranches, and land managers"
+        whoIsItFor: "For Farmers, Reserves & EIAs"
     },
     {
-        title: "Grassland & Veld Restoration Planning",
-        description: "Our team designs practical, actionable plans to restore degraded grasslands or pastures, which enhances biodiversity, improves soil health, and supports livestock productivity.",
-        cta: "Discuss a Plan",
-        whoIsItFor: "For properties with degraded land or pastures"
+        title: "Grazing & Restoration Planning",
+        description: "Actionable plans to restore degraded grasslands and optimize grazing systems. We cover everything from rotational plans to water point and fencing layouts.",
+        cta: "Create a Plan",
+        whoIsItFor: "For Livestock Producers & Land Managers"
     },
     {
-        title: "Ecological & Vegetation Surveys",
-        description: "We provide detailed mapping and analysis of flora on your land. These surveys are often a prerequisite for Environmental Impact Assessments (EIAs), farm planning, or conservation compliance.",
-        cta: "Request a Survey",
-        whoIsItFor: "For EIAs, farm planning, and conservation compliance"
-    },
-    {
-        title: "Mine Site Rehabilitation & Land Management",
-        description: "We create and implement strategies to restore mined or degraded industrial sites to productive or natural states, helping you meet regulatory requirements and prevent soil erosion.",
-        cta: "Contact Us",
-        whoIsItFor: "For mining houses and industrial sites"
-    },
-    {
-        title: "Grazing Management & Infrastructure Planning",
-        description: "Access expert advice on rotational grazing systems, water point placement, and fencing layouts to support livestock health and ensure long-term sustainability.",
-        cta: "Book Consultation",
-        whoIsItFor: "For livestock producers seeking to optimize their systems"
+        title: "Mine & Industrial Rehabilitation",
+        description: "Expert strategies to restore mined or degraded industrial land, helping you meet regulatory requirements, prevent soil erosion, and re-establish productive ecosystems.",
+        cta: "Discuss a Project",
+        whoIsItFor: "For Mining Houses & Industrial Sites"
     }
 ];
   
