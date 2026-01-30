@@ -78,7 +78,7 @@ export function Header() {
   );
 
   return (
-    <header className="w-full border-b bg-background">
+    <header className="sticky top-0 z-50 w-full border-b bg-background">
       <div className="container flex h-16 items-center">
         <div className="flex items-center gap-6">
             <Logo />
@@ -231,5 +231,3 @@ export function Header() {
     </header>
   );
 }
-
-    
