@@ -83,19 +83,19 @@ export default function Home() {
         {/* Darker gradient for better text contrast */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         {/* Container for content, aligned to bottom-left */}
-        <div className="relative h-full flex flex-col items-start justify-end text-left text-primary-foreground p-8 md:p-16 lg:p-24">
+        <div className="relative h-full flex flex-col items-center justify-end text-center md:items-start md:text-left p-8 md:p-16 lg:p-24">
           <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white font-headline">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white font-headline">
               Sustainable Veld Management, Guided by Experience
             </h1>
-            <p className="mt-4 max-w-2xl text-lg md:text-xl text-gray-200 font-body">
+            <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90 font-body">
               Practical, science-based guidance for managing and restoring your land. Led by grassland ecologist Frits van Oudtshoorn.
             </p>
-            <div className="mt-8 flex flex-wrap justify-start gap-4">
-              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center md:justify-start gap-4">
+              <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
                 <Link href="/contact?service=Professional+Assessment">Request a Consultation</Link>
               </Button>
-              <Button asChild size="lg" variant="secondary">
+              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
                 <Link href="/shop">Explore the Shop</Link>
               </Button>
             </div>
@@ -118,10 +118,10 @@ export default function Home() {
       </section>
 
       {/* What We Do */}
-      <section id="services" className="w-full py-12 md:py-24 bg-secondary/30">
+      <section id="services" className="w-full py-16 md:py-24 bg-secondary/30">
         <div className="container px-4 md:px-6">
           <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What We Do</h2>
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">What We Do</h2>
             <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
               We provide expert advisory, assessment, and planning services to help you achieve sustainable and productive land use.
             </p>
@@ -147,10 +147,10 @@ export default function Home() {
       </section>
       
       {/* Featured Products Section */}
-        <section className="w-full py-12 md:py-24 bg-background">
+        <section className="w-full py-16 md:py-24 bg-background">
             <div className="container px-4 md:px-6">
             <div className="flex flex-col items-center justify-center space-y-4 text-center">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">From the Shop</h2>
+                <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">From the Shop</h2>
                 <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
                 Essential tools, publications, and products developed from decades of in-the-field experience.
                 </p>
@@ -221,28 +221,9 @@ export default function Home() {
         </section>
 
       {/* About Frits */}
-      <section id="about" className="w-full py-12 md:py-24 bg-secondary/30">
+      <section id="about" className="w-full py-16 md:py-24 bg-secondary/30">
         <div className="container px-4 md:px-6">
-          <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
-            <div>
-              <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
-                Meet the Founder
-              </h2>
-              <div className="mt-4 prose max-w-none text-muted-foreground">
-                <blockquote className="border-l-4 border-primary pl-4 italic">
-                  "My goal is to bridge the gap between science and the farmer. Sustainable land management isn't just about conservation; it's about building resilient, profitable agricultural businesses for generations to come."
-                </blockquote>
-                <p className="mt-4">
-                  <strong>- Frits van Oudtshoorn</strong>, Grassland Ecologist
-                </p>
-              </div>
-              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-lg/relaxed">
-                With decades of field experience, Frits is a leading authority on veld management, ecological assessments, and rehabilitation across Southern Africa. His practical, science-based approach has helped countless land-owners improve their productivity and ecological health.
-              </p>
-               <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
-               </Button>
-            </div>
+          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             <div className="flex justify-center">
               <Image
                 src={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageUrl || ''}
@@ -253,21 +234,40 @@ export default function Home() {
                 data-ai-hint={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageHint}
               />
             </div>
+            <div className="text-center lg:text-left">
+              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">
+                Meet the Founder
+              </h2>
+              <div className="mt-4 prose max-w-none text-muted-foreground mx-auto lg:mx-0">
+                <blockquote className="border-l-4 border-primary pl-4 italic text-left">
+                  "My goal is to bridge the gap between science and the farmer. Sustainable land management isn't just about conservation; it's about building resilient, profitable agricultural businesses for generations to come."
+                </blockquote>
+                <p className="mt-4 text-left">
+                  <strong>- Frits van Oudtshoorn</strong>, Grassland Ecologist
+                </p>
+              </div>
+              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-lg/relaxed mx-auto lg:mx-0">
+                With decades of field experience, Frits is a leading authority on veld management, ecological assessments, and rehabilitation across Southern Africa. His practical, science-based approach has helped countless land-owners improve their productivity and ecological health.
+              </p>
+               <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
+                <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
+               </Button>
+            </div>
           </div>
         </div>
       </section>
 
       {/* Grass App Section */}
-      <section className="w-full py-12 md:py-24 bg-background">
+      <section className="w-full py-16 md:py-24 bg-background">
           <div className="container px-4 md:px-6">
-              <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
-                  <div>
+              <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+                  <div className="text-center lg:text-left">
                       <Badge>Coming Soon</Badge>
-                      <h2 className="mt-2 text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">The Grass Guide App</h2>
-                      <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed">
+                      <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">The Grass Guide App</h2>
+                      <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto lg:mx-0">
                           Your veld management partner, in your pocket. Identify grasses, calculate biomass, and make informed decisions on the go.
                       </p>
-                      <ul className="mt-6 space-y-4 text-muted-foreground">
+                      <ul className="mt-6 space-y-4 text-muted-foreground text-left max-w-md mx-auto lg:mx-0">
                           <li className="flex items-start gap-3">
                               <Camera className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
                               <span><strong>Instant Grass ID:</strong> Snap a photo to identify hundreds of grass species with detailed ecological information.</span>
@@ -300,14 +300,14 @@ export default function Home() {
       </section>
 
       {/* Final CTA */}
-      <section className="w-full py-12 md:py-20 bg-secondary/30">
+      <section className="w-full py-16 md:py-20 bg-secondary/30">
           <div className="container text-center">
             <h2 className="text-3xl font-bold">Need expert guidance on your land or veld?</h2>
-            <div className="mt-6 flex justify-center gap-4">
-               <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
+               <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
                   <Link href="/contact?service=Quote+Request">Request a Consultation</Link>
                </Button>
-                 <Button asChild size="lg" variant="outline">
+                 <Button asChild size="lg" variant="outline" className="w-full sm:w-auto">
                   <Link href="/contact">Contact Us</Link>
                </Button>
             </div>
