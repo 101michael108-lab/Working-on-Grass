@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { MediaForm } from "@/components/admin/media-form";
 import type { SiteImage } from "@/lib/types";
+import { PlusCircle } from "lucide-react";
 
 export default function AdminMediaPage() {
   const firestore = useFirestore();
@@ -28,6 +29,11 @@ export default function AdminMediaPage() {
     setDialogOpen(true);
   };
 
+  const handleAdd = () => {
+    setSelectedImage(null);
+    setDialogOpen(true);
+  }
+
   const onFormSuccess = () => {
     setDialogOpen(false);
     setSelectedImage(null);
@@ -36,11 +42,15 @@ export default function AdminMediaPage() {
   return (
     <>
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <div>
               <CardTitle>Manage Site Images</CardTitle>
-              <CardDescription>Edit the URLs and metadata for images used across your website.</CardDescription>
+              <CardDescription>Add or edit image spots used across your website.</CardDescription>
           </div>
+          <Button onClick={handleAdd}>
+              <PlusCircle className="mr-2 h-4 w-4"/>
+              Add Image Spot
+          </Button>
         </CardHeader>
         <CardContent>
           {isLoading && <p>Loading images...</p>}
@@ -75,7 +85,7 @@ export default function AdminMediaPage() {
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Edit Image Details</DialogTitle>
+            <DialogTitle>{selectedImage ? "Edit Image Details" : "Add New Image Spot"}</DialogTitle>
           </DialogHeader>
           <MediaForm image={selectedImage} onSuccess={onFormSuccess} />
         </DialogContent>
