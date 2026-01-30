@@ -54,16 +54,18 @@ export default function Home() {
             data-ai-hint={heroImage.imageHint}
           />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-black/20" />
-        <div className="relative h-full flex flex-col items-center justify-center text-center text-primary-foreground p-4">
-          <div className="bg-black/40 backdrop-blur-sm p-8 rounded-xl max-w-4xl">
+        {/* Darker gradient for better text contrast */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        {/* Container for content, aligned to bottom-left */}
+        <div className="relative h-full flex flex-col items-start justify-end text-left text-primary-foreground p-8 md:p-16 lg:p-24">
+          <div className="max-w-3xl">
             <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-white font-headline">
               Sustainable Veld Management, Guided by Experience
             </h1>
-            <p className="mt-4 max-w-3xl mx-auto text-lg md:text-xl text-gray-200 font-body">
+            <p className="mt-4 max-w-2xl text-lg md:text-xl text-gray-200 font-body">
               Practical, science-based guidance for managing and restoring your land. Led by grassland ecologist Frits van Oudtshoorn.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
+            <div className="mt-8 flex flex-wrap justify-start gap-4">
               <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/contact?service=Professional+Assessment">Request a Consultation</Link>
               </Button>
@@ -168,7 +170,7 @@ export default function Home() {
               </p>
                <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
+               </Button>
             </div>
             <div className="flex justify-center">
               <Image
