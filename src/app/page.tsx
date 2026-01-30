@@ -6,17 +6,17 @@ import Link from "next/link";
 import {
   ArrowRight,
   Leaf,
-  Quote,
   BookOpen,
   Globe,
-  Award
+  Award,
+  Camera,
+  Calculator,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { services } from "@/lib/static-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Imports for the new shop section
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -228,8 +228,16 @@ export default function Home() {
               <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">
                 Meet the Founder
               </h2>
-              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed">
-                Frits van Oudtshoorn is a grassland ecologist and land-use specialist with decades of experience in veld management, ecological assessments, and rehabilitation across Southern Africa.
+              <div className="mt-4 prose max-w-none text-muted-foreground">
+                <blockquote className="border-l-4 border-primary pl-4 italic">
+                  "My goal is to bridge the gap between science and the farmer. Sustainable land management isn't just about conservation; it's about building resilient, profitable agricultural businesses for generations to come."
+                </blockquote>
+                <p className="mt-4">
+                  <strong>- Frits van Oudtshoorn</strong>, Grassland Ecologist
+                </p>
+              </div>
+              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-lg/relaxed">
+                With decades of field experience, Frits is a leading authority on veld management, ecological assessments, and rehabilitation across Southern Africa. His practical, science-based approach has helped countless land-owners improve their productivity and ecological health.
               </p>
                <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
@@ -239,9 +247,9 @@ export default function Home() {
               <Image
                 src={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageUrl || ''}
                 alt="Frits van Oudtshoorn"
-                width={400}
-                height={400}
-                className="rounded-full object-cover aspect-square shadow-lg"
+                width={450}
+                height={450}
+                className="rounded-lg object-cover aspect-square shadow-lg"
                 data-ai-hint={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageHint}
               />
             </div>
@@ -249,66 +257,46 @@ export default function Home() {
         </div>
       </section>
 
-       {/* Social Proof */}
-       <section id="testimonials" className="w-full py-12 md:py-24">
-        <div className="container px-4 md:px-6">
-           <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">What Our Clients Say</h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-              Real results from farmers, ranchers, and conservationists across Africa.
-            </p>
+      {/* Grass App Section */}
+      <section className="w-full py-12 md:py-24 bg-background">
+          <div className="container px-4 md:px-6">
+              <div className="grid gap-10 lg:grid-cols-2 lg:gap-16 items-center">
+                  <div>
+                      <Badge>Coming Soon</Badge>
+                      <h2 className="mt-2 text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl">The Grass Guide App</h2>
+                      <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed">
+                          Your veld management partner, in your pocket. Identify grasses, calculate biomass, and make informed decisions on the go.
+                      </p>
+                      <ul className="mt-6 space-y-4 text-muted-foreground">
+                          <li className="flex items-start gap-3">
+                              <Camera className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
+                              <span><strong>Instant Grass ID:</strong> Snap a photo to identify hundreds of grass species with detailed ecological information.</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                              <Calculator className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
+                              <span><strong>Biomass Calculation:</strong> Use your phone's camera with our digital disc pasture meter to estimate grazing capacity.</span>
+                          </li>
+                          <li className="flex items-start gap-3">
+                              <BookOpen className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
+                              <span><strong>Veld Management Log:</strong> Keep track of grazing patterns, rainfall, and veld condition over time.</span>
+                          </li>
+                      </ul>
+                      <Button className="mt-8" disabled>
+                          Notify Me When Available
+                      </Button>
+                  </div>
+                   <div className="flex justify-center">
+                        <Image
+                            src={PlaceHolderImages.find(p => p.id === 'grass-app-promo')?.imageUrl || ''}
+                            alt="A smartphone displaying the Grass Guide app in a sunny field"
+                            width={350}
+                            height={700}
+                            className="rounded-xl object-cover shadow-2xl"
+                            data-ai-hint={PlaceHolderImages.find(p => p.id === 'grass-app-promo')?.imageHint}
+                        />
+                  </div>
+              </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-12">
-            <Card>
-              <CardContent className="pt-6">
-                <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"Frits's grazing plan helped us see our veld in a new way. The grass is healthier, and our livestock have benefited greatly."</p>
-                <div className="flex items-center gap-4">
-                   <Avatar>
-                      <AvatarImage src="https://picsum.photos/seed/client1/40/40" />
-                      <AvatarFallback>JD</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">John D.</p>
-                      <p className="text-sm text-muted-foreground">Cattle Farmer, North West</p>
-                    </div>
-                </div>
-              </CardContent>
-            </Card>
-             <Card>
-              <CardContent className="pt-6">
-                <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"The ecological assessment we received was incredibly thorough. It formed the foundation of our new conservation strategy. Truly expert work."</p>
-                <div className="flex items-center gap-4">
-                   <Avatar>
-                      <AvatarImage src="https://picsum.photos/seed/client2/40/40" />
-                      <AvatarFallback>SM</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">Sarah M.</p>
-                      <p className="text-sm text-muted-foreground">Conservation Manager, Kenya</p>
-                    </div>
-                </div>
-              </CardContent>
-            </Card>
-             <Card>
-              <CardContent className="pt-6">
-                <Quote className="w-8 h-8 text-primary mb-4" />
-                <p className="text-muted-foreground mb-4">"We were managing our veld based on intuition. The condition assessment gave us the data to make confident, long-term decisions."</p>
-                <div className="flex items-center gap-4">
-                   <Avatar>
-                      <AvatarImage src="https://picsum.photos/seed/client3/40/40" />
-                      <AvatarFallback>BV</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="font-semibold">Bennie van der Merwe</p>
-                      <p className="text-sm text-muted-foreground">Game Rancher, Limpopo</p>
-                    </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
       </section>
 
       {/* Final CTA */}
