@@ -1,0 +1,18 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Images in siteImages are publicly readable.
+    // Writes are allowed by any authenticated user.
+    // The admin media page is protected by app logic, so only admins should be able to trigger uploads here.
+    match /siteImages/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // User-specific files can only be read/written by the owning user.
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
