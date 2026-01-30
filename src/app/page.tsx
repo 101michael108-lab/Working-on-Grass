@@ -20,10 +20,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // Imports for the new shop section
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, limit } from "firebase/firestore";
+import { collection, query, where, limit } from "firebase/firestore";
 import type { Product } from "@/lib/types";
 import ProductCard from "@/components/shop/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
 
 
 export default function Home() {
@@ -49,8 +50,21 @@ export default function Home() {
   ];
 
   const firestore = useFirestore();
-  const productsQuery = useMemoFirebase(() => query(collection(firestore, 'products'), limit(3)), [firestore]);
-  const { data: products, isLoading } = useCollection<Omit<Product, 'id'>>(productsQuery);
+  const featuredProductQuery = useMemoFirebase(() => 
+    query(collection(firestore, 'products'), where('name', '==', 'Disc Pasture Meter'), limit(1)),
+    [firestore]
+  );
+  const { data: featuredProducts, isLoading: isLoadingFeatured } = useCollection<Omit<Product, 'id'>>(featuredProductQuery);
+  const featuredProduct = featuredProducts?.[0];
+
+  const otherProductsQuery = useMemoFirebase(() => {
+    if (!firestore) return null;
+    return query(collection(firestore, 'products'), where('name', '!=', 'Disc Pasture Meter'), limit(2));
+  }, [firestore]);
+  const { data: otherProducts, isLoading: isLoadingOthers } = useCollection<Omit<Product, 'id'>>(otherProductsQuery);
+
+  const isLoading = isLoadingFeatured || isLoadingOthers;
+
 
   return (
     <div className="flex flex-col min-h-[100dvh]">
@@ -133,42 +147,78 @@ export default function Home() {
       </section>
       
       {/* Featured Products Section */}
-      <section className="w-full py-12 md:py-24 bg-background">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-4 text-center">
-            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">From the Shop</h2>
-            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
-              Essential tools, publications, and products developed from decades of in-the-field experience.
-            </p>
-          </div>
-          <div className="mx-auto max-w-5xl pt-12">
-            {isLoading ? (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <Skeleton className="h-[400px] rounded-lg" />
-                <Skeleton className="h-[400px] rounded-lg" />
-                <Skeleton className="h-[400px] rounded-lg" />
-              </div>
-            ) : (
-              products && products.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    {products.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-              ) : (
-                  <p className="text-center text-muted-foreground">No products to display at the moment. Check back soon!</p>
-              )
-            )}
-          </div>
-          <div className="mt-12 text-center">
-            <Button asChild size="lg" variant="outline">
-              <Link href="/shop">
-                Explore All Products <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+        <section className="w-full py-12 md:py-24 bg-background">
+            <div className="container px-4 md:px-6">
+            <div className="flex flex-col items-center justify-center space-y-4 text-center">
+                <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">From the Shop</h2>
+                <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+                Essential tools, publications, and products developed from decades of in-the-field experience.
+                </p>
+            </div>
+            <div className="mx-auto max-w-6xl pt-12">
+                {isLoading ? (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    <div className="lg:col-span-2">
+                        <Skeleton className="h-[350px] w-full rounded-lg" />
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-8">
+                         <Skeleton className="h-[420px] w-full rounded-lg" />
+                         <Skeleton className="h-[420px] w-full rounded-lg" />
+                    </div>
+                </div>
+
+                ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    {featuredProduct && (
+                        <div className="lg:col-span-2">
+                            <Card className="flex flex-col md:flex-row group h-full overflow-hidden border-2 border-primary/20 hover:border-primary/50 transition-colors shadow-lg">
+                               <div className="md:w-1/2 p-6 flex items-center justify-center bg-secondary/30">
+                                 <Link href={`/shop/${featuredProduct.id}`}>
+                                    <Image 
+                                        src={featuredProduct.image || `https://picsum.photos/seed/${featuredProduct.id}/400/400`} 
+                                        alt={featuredProduct.name}
+                                        width={400}
+                                        height={400}
+                                        className="object-contain group-hover:scale-105 transition-transform"
+                                        data-ai-hint={featuredProduct.imageHint}
+                                    />
+                                  </Link>
+                               </div>
+                               <div className="flex flex-col md:w-1/2">
+                                    <CardHeader className="p-6">
+                                        <Badge>Featured Product</Badge>
+                                        <CardTitle className="text-2xl mt-2">{featuredProduct.name}</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-6 pt-0 flex-grow">
+                                        <p className="text-muted-foreground text-sm line-clamp-4">{featuredProduct.description}</p>
+                                    </CardContent>
+                                    <CardFooter className="p-6 flex flex-wrap justify-between items-center gap-4">
+                                        <p className="text-3xl font-bold text-accent">R{featuredProduct.price.toFixed(2)}</p>
+                                        <Button asChild size="lg">
+                                            <Link href={`/shop/${featuredProduct.id}`}>View Details <ArrowRight className="ml-2" /></Link>
+                                        </Button>
+                                    </CardFooter>
+                               </div>
+                            </Card>
+                        </div>
+                    )}
+                    <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-8">
+                        {otherProducts?.map((product) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))}
+                    </div>
+                </div>
+                )}
+            </div>
+            <div className="mt-12 text-center">
+                <Button asChild size="lg" variant="outline">
+                <Link href="/shop">
+                    Explore All Products <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+                </Button>
+            </div>
+            </div>
+        </section>
 
       {/* About Frits */}
       <section id="about" className="w-full py-12 md:py-24 bg-secondary/30">
