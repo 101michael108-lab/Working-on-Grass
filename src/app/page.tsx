@@ -83,7 +83,7 @@ export default function Home() {
         {/* Darker gradient for better text contrast */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
         {/* Container for content, aligned to bottom-left */}
-        <div className="relative h-full flex flex-col items-center justify-end text-center md:items-start md:text-left p-8 md:p-16 lg:p-24">
+        <div className="relative h-full flex flex-col items-center justify-center text-center sm:text-left p-8 md:justify-end md:items-start md:p-16 lg:p-24">
           <div className="max-w-3xl">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white font-headline">
               Sustainable Veld Management, Guided by Experience
@@ -224,7 +224,7 @@ export default function Home() {
       <section id="about" className="w-full py-16 md:py-24 bg-secondary/30">
         <div className="container px-4 md:px-6">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-            <div className="flex justify-center">
+            <div className="flex justify-center lg:order-last">
               <Image
                 src={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageUrl || ''}
                 alt="Frits van Oudtshoorn"
@@ -234,19 +234,19 @@ export default function Home() {
                 data-ai-hint={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageHint}
               />
             </div>
-            <div className="text-center lg:text-left">
+            <div className="text-center sm:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">
                 Meet the Founder
               </h2>
               <div className="mt-4 prose max-w-none text-muted-foreground mx-auto lg:mx-0">
-                <blockquote className="border-l-4 border-primary pl-4 italic text-left">
+                <blockquote className="border-l-4 border-primary pl-4 italic">
                   "My goal is to bridge the gap between science and the farmer. Sustainable land management isn't just about conservation; it's about building resilient, profitable agricultural businesses for generations to come."
                 </blockquote>
-                <p className="mt-4 text-left">
+                <p className="mt-4">
                   <strong>- Frits van Oudtshoorn</strong>, Grassland Ecologist
                 </p>
               </div>
-              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-lg/relaxed mx-auto lg:mx-0">
+              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-lg/relaxed mx-auto sm:mx-0">
                 With decades of field experience, Frits is a leading authority on veld management, ecological assessments, and rehabilitation across Southern Africa. His practical, science-based approach has helped countless land-owners improve their productivity and ecological health.
               </p>
                <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
@@ -261,13 +261,13 @@ export default function Home() {
       <section className="w-full py-16 md:py-24 bg-background">
           <div className="container px-4 md:px-6">
               <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-                  <div className="text-center lg:text-left">
+                  <div className="text-center sm:text-left">
                       <Badge>Coming Soon</Badge>
                       <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">The Grass Guide App</h2>
-                      <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto lg:mx-0">
+                      <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto sm:mx-0">
                           Your veld management partner, in your pocket. Identify grasses, calculate biomass, and make informed decisions on the go.
                       </p>
-                      <ul className="mt-6 space-y-4 text-muted-foreground text-left max-w-md mx-auto lg:mx-0">
+                      <ul className="mt-6 space-y-4 text-muted-foreground text-left max-w-md mx-auto sm:mx-0">
                           <li className="flex items-start gap-3">
                               <Camera className="h-5 w-5 mt-1 text-primary flex-shrink-0" />
                               <span><strong>Instant Grass ID:</strong> Snap a photo to identify hundreds of grass species with detailed ecological information.</span>
