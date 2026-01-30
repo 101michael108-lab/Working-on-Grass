@@ -18,6 +18,14 @@ import { services } from "@/lib/static-data";
 import { PlaceHolderImages } from "@/lib/placeholder-images";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
+// Imports for the new shop section
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { collection, query, limit } from "firebase/firestore";
+import type { Product } from "@/lib/types";
+import ProductCard from "@/components/shop/ProductCard";
+import { Skeleton } from "@/components/ui/skeleton";
+
+
 export default function Home() {
   const heroImage = PlaceHolderImages.find(p => p.id === 'hero');
 
@@ -38,7 +46,11 @@ export default function Home() {
           icon: Globe,
           text: "Based in Limpopo, serving Southern Africa"
       }
-  ]
+  ];
+
+  const firestore = useFirestore();
+  const productsQuery = useMemoFirebase(() => query(collection(firestore, 'products'), limit(3)), [firestore]);
+  const { data: products, isLoading } = useCollection<Omit<Product, 'id'>>(productsQuery);
 
   return (
     <div className="flex flex-col min-h-[100dvh]">
@@ -120,42 +132,43 @@ export default function Home() {
         </div>
       </section>
       
-      {/* Featured Products / Knowledge */}
-       <section className="w-full py-12 md:py-24">
-         <div className="container px-4 md:px-6">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight mb-4">Our Shop & Expertise</h2>
-                <p className="text-muted-foreground mb-8">
-                  Beyond consultation, we offer essential tools and publications developed from decades of in-the-field experience.
-                </p>
-                <div className="grid grid-cols-1 gap-6">
-                  <Card>
-                    <CardHeader>
-                      <CardTitle>Shop Products</CardTitle>
-                      <CardDescription>Find tools, books, and seeds to support your land management goals.</CardDescription>
-                    </CardHeader>
-                    <CardFooter>
-                       <Button asChild className="bg-accent text-accent-foreground hover:bg-accent/90">
-                          <Link href="/shop">Visit Shop</Link>
-                       </Button>
-                    </CardFooter>
-                  </Card>
-                </div>
+      {/* Featured Products Section */}
+      <section className="w-full py-12 md:py-24 bg-background">
+        <div className="container px-4 md:px-6">
+          <div className="flex flex-col items-center justify-center space-y-4 text-center">
+            <h2 className="text-3xl font-bold tracking-tighter sm:text-5xl">From the Shop</h2>
+            <p className="max-w-[900px] text-muted-foreground md:text-xl/relaxed">
+              Essential tools, publications, and products developed from decades of in-the-field experience.
+            </p>
+          </div>
+          <div className="mx-auto max-w-5xl pt-12">
+            {isLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <Skeleton className="h-[400px] rounded-lg" />
+                <Skeleton className="h-[400px] rounded-lg" />
+                <Skeleton className="h-[400px] rounded-lg" />
               </div>
-               <div className="flex justify-center">
-                <Image
-                  src={PlaceHolderImages.find(p => p.id === 'book-guide')?.imageUrl || ''}
-                  alt="A collection of books and tools for grassland management"
-                  width={500}
-                  height={500}
-                  className="rounded-lg object-cover aspect-square shadow-lg"
-                  data-ai-hint="books tools"
-                />
-              </div>
-            </div>
-         </div>
-       </section>
+            ) : (
+              products && products.length > 0 ? (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    {products.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
+                  </div>
+              ) : (
+                  <p className="text-center text-muted-foreground">No products to display at the moment. Check back soon!</p>
+              )
+            )}
+          </div>
+          <div className="mt-12 text-center">
+            <Button asChild size="lg" variant="outline">
+              <Link href="/shop">
+                Explore All Products <ArrowRight className="ml-2 h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* About Frits */}
       <section id="about" className="w-full py-12 md:py-24 bg-secondary/30">
