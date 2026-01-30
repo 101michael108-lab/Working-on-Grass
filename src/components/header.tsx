@@ -4,7 +4,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { Menu, ShoppingCart, User, LogOut, LayoutDashboard, Leaf } from "lucide-react";
+import { Menu, ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +47,7 @@ export function Header() {
   const auth = useAuth();
   const firestore = useFirestore();
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const [isSticky, setIsSticky] = React.useState(false);
 
   React.useEffect(() => {
     if (user && firestore) {
@@ -63,6 +64,17 @@ export function Header() {
     }
   }, [user, firestore]);
 
+  // Handle sticky header state on client to avoid hydration mismatch
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setIsSticky(window.scrollY > 0);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   const NavLink = ({ href, label }: { href: string; label: string }) => (
     <Link
       href={href}
@@ -77,101 +89,112 @@ export function Header() {
   );
 
   return (
-    <header className="w-full border-b bg-background">
-      <div className="container flex h-16 items-center">
-        <div className="flex items-center gap-6 md:gap-4">
-            <div className="md:hidden">
-                <Sheet>
-                    <SheetTrigger asChild>
-                        <Button variant="ghost" size="icon">
-                        <Menu className="h-6 w-6" />
-                        <span className="sr-only">Toggle navigation menu</span>
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" className="p-0">
-                        <SheetHeader className="border-b p-4">
-                            <SheetTitle>
+    <header className={cn(
+        "sticky top-0 z-50 w-full border-b transition-colors",
+        isSticky ? "bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60" : "bg-background"
+    )}>
+      <div className="container relative flex h-16 items-center justify-between">
+        {/* Left Section */}
+        <div className="flex items-center gap-6">
+           {/* Desktop Logo & Nav */}
+          <div className="hidden md:flex items-center gap-6">
+            <Logo />
+            <nav className="flex items-center space-x-6 text-sm font-medium">
+                {navLinks.map((link) => (
+                    <NavLink key={link.href} {...link} />
+                ))}
+            </nav>
+          </div>
+           {/* Mobile Nav Trigger */}
+          <div className="md:hidden">
+            <Sheet>
+                <SheetTrigger asChild>
+                    <Button variant="ghost" size="icon">
+                    <Menu className="h-6 w-6" />
+                    <span className="sr-only">Toggle navigation menu</span>
+                    </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="p-0">
+                    <SheetHeader className="border-b p-4">
+                        <SheetTitle>
+                            <SheetClose asChild>
+                                <Logo />
+                            </SheetClose>
+                        </SheetTitle>
+                    </SheetHeader>
+                    <div className="flex h-full flex-col justify-between">
+                        <nav className="grid gap-2 p-4 text-lg font-medium">
+                        {navLinks.map((link) => (
+                            <SheetClose asChild key={link.href}>
+                            <Link
+                                href={link.href}
+                                className={cn(
+                                "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
+                                pathname === link.href
+                                    ? "bg-muted text-primary font-semibold"
+                                    : "text-muted-foreground hover:text-primary",
+                                )}
+                                prefetch={false}
+                            >
+                                {link.label}
+                            </Link>
+                            </SheetClose>
+                        ))}
+                        </nav>
+                        <div className="mt-auto p-4 border-t">
+                        {user ? (
+                            <div className="grid gap-2 text-base font-medium">
+                                <div className="flex items-center gap-3 rounded-lg px-3 py-2">
+                                <Avatar className="h-9 w-9">
+                                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || ''} />
+                                    <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col">
+                                    <span className="text-sm font-semibold">{user.displayName || 'User'}</span>
+                                    <span className="text-xs text-muted-foreground">{user.email}</span>
+                                </div>
+                                </div>
+                                <Separator className="my-2"/>
                                 <SheetClose asChild>
-                                    <Logo />
-                                </SheetClose>
-                            </SheetTitle>
-                        </SheetHeader>
-                        <div className="flex h-full flex-col justify-between">
-                            <nav className="grid gap-2 p-4 text-lg font-medium">
-                            {navLinks.map((link) => (
-                                <SheetClose asChild key={link.href}>
                                 <Link
-                                    href={link.href}
-                                    className={cn(
-                                    "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
-                                    pathname === link.href
-                                        ? "bg-muted text-primary font-semibold"
-                                        : "text-muted-foreground hover:text-primary",
-                                    )}
-                                    prefetch={false}
+                                    href={isAdmin ? "/admin" : "/dashboard"}
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                                 >
-                                    {link.label}
+                                    <LayoutDashboard className="h-5 w-5" />
+                                    Dashboard
                                 </Link>
                                 </SheetClose>
-                            ))}
-                            </nav>
-                            <div className="mt-auto p-4 border-t">
-                            {user ? (
-                                <div className="grid gap-2 text-base font-medium">
-                                    <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-                                    <Avatar className="h-9 w-9">
-                                        <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || ''} />
-                                        <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex flex-col">
-                                        <span className="text-sm font-semibold">{user.displayName || 'User'}</span>
-                                        <span className="text-xs text-muted-foreground">{user.email}</span>
-                                    </div>
-                                    </div>
-                                    <Separator className="my-2"/>
-                                    <SheetClose asChild>
-                                    <Link
-                                        href={isAdmin ? "/admin" : "/dashboard"}
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                                    >
-                                        <LayoutDashboard className="h-5 w-5" />
-                                        Dashboard
-                                    </Link>
-                                    </SheetClose>
-                                    <Button onClick={() => signOut(auth)} variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start w-full text-left font-normal h-auto">
-                                        <LogOut className="h-5 w-5" />
-                                        <span>Log out</span>
-                                    </Button>
-                                </div>
-                            ) : (
-                                <div className="grid gap-2 text-base font-medium">
-                                <SheetClose asChild>
-                                    <Link
-                                        href="/login"
-                                        className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                                    >
-                                        <User className="h-5 w-5" />
-                                        Login / Sign Up
-                                    </Link>
-                                </SheetClose>
-                                </div>
-                            )}
+                                <Button onClick={() => signOut(auth)} variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start w-full text-left font-normal h-auto">
+                                    <LogOut className="h-5 w-5" />
+                                    <span>Log out</span>
+                                </Button>
                             </div>
+                        ) : (
+                            <div className="grid gap-2 text-base font-medium">
+                            <SheetClose asChild>
+                                <Link
+                                    href="/login"
+                                    className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
+                                >
+                                    <User className="h-5 w-5" />
+                                    Login / Sign Up
+                                </Link>
+                            </SheetClose>
+                            </div>
+                        )}
                         </div>
-                    </SheetContent>
-                </Sheet>
-            </div>
-            <div className="hidden md:block">
-              <Logo />
-            </div>
+                    </div>
+                </SheetContent>
+            </Sheet>
+          </div>
         </div>
-        
-        <nav className="hidden items-center space-x-6 text-sm font-medium md:flex flex-1 justify-center">
-            {navLinks.map((link) => (
-                <NavLink key={link.href} {...link} />
-            ))}
-        </nav>
-        
+
+        {/* Mobile Logo (centered) */}
+        <div className="md:hidden absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+            <Logo />
+        </div>
+
+        {/* Right Section */}
         <div className="flex items-center space-x-2">
           <Button variant="ghost" size="icon" asChild>
             <Link href="/cart">
@@ -225,7 +248,6 @@ export function Header() {
               </Link>
             </Button>
           )}
-
         </div>
       </div>
     </header>
