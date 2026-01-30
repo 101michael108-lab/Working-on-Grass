@@ -4,7 +4,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { services } from "@/lib/static-data";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useMedia } from "@/context/media-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -14,7 +14,8 @@ export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string | undefined>(undefined);
 
-  const heroImage = PlaceHolderImages.find(p => p.id === 'about-frits');
+  const { getImage } = useMedia();
+  const heroImage = getImage('about-frits');
 
   const handleRequestConsultation = (serviceTitle?: string) => {
     setSelectedService(serviceTitle);
@@ -50,7 +51,7 @@ export default function ServicesPage() {
             {heroImage && (
               <Image
                 src={heroImage.imageUrl}
-                alt="Frits van Oudtshoorn in the field"
+                alt={heroImage.description}
                 width={400}
                 height={400}
                 className="rounded-lg object-cover shadow-lg aspect-square"

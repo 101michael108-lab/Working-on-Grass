@@ -1,3 +1,4 @@
+
 /**
  * # Firestore Security Rules
  *
@@ -9,7 +10,7 @@
  * ## Data Structure
  * - `/users/{userId}`: Contains user profile data, including the critical 'role' field.
  * - `/users/{userId}/orders/...`: A subcollection tree containing a user's private order history.
- * - `/products`, `/services`, `/galleryImages`: Top-level collections for publicly readable data, managed exclusively by admins.
+ * - `/products`, `/services`, `/siteImages`: Top-level collections for publicly readable data, managed exclusively by admins.
  * - `/contactFormEntries`: A top-level "dropbox" collection, allowing anyone to write but only admins to read.
  *
  * ## Key Security Decisions
@@ -129,19 +130,19 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
-    // Gallery Images (/galleryImages)
+    // Site Images (/siteImages)
     // ------------------------------------------------------------------
 
     /**
      * @description
-     * Manages gallery images. All users can view the gallery. Only administrators can add,
-     * update, or remove images.
-     * @path /galleryImages/{galleryImageId}
-     * @allow (get) Any user, signed in or not, viewing a gallery image.
-     * @deny (delete) A non-admin user trying to remove an image from the gallery.
+     * Manages site-wide images. All users can view the images. Only administrators can add,
+     * update, or remove them.
+     * @path /siteImages/{siteImageId}
+     * @allow (get) Any user, signed in or not, viewing a site image.
+     * @deny (delete) A non-admin user trying to remove an image.
      * @principle Public read access with restricted, role-based write access.
      */
-    match /galleryImages/{galleryImageId} {
+    match /siteImages/{siteImageId} {
       allow get: if true;
       allow list: if true;
       allow create: if isAdmin();

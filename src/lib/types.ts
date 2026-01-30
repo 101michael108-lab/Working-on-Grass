@@ -1,3 +1,4 @@
+
 export type Service = {
   title: string;
   description: string;
@@ -51,4 +52,11 @@ export type User = {
     role: 'user' | 'admin';
     createdAt: any; // Firestore timestamp
     updatedAt: any; // Firestore timestamp
+};
+
+export type SiteImage = {
+  id: string;
+  description: string;
+  imageUrl: string;
+  imageHint: string;
 };

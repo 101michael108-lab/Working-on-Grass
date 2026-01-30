@@ -16,7 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { services } from "@/lib/static-data";
-import { PlaceHolderImages } from "@/lib/placeholder-images";
+import { useMedia } from "@/context/media-context";
 
 // Imports for the new shop section
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
@@ -28,7 +28,10 @@ import { Badge } from "@/components/ui/badge";
 
 
 export default function Home() {
-  const heroImage = PlaceHolderImages.find(p => p.id === 'hero');
+  const { getImage } = useMedia();
+  const heroImage = getImage('hero');
+  const aboutImage = getImage('about-frits');
+  const appPromoImage = getImage('grass-app-promo');
 
   const trustPillars = [
       {
@@ -226,14 +229,14 @@ export default function Home() {
         <div className="container px-4 md:px-6">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
             <div className="flex justify-center lg:order-last">
-              <Image
-                src={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageUrl || ''}
-                alt="Frits van Oudtshoorn"
+              {aboutImage && <Image
+                src={aboutImage.imageUrl}
+                alt={aboutImage.description}
                 width={450}
                 height={450}
                 className="rounded-lg object-cover aspect-square shadow-lg"
-                data-ai-hint={PlaceHolderImages.find(p => p.id === 'about-frits')?.imageHint}
-              />
+                data-ai-hint={aboutImage.imageHint}
+              />}
             </div>
             <div className="text-center sm:text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">
@@ -287,14 +290,14 @@ export default function Home() {
                       </Button>
                   </div>
                    <div className="flex justify-center">
-                        <Image
-                            src={PlaceHolderImages.find(p => p.id === 'grass-app-promo')?.imageUrl || ''}
-                            alt="A smartphone displaying the Grass Guide app in a sunny field"
+                        {appPromoImage && <Image
+                            src={appPromoImage.imageUrl}
+                            alt={appPromoImage.description}
                             width={350}
                             height={700}
                             className="rounded-xl object-cover shadow-2xl"
-                            data-ai-hint={PlaceHolderImages.find(p => p.id === 'grass-app-promo')?.imageHint}
-                        />
+                            data-ai-hint={appPromoImage.imageHint}
+                        />}
                   </div>
               </div>
           </div>

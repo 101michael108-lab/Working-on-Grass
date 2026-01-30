@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -281,6 +282,30 @@
         "needs",
         "submissionDate"
       ]
+    },
+    "SiteImage": {
+      "title": "Site Image",
+      "type": "object",
+      "description": "Represents a managed image used across the website, like the hero or about page image.",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "A description of the image for alt text."
+        },
+        "imageUrl": {
+          "type": "string",
+          "description": "The URL of the image.",
+          "format": "uri"
+        },
+        "imageHint": {
+          "type": "string",
+          "description": "A hint for AI image generation services."
+        }
+      },
+      "required": [
+        "description",
+        "imageUrl"
+      ]
     }
   },
   "auth": {
@@ -360,17 +385,17 @@
         }
       },
       {
-        "path": "/galleryImages/{galleryImageId}",
+        "path": "/siteImages/{siteImageId}",
         "definition": {
-          "entityName": "GalleryImage",
+          "entityName": "SiteImage",
           "schema": {
-            "$ref": "#/backend/entities/GalleryImage"
+            "$ref": "#/backend/entities/SiteImage"
           },
-          "description": "Stores gallery image information, including image URL and description.",
+          "description": "Stores managed images for use across the website. The document ID (e.g., 'hero', 'about-frits') is used to reference the image in the code.",
           "params": [
             {
-              "name": "galleryImageId",
-              "description": "The unique identifier for the gallery image."
+              "name": "siteImageId",
+              "description": "The unique slug for the image."
             }
           ]
         }

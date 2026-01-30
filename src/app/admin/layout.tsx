@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -21,6 +22,7 @@ import {
   ShoppingCart,
   LayoutDashboard,
   LogOut,
+  Image as ImageIcon,
 } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -89,6 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavLink href="/admin" icon={<LayoutDashboard />} tooltip="Dashboard">Dashboard</NavLink>
             <NavLink href="/admin/orders" icon={<ShoppingCart />} tooltip="Orders">Orders</NavLink>
             <NavLink href="/admin/products" icon={<Package />} tooltip="Products">Products</NavLink>
+            <NavLink href="/admin/media" icon={<ImageIcon />} tooltip="Media">Media</NavLink>
             <NavLink href="/admin/users" icon={<User />} tooltip="Users">Users</NavLink>
           </SidebarMenu>
         </SidebarContent>
