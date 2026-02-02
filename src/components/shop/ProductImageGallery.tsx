@@ -1,5 +1,5 @@
-
 "use client"
+
 import React, { useState, useEffect, useCallback } from 'react'
 import Image from 'next/image'
 import {
@@ -10,7 +10,7 @@ import {
   CarouselPrevious,
   type CarouselApi,
 } from "@/components/ui/carousel"
-import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { Card, CardContent } from "@/components/ui/card"
 import { cn } from '@/lib/utils'
 
@@ -122,6 +122,10 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
       
       <Dialog open={fullscreenOpen} onOpenChange={setFullscreenOpen}>
         <DialogContent className="max-w-[90vw] h-[90vh] p-4 bg-transparent border-none shadow-none flex items-center justify-center">
+          <DialogHeader className="sr-only">
+            <DialogTitle>Image gallery for {productName}</DialogTitle>
+            <DialogDescription>Use the arrow buttons to navigate through the product images.</DialogDescription>
+          </DialogHeader>
           <Carousel className="w-full max-w-6xl h-full" setApi={setFullscreenApi} opts={{ startIndex: selectedIndex, loop: true }}>
             <CarouselContent className="h-full">
               {images.map((imgUrl, index) => (
