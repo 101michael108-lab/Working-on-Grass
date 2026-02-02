@@ -67,7 +67,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
           alt="No image available"
           width={600}
           height={600}
-          className="object-contain w-full h-full"
+          className="object-cover w-full h-full"
         />
       </div>
     )
@@ -129,11 +129,11 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             <DialogTitle>Image gallery for {productName}</DialogTitle>
             <DialogDescription>Use the arrow buttons to navigate through the product images.</DialogDescription>
           </DialogHeader>
-          <Carousel className="w-full max-w-6xl h-full" setApi={setFullscreenApi} opts={{ startIndex: selectedIndex, loop: true }}>
+          <Carousel className="w-full h-full" setApi={setFullscreenApi} opts={{ startIndex: selectedIndex, loop: true }}>
             <CarouselContent className="h-full">
               {images.map((imgUrl, index) => (
                 <CarouselItem key={index} className="h-full">
-                    <div className="relative flex items-center justify-center h-full w-full p-4">
+                    <div className="relative flex items-center justify-center h-full w-full">
                         <Image src={imgUrl} alt={`${productName} - image ${index + 1}`} fill className="object-contain"/>
                     </div>
                 </CarouselItem>
