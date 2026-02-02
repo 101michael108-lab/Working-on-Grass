@@ -66,25 +66,14 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
       </section>
 
       {/* 3. How It Works Section */}
-      {product.howItWorks && product.howItWorks.steps && product.howItWorks.steps.length > 0 && (
+      {product.howItWorks && (
         <section id="how-it-works" className="py-16 md:py-24 bg-secondary/30">
             <div className="container">
-                <div className="max-w-4xl mx-auto text-center mb-12">
-                     <h2 className="text-3xl font-bold">{product.howItWorks.headline || "How It Works"}</h2>
-                </div>
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                   {product.howItWorks.steps.map((step, index) => (
-                     <div key={index} className="flex gap-4">
-                        <div className="flex flex-col items-center">
-                           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold">{index + 1}</div>
-                           {index < product.howItWorks!.steps!.length - 1 && <div className="w-px h-full bg-border mt-2"></div>}
-                        </div>
-                        <div>
-                           <h3 className="font-semibold text-lg">{step.title}</h3>
-                           <p className="mt-1 text-muted-foreground">{step.description}</p>
-                        </div>
+                <div className="max-w-4xl mx-auto text-center">
+                     <h2 className="text-3xl font-bold">How It Works</h2>
+                     <div className="mt-4 text-lg text-muted-foreground prose prose-lg max-w-none">
+                        <p>{product.howItWorks}</p>
                      </div>
-                   ))}
                 </div>
             </div>
         </section>

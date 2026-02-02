@@ -1,5 +1,4 @@
 
-
 export type Service = {
   title: string;
   description: string;
@@ -10,11 +9,6 @@ export type Service = {
 export type Specification = {
   feature: string;
   description: string;
-};
-
-export type HowItWorksStep = {
-    title: string;
-    description: string;
 };
 
 export type Product = {
@@ -32,10 +26,7 @@ export type Product = {
   valueProposition?: string;
   specifications?: Specification[];
   features?: string[];
-  howItWorks?: {
-      headline: string;
-      steps: HowItWorksStep[];
-  };
+  howItWorks?: string;
   authorityStatement?: string;
 };
 

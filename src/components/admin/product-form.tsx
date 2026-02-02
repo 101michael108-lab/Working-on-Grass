@@ -48,13 +48,7 @@ const formSchema = z.object({
   
   features: z.array(z.string().min(1, "Feature text is required")).optional(),
 
-  howItWorks: z.object({
-      headline: z.string().optional(),
-      steps: z.array(z.object({
-          title: z.string().min(1, "Title is required"),
-          description: z.string().min(1, "Description is required"),
-      })).optional(),
-  }).optional(),
+  howItWorks: z.string().optional(),
 });
 
 
@@ -85,14 +79,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             authorityStatement: product?.authorityStatement || "",
             specifications: product?.specifications || [],
             features: product?.features || [],
-            howItWorks: product?.howItWorks || { headline: '', steps: []},
+            howItWorks: product?.howItWorks || "",
         },
     });
 
     const layout = form.watch("layout");
 
     const { fields: specFields, append: appendSpec, remove: removeSpec } = useFieldArray({ control: form.control, name: "specifications" });
-    const { fields: howItWorksFields, append: appendHowItWorks, remove: removeHowItWorks } = useFieldArray({ control: form.control, name: "howItWorks.steps" });
     const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({ control: form.control, name: "features" });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -225,30 +218,19 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                 </CardContent>
                             </Card>
                             <Card>
-                                <CardHeader className="flex-row items-center justify-between">
+                                <CardHeader>
                                     <CardTitle>In-Depth Layout: "How It Works" Section</CardTitle>
                                 </CardHeader>
-                                <CardContent className="space-y-4">
-                                    <FormField name="howItWorks.headline" control={form.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Headline</FormLabel><FormControl><Input {...field} placeholder="How The DPM Works"/></FormControl><FormMessage /></FormItem>
+                                <CardContent>
+                                    <FormField name="howItWorks" control={form.control} render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>How it Works Paragraph</FormLabel>
+                                            <FormControl>
+                                                <Textarea {...field} rows={6} placeholder="Explain how the product works in a detailed paragraph..." />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )} />
-                                    <div className="flex items-center justify-between">
-                                        <Label>Steps</Label>
-                                        <Button type="button" variant="outline" size="sm" onClick={() => appendHowItWorks({ title: '', description: '' })}><PlusCircle className="mr-2"/>Add Step</Button>
-                                    </div>
-                                    {howItWorksFields.map((field, index) => (
-                                        <div key={field.id} className="grid grid-cols-[1fr_auto] gap-2 items-start p-4 border rounded-md">
-                                            <div className="space-y-2">
-                                                <FormField control={form.control} name={`howItWorks.steps.${index}.title`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Step {index + 1} Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                                )}/>
-                                                <FormField control={form.control} name={`howItWorks.steps.${index}.description`} render={({ field }) => (
-                                                    <FormItem><FormLabel>Step {index + 1} Description</FormLabel><FormControl><Textarea {...field} rows={2} /></FormControl><FormMessage /></FormItem>
-                                                )}/>
-                                            </div>
-                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeHowItWorks(index)}><Trash /></Button>
-                                        </div>
-                                    ))}
                                 </CardContent>
                             </Card>
                         </>

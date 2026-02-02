@@ -109,22 +109,8 @@
           "items": { "type": "string" }
         },
         "howItWorks": {
-          "type": "object",
-          "description": "Explanation of how the product works.",
-          "properties": {
-            "headline": { "type": "string" },
-            "steps": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "title": { "type": "string" },
-                  "description": { "type": "string" }
-                },
-                "required": ["title", "description"]
-              }
-            }
-          }
+          "type": "string",
+          "description": "A paragraph explaining how the product works."
         },
         "authorityStatement": {
           "type": "string",
