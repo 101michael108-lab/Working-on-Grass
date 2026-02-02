@@ -4,41 +4,52 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { ShoppingCart } from 'lucide-react';
+import { ArrowRight, ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart();
+  const isForSale = product.layout === 'standard' || product.layout === 'book';
+
   return (
-    <Card className="flex flex-col group">
-      <CardHeader className="p-0">
-        <Link href={`/shop/${product.id}`}>
-          <div className="aspect-square bg-secondary/50 rounded-t-lg overflow-hidden flex items-center justify-center p-4">
+    <Card className="flex flex-col group overflow-hidden transition-shadow hover:shadow-lg h-full">
+      <CardHeader className="p-0 border-b">
+        <Link href={`/shop/${product.id}`} className="block">
+          <div className="aspect-[4/3] bg-white overflow-hidden flex items-center justify-center">
             <Image
-              src={product.image || `https://picsum.photos/seed/${product.id}/300/300`}
+              src={product.image || `https://picsum.photos/seed/${product.id}/400/300`}
               alt={product.name}
-              width={300}
+              width={400}
               height={300}
-              className="object-cover h-full w-full group-hover:scale-105 transition-transform"
-              data-ai-hint={product.imageHint}
+              className="object-contain h-full w-full group-hover:scale-105 transition-transform duration-300 p-4"
             />
           </div>
         </Link>
       </CardHeader>
       <CardContent className="flex-grow p-4">
-        <Link href={`/shop/${product.id}`}>
-          <h3 className="font-semibold text-lg hover:text-primary transition-colors truncate">{product.name}</h3>
-        </Link>
         <p className="text-sm text-muted-foreground">{product.category}</p>
+        <Link href={`/shop/${product.id}`} className="block mt-1">
+          <h3 className="font-semibold text-lg hover:text-primary transition-colors line-clamp-2 leading-tight">{product.name}</h3>
+        </Link>
       </CardContent>
-      <CardFooter className="p-4 flex justify-between items-center">
-         <p className="text-xl font-bold text-accent">
-            R{product.price.toFixed(2)}
-        </p>
-        <Button size="icon" variant="outline" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, 1)}>
-            <ShoppingCart className="h-5 w-5" />
-        </Button>
+      <CardFooter className="p-4 mt-auto border-t">
+        {isForSale ? (
+            <div className="flex justify-between items-center w-full">
+                <p className="text-xl font-bold text-accent">
+                    R{product.price.toFixed(2)}
+                </p>
+                <Button size="sm" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, 1)}>
+                    <ShoppingCart className="mr-2 h-4 w-4" /> Add to Cart
+                </Button>
+            </div>
+        ) : (
+            <Button asChild className="w-full" variant="secondary">
+                <Link href={`/shop/${product.id}`}>
+                    Learn More <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
+        )}
       </CardFooter>
     </Card>
   );

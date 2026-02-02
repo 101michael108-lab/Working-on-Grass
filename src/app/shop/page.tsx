@@ -1,3 +1,4 @@
+
 "use client";
 
 import ShopClient from '@/components/shop/ShopClient';
@@ -12,16 +13,31 @@ export default function ShopPage() {
   const { data: products, isLoading } = useCollection<Omit<Product, 'id'>>(productsQuery);
 
   const LoadingSkeleton = () => (
-     <div className="grid md:grid-cols-4 gap-8">
-        <aside className="md:col-span-1">
-            <Skeleton className="h-[300px] w-full rounded-lg" />
+     <div className="grid lg:grid-cols-4 gap-8 xl:gap-12">
+        <aside className="lg:col-span-1">
+             <div className="sticky top-24">
+                <Skeleton className="h-[300px] w-full rounded-lg" />
+            </div>
         </aside>
-        <main className="md:col-span-3">
-            <Skeleton className="h-10 w-full mb-6" />
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                {[...Array(6)].map((_, i) => (
-                    <Skeleton key={i} className="aspect-square w-full rounded-lg" />
-                ))}
+        <main className="lg:col-span-3">
+            <Skeleton className="h-10 w-full mb-8" />
+            <div className="space-y-16">
+                 <div>
+                    <Skeleton className="h-8 w-1/3 mb-6 pb-2" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                        {[...Array(3)].map((_, i) => (
+                            <Skeleton key={i} className="h-[450px] w-full rounded-lg" />
+                        ))}
+                    </div>
+                </div>
+                 <div>
+                    <Skeleton className="h-8 w-1/3 mb-6 pb-2" />
+                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
+                        {[...Array(2)].map((_, i) => (
+                            <Skeleton key={i} className="h-[450px] w-full rounded-lg" />
+                        ))}
+                    </div>
+                </div>
             </div>
         </main>
     </div>
@@ -29,7 +45,7 @@ export default function ShopPage() {
 
   return (
     <div className="container py-12 md:py-16">
-       <div className="mb-8 text-center">
+       <div className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Products & Tools</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
           A curated selection of tools, books, and seeds, field-tested and recommended by Working on Grass.
