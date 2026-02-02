@@ -82,53 +82,58 @@
           "type": "string",
           "description": "Brand of the product."
         },
-        "productType": {
-            "type": "string",
-            "description": "The type of product, which determines the call to action.",
-            "enum": ["e-commerce", "inquiry"]
+        "layout": {
+          "type": "string",
+          "description": "The page layout to use for this product.",
+          "enum": ["standard", "in-depth", "book"]
         },
         "valueProposition": {
-            "type": "string",
-            "description": "A short, compelling statement about the product's value."
+          "type": "string",
+          "description": "A short, compelling statement about the product's value."
         },
         "specifications": {
-            "type": "array",
-            "description": "A list of technical specifications for the product.",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "feature": { "type": "string" },
-                    "description": { "type": "string" }
-                },
-                "required": ["feature", "description"]
-            }
+          "type": "array",
+          "description": "A list of technical specifications for the product.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "feature": { "type": "string" },
+              "description": { "type": "string" }
+            },
+            "required": ["feature", "description"]
+          }
+        },
+        "features": {
+          "type": "array",
+          "description": "A list of key features for a product, often used for book layouts.",
+          "items": { "type": "string" }
         },
         "howItWorks": {
-            "type": "object",
-            "description": "Explanation of how the product works.",
-            "properties": {
-                "headline": { "type": "string" },
-                "steps": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "title": { "type": "string" },
-                            "description": { "type": "string" }
-                        },
-                        "required": ["title", "description"]
-                    }
-                }
+          "type": "object",
+          "description": "Explanation of how the product works.",
+          "properties": {
+            "headline": { "type": "string" },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "title": { "type": "string" },
+                  "description": { "type": "string" }
+                },
+                "required": ["title", "description"]
+              }
             }
+          }
         },
         "authorityStatement": {
-            "type": "string",
-            "description": "A statement to build trust and authority."
+          "type": "string",
+          "description": "A statement to build trust and authority."
         },
         "relatedProductIds": {
-            "type": "array",
-            "description": "A list of IDs for related products.",
-            "items": { "type": "string" }
+          "type": "array",
+          "description": "A list of IDs for related products.",
+          "items": { "type": "string" }
         }
       },
       "required": [
@@ -136,7 +141,8 @@
         "name",
         "description",
         "price",
-        "category"
+        "category",
+        "layout"
       ]
     },
     "Service": {
@@ -530,5 +536,3 @@
     "reasoning": "This Firestore data structure is designed to support the 'Working on Grass' application, focusing on secure user authentication, role-based access control, and efficient data management for products, services, orders, and gallery images. The structure prioritizes authorization independence and supports list operations (QAPs) by avoiding hierarchical authorization dependencies and using structural segregation. User roles are stored directly in the `users` collection, enabling easy management and modification of roles. To ensure Authorization Independence (CRITICAL), there are no `get()` calls required in the rules due to denormalization of user roles into the relevant collections if needed. This design facilitates simple, robust, and easily debuggable security rules."
   }
 }
-
-    

@@ -2,7 +2,7 @@
 "use client";
 
 import React from 'react';
-import ProductPageClient from '@/components/shop/ProductPageClient';
+import ProductPageClient from '@/components/shop/product-details';
 import { notFound, useParams } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query, where, documentId } from 'firebase/firestore';
@@ -98,5 +98,3 @@ export default function ProductPage() {
         </>
     );
 }
-
-    

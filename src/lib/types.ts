@@ -26,10 +26,12 @@ export type Product = {
   image?: string;
   sku?: string;
   brand?: string;
-  // new fields
-  productType?: 'e-commerce' | 'inquiry';
+  
+  layout: 'standard' | 'in-depth' | 'book';
+  
   valueProposition?: string;
   specifications?: Specification[];
+  features?: string[];
   howItWorks?: {
       headline: string;
       steps: HowItWorksStep[];
@@ -92,5 +94,3 @@ export type MediaLibraryItem = {
     description?: string;
     uploadedAt: any; // Firestore Timestamp
 };
-
-    

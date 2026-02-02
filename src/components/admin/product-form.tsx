@@ -25,7 +25,7 @@ import type { Product, MediaLibraryItem } from "@/lib/types";
 import { ProductImageSelector } from './product-image-selector';
 import Image from 'next/image';
 import { Image as ImageIcon, XCircle, PlusCircle, Trash } from 'lucide-react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
@@ -35,13 +35,19 @@ const formSchema = z.object({
   category: z.string().min(2, "Category is required"),
   sku: z.string().optional(),
   brand: z.string().optional(),
-  productType: z.enum(['e-commerce', 'inquiry']),
+  
+  layout: z.enum(['standard', 'in-depth', 'book']),
+
   valueProposition: z.string().optional(),
   authorityStatement: z.string().optional(),
+
   specifications: z.array(z.object({
     feature: z.string().min(1, "Feature is required"),
     description: z.string().min(1, "Description is required"),
   })).optional(),
+  
+  features: z.array(z.string().min(1, "Feature text is required")).optional(),
+
   howItWorks: z.object({
       headline: z.string().optional(),
       steps: z.array(z.object({
@@ -51,6 +57,7 @@ const formSchema = z.object({
   }).optional(),
   relatedProductIds: z.string().optional(),
 });
+
 
 const productCategories = ["Measurement & Tools", "Books & Field Guides", "Seeds & Pasture Products", "Online Courses"];
 
@@ -74,23 +81,21 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             category: product?.category || "Measurement & Tools",
             sku: product?.sku || "",
             brand: product?.brand || "",
-            productType: product?.productType || 'e-commerce',
+            layout: product?.layout || 'standard',
             valueProposition: product?.valueProposition || "",
             authorityStatement: product?.authorityStatement || "",
             specifications: product?.specifications || [],
+            features: product?.features || [],
             howItWorks: product?.howItWorks || { headline: '', steps: []},
             relatedProductIds: product?.relatedProductIds?.join(', ') || '',
         },
     });
 
-    const { fields: specFields, append: appendSpec, remove: removeSpec } = useFieldArray({
-        control: form.control,
-        name: "specifications"
-    });
-     const { fields: howItWorksFields, append: appendHowItWorks, remove: removeHowItWorks } = useFieldArray({
-        control: form.control,
-        name: "howItWorks.steps"
-    });
+    const layout = form.watch("layout");
+
+    const { fields: specFields, append: appendSpec, remove: removeSpec } = useFieldArray({ control: form.control, name: "specifications" });
+    const { fields: howItWorksFields, append: appendHowItWorks, remove: removeHowItWorks } = useFieldArray({ control: form.control, name: "howItWorks.steps" });
+    const { fields: featureFields, append: appendFeature, remove: removeFeature } = useFieldArray({ control: form.control, name: "features" });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
         const productData = { 
@@ -187,84 +192,114 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </div>
                     </div>
 
-                    {/* Page Content & Marketing */}
                     <Card>
-                        <CardHeader><CardTitle>Page Content & SEO</CardTitle></CardHeader>
+                        <CardHeader><CardTitle>Page Content & Layout</CardTitle></CardHeader>
                         <CardContent className="space-y-4">
-                            <FormField name="productType" control={form.control} render={({ field }) => (
+                             <FormField name="layout" control={form.control} render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Product Type</FormLabel>
+                                    <FormLabel>Product Page Layout</FormLabel>
                                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                     <SelectContent>
-                                        <SelectItem value="e-commerce">E-commerce (Add to Cart)</SelectItem>
-                                        <SelectItem value="inquiry">Inquiry (Request Pricing)</SelectItem>
+                                        <SelectItem value="standard">Standard E-commerce</SelectItem>
+                                        <SelectItem value="in-depth">In-Depth / Inquiry</SelectItem>
+                                        <SelectItem value="book">Book</SelectItem>
                                     </SelectContent>
                                     </Select>
                                     <FormMessage />
+                                    <CardDescription className="pt-2">Choose the page template. This changes the available fields below and how the page looks to customers.</CardDescription>
                                 </FormItem>
                             )} />
-                             <FormField name="valueProposition" control={form.control} render={({ field }) => (
-                                <FormItem><FormLabel>Value Proposition</FormLabel><FormControl><Input {...field} placeholder="e.g. Accurately measure grass biomass..." /></FormControl><FormMessage /></FormItem>
-                            )} />
-                             <FormField name="authorityStatement" control={form.control} render={({ field }) => (
-                                <FormItem><FormLabel>Authority Statement</FormLabel><FormControl><Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." /></FormControl><FormMessage /></FormItem>
-                            )} />
                         </CardContent>
                     </Card>
 
-                    {/* Specifications */}
-                    <Card>
-                        <CardHeader className="flex-row items-center justify-between">
-                            <CardTitle>Specifications</CardTitle>
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {specFields.map((field, index) => (
-                                <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
-                                    <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
-                                        <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="Material" /></FormControl><FormMessage /></FormItem>
-                                    )}/>
-                                     <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
-                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} placeholder="Aluminium"/></FormControl><FormMessage /></FormItem>
-                                    )}/>
-                                    <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
-                                </div>
-                            ))}
-                            {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added.</p>}
-                        </CardContent>
-                    </Card>
-
-                    {/* How It Works */}
-                    <Card>
-                        <CardHeader className="flex-row items-center justify-between">
-                             <div className="space-y-1.5"><CardTitle>How It Works Section</CardTitle></div>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                             <FormField name="howItWorks.headline" control={form.control} render={({ field }) => (
-                                <FormItem><FormLabel>Headline</FormLabel><FormControl><Input {...field} placeholder="How The DPM Works"/></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <div className="flex items-center justify-between">
-                                <Label>Steps</Label>
-                                <Button type="button" variant="outline" size="sm" onClick={() => appendHowItWorks({ title: '', description: '' })}><PlusCircle className="mr-2"/>Add Step</Button>
-                            </div>
-                            {howItWorksFields.map((field, index) => (
-                                <div key={field.id} className="grid grid-cols-[1fr_auto] gap-2 items-start p-4 border rounded-md">
-                                    <div className="space-y-2">
-                                        <FormField control={form.control} name={`howItWorks.steps.${index}.title`} render={({ field }) => (
-                                            <FormItem><FormLabel>Step {index + 1} Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                                        )}/>
-                                        <FormField control={form.control} name={`howItWorks.steps.${index}.description`} render={({ field }) => (
-                                            <FormItem><FormLabel>Step {index + 1} Description</FormLabel><FormControl><Textarea {...field} rows={2} /></FormControl><FormMessage /></FormItem>
-                                        )}/>
+                    {/* Conditional Fields based on Layout */}
+                    {layout === 'in-depth' && (
+                        <>
+                            <Card>
+                                <CardHeader><CardTitle>In-Depth Layout: Page Content</CardTitle></CardHeader>
+                                <CardContent className="space-y-4">
+                                    <FormField name="valueProposition" control={form.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Value Proposition</FormLabel><FormControl><Input {...field} placeholder="e.g. Accurately measure grass biomass..." /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField name="authorityStatement" control={form.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Authority Statement</FormLabel><FormControl><Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                </CardContent>
+                            </Card>
+                            <Card>
+                                <CardHeader className="flex-row items-center justify-between">
+                                    <CardTitle>In-Depth Layout: "How It Works" Section</CardTitle>
+                                </CardHeader>
+                                <CardContent className="space-y-4">
+                                    <FormField name="howItWorks.headline" control={form.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Headline</FormLabel><FormControl><Input {...field} placeholder="How The DPM Works"/></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <div className="flex items-center justify-between">
+                                        <Label>Steps</Label>
+                                        <Button type="button" variant="outline" size="sm" onClick={() => appendHowItWorks({ title: '', description: '' })}><PlusCircle className="mr-2"/>Add Step</Button>
                                     </div>
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeHowItWorks(index)}><Trash /></Button>
-                                </div>
-                            ))}
-                        </CardContent>
-                    </Card>
+                                    {howItWorksFields.map((field, index) => (
+                                        <div key={field.id} className="grid grid-cols-[1fr_auto] gap-2 items-start p-4 border rounded-md">
+                                            <div className="space-y-2">
+                                                <FormField control={form.control} name={`howItWorks.steps.${index}.title`} render={({ field }) => (
+                                                    <FormItem><FormLabel>Step {index + 1} Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                                <FormField control={form.control} name={`howItWorks.steps.${index}.description`} render={({ field }) => (
+                                                    <FormItem><FormLabel>Step {index + 1} Description</FormLabel><FormControl><Textarea {...field} rows={2} /></FormControl><FormMessage /></FormItem>
+                                                )}/>
+                                            </div>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeHowItWorks(index)}><Trash /></Button>
+                                        </div>
+                                    ))}
+                                </CardContent>
+                            </Card>
+                        </>
+                    )}
 
-                     {/* Related Products */}
+                    {layout === 'book' && (
+                        <Card>
+                            <CardHeader className="flex-row items-center justify-between">
+                                <CardTitle>Book Layout: Key Features</CardTitle>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendFeature('')}><PlusCircle className="mr-2"/>Add Feature</Button>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                {featureFields.map((field, index) => (
+                                    <div key={field.id} className="flex items-center gap-2">
+                                        <FormField control={form.control} name={`features.${index}`} render={({ field }) => (
+                                            <FormItem className="flex-grow"><FormControl><Input {...field} placeholder="e.g. Over 1000 colour photographs" /></FormControl><FormMessage /></FormItem>
+                                        )}/>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeFeature(index)}><Trash /></Button>
+                                    </div>
+                                ))}
+                                {featureFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No features added. These are displayed as bullet points.</p>}
+                            </CardContent>
+                        </Card>
+                    )}
+
+                    {(layout === 'in-depth' || layout === 'book') && (
+                        <Card>
+                            <CardHeader className="flex-row items-center justify-between">
+                                <CardTitle>Specifications</CardTitle>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {specFields.map((field, index) => (
+                                    <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                                        <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
+                                            <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="e.g. Author, Pages, Material" /></FormControl><FormMessage /></FormItem>
+                                        )}/>
+                                        <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
+                                            <FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} placeholder="e.g. Frits van Oudtshoorn, 289, Aluminium"/></FormControl><FormMessage /></FormItem>
+                                        )}/>
+                                        <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
+                                    </div>
+                                ))}
+                                {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added.</p>}
+                            </CardContent>
+                        </Card>
+                    )}
+
                     <Card>
                         <CardHeader><CardTitle>Related Products</CardTitle></CardHeader>
                         <CardContent>
@@ -278,7 +313,6 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </CardContent>
                     </Card>
 
-
                     <Button type="submit" size="lg">{product ? "Save Changes" : "Create Product"}</Button>
                 </form>
             </Form>
@@ -291,5 +325,3 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         </>
     )
 }
-
-    
