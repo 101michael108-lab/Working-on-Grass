@@ -13,7 +13,6 @@ export type Product = {
   description: string;
   category: string;
   image?: string;
-  imageHint?: string;
   sku?: string;
   brand?: string;
 };
@@ -65,7 +64,7 @@ export type SiteImage = {
 };
 
 export type MediaLibraryItem = {
-    id: string;
+    id:string;
     name: string;
     imageUrl: string;
     description?: string;

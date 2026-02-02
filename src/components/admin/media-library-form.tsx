@@ -32,7 +32,7 @@ const formSchema = z.object({
 
 interface MediaLibraryFormProps {
     mediaItem: MediaLibraryItem | null;
-    onSuccess: () => void;
+    onSuccess: (item: MediaLibraryItem) => void;
 }
 
 export function MediaLibraryForm({ mediaItem, onSuccess }: MediaLibraryFormProps) {
@@ -58,32 +58,45 @@ export function MediaLibraryForm({ mediaItem, onSuccess }: MediaLibraryFormProps
             return;
         }
 
-        const handleSave = (imageUrl?: string) => {
-            const dataToSave = {
-                name: values.name,
-                description: values.description || "",
-                imageUrl: imageUrl || mediaItem?.imageUrl,
-                uploadedAt: mediaItem?.uploadedAt || serverTimestamp(),
-            };
-
-            if (!dataToSave.imageUrl) {
+        const handleSave = async (imageUrl?: string) => {
+            const finalImageUrl = imageUrl || mediaItem?.imageUrl;
+            if (!finalImageUrl) {
                  toast({ variant: "destructive", title: "Missing Image URL", description: "Could not save media item." });
                  return;
             }
+
+            const dataToSave = {
+                name: values.name,
+                description: values.description || "",
+                imageUrl: finalImageUrl,
+                uploadedAt: mediaItem?.uploadedAt || serverTimestamp(),
+            };
 
             if (isEditing && mediaItem) {
                 const itemRef = doc(firestore, 'mediaLibrary', mediaItem.id);
                 setDocumentNonBlocking(itemRef, dataToSave, { merge: true });
                 toast({ title: "Media item updated!" });
+                const updatedItem = { ...mediaItem, ...dataToSave, imageUrl: finalImageUrl };
+                onSuccess(updatedItem);
             } else {
                 const collectionRef = collection(firestore, 'mediaLibrary');
-                addDocumentNonBlocking(collectionRef, dataToSave);
-                toast({ title: "Image uploaded to library!" });
+                try {
+                    const docRef = await addDocumentNonBlocking(collectionRef, dataToSave);
+                    toast({ title: "Image uploaded to library!" });
+                    const newItem: MediaLibraryItem = {
+                        id: docRef.id,
+                        name: dataToSave.name,
+                        imageUrl: dataToSave.imageUrl,
+                        description: dataToSave.description,
+                        uploadedAt: new Date(), 
+                    };
+                    onSuccess(newItem);
+                } catch (e) {
+                    toast({ variant: "destructive", title: "Upload failed", description: "Could not save to database." });
+                }
             }
-
             setUploadProgress(null);
-            onSuccess();
-        }
+        };
 
         if (file) {
             const fileName = `${new Date().getTime()}-${file.name}`;
@@ -101,11 +114,11 @@ export function MediaLibraryForm({ mediaItem, onSuccess }: MediaLibraryFormProps
                     setUploadProgress(null);
                 },
                 () => {
-                    getDownloadURL(uploadTask.snapshot.ref).then(handleSave);
+                    getDownloadURL(uploadTask.snapshot.ref).then(url => handleSave(url));
                 }
             );
         } else if (isEditing) {
-            handleSave();
+            await handleSave();
         }
     }
 

@@ -171,7 +171,7 @@ export default function AdminMediaPage() {
           </DialogHeader>
           <MediaLibraryForm 
             mediaItem={editingLibraryItem}
-            onSuccess={() => setUploadDialogOpen(false)}
+            onSuccess={(_item) => setUploadDialogOpen(false)}
           />
         </DialogContent>
       </Dialog>
