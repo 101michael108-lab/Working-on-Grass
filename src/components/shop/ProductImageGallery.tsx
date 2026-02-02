@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react'
@@ -131,15 +132,13 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
           <Carousel className="w-full h-full" setApi={setFullscreenApi} opts={{ startIndex: selectedIndex, loop: true }}>
             <CarouselContent className="h-full">
               {images.map((imgUrl, index) => (
-                <CarouselItem key={index} className="h-full flex items-center justify-center">
-                    <div className="relative w-full h-full">
-                        <Image src={imgUrl} alt={`${productName} - image ${index + 1}`} fill className="object-contain"/>
-                    </div>
+                <CarouselItem key={index} className="relative">
+                    <Image src={imgUrl} alt={`${productName} - image ${index + 1}`} fill className="object-contain p-4"/>
                 </CarouselItem>
               ))}
             </CarouselContent>
-            <CarouselPrevious className="absolute left-2 text-white bg-black/50 hover:bg-black/80 hover:text-white border-none h-10 w-10"/>
-            <CarouselNext className="absolute right-2 text-white bg-black/50 hover:bg-black/80 hover:text-white border-none h-10 w-10" />
+            <CarouselPrevious className="absolute left-4 text-white bg-black/50 hover:bg-black/80 hover:text-white border-none h-12 w-12"/>
+            <CarouselNext className="absolute right-4 text-white bg-black/50 hover:bg-black/80 hover:text-white border-none h-12 w-12" />
           </Carousel>
         </DialogContent>
       </Dialog>
