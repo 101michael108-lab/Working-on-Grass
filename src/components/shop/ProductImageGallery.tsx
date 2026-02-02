@@ -133,7 +133,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             <CarouselContent className="h-full">
               {images.map((imgUrl, index) => (
                 <CarouselItem key={index} className="h-full">
-                    <div className="p-1 flex aspect-square items-center justify-center h-full">
+                    <div className="relative flex items-center justify-center h-full w-full p-4">
                         <Image src={imgUrl} alt={`${productName} - image ${index + 1}`} fill className="object-contain"/>
                     </div>
                 </CarouselItem>
