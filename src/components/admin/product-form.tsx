@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Product, MediaLibraryItem } from "@/lib/types";
 import { ProductImageSelector } from './product-image-selector';
 import Image from 'next/image';
-import { Image as ImageIcon, XCircle, PlusCircle, Trash } from 'lucide-react';
+import { ImagePlus, XCircle, PlusCircle, Trash } from 'lucide-react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
@@ -63,7 +63,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
     const firestore = useFirestore();
     const { toast } = useToast();
     const [isImageSelectorOpen, setImageSelectorOpen] = React.useState(false);
-    const [selectedImageUrl, setSelectedImageUrl] = React.useState(product?.image || '');
+    const [images, setImages] = React.useState<string[]>(product?.images || []);
 
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
@@ -92,7 +92,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         const productData = { 
             ...values, 
             price: Number(values.price),
-            image: selectedImageUrl,
+            images: images,
         };
         
         if (product) {
@@ -108,7 +108,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
     }
     
     const handleImageSelected = (image: MediaLibraryItem) => {
-        setSelectedImageUrl(image.imageUrl);
+        if (!images.includes(image.imageUrl)) {
+            setImages(prev => [...prev, image.imageUrl]);
+        }
+    }
+
+    const handleRemoveImage = (url: string) => {
+        setImages(prev => prev.filter(img => img !== url));
     }
 
     return (
@@ -162,22 +168,24 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                              </Card>
                         </div>
                         <div className="lg:col-span-1 space-y-2">
-                             <Label>Product Image</Label>
-                             <Card className="overflow-hidden">
-                                 <CardContent className="p-0 aspect-square flex items-center justify-center bg-secondary">
-                                     {selectedImageUrl ? (
-                                         <Image src={selectedImageUrl} alt={form.getValues('name')} width={300} height={300} className="object-cover w-full h-full" />
-                                     ) : (
-                                        <div className="text-center text-muted-foreground p-4">
-                                            <ImageIcon className="mx-auto h-12 w-12" />
-                                            <p className="mt-2 text-sm">No image selected</p>
-                                        </div>
-                                     )}
+                             <Label>Product Images</Label>
+                             <Card>
+                                 <CardContent className="p-3">
+                                     <div className="grid grid-cols-3 gap-2">
+                                        {images.map(url => (
+                                            <div key={url} className="relative group aspect-square">
+                                                <Image src={url} alt="Product image" fill className="object-cover rounded-md" />
+                                                <Button type="button" variant="destructive" size="icon" className="absolute -top-2 -right-2 h-6 w-6 rounded-full hidden group-hover:flex" onClick={() => handleRemoveImage(url)}>
+                                                    <XCircle className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        ))}
+                                         <button type="button" onClick={() => setImageSelectorOpen(true)} className="aspect-square flex flex-col items-center justify-center rounded-md border-2 border-dashed text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+                                            <ImagePlus className="h-8 w-8"/>
+                                            <span className="text-xs mt-1">Add Image</span>
+                                        </button>
+                                     </div>
                                  </CardContent>
-                                 <CardFooter className="p-2 grid grid-cols-2 gap-2">
-                                     <Button type="button" variant="outline" className="w-full" onClick={() => setImageSelectorOpen(true)}>Choose</Button>
-                                     <Button type="button" variant="destructive" size="sm" className="w-full" disabled={!selectedImageUrl} onClick={() => setSelectedImageUrl('')}><XCircle className="mr-2"/>Remove</Button>
-                                 </CardFooter>
                              </Card>
                         </div>
                     </div>

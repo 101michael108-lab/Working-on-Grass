@@ -1,3 +1,4 @@
+
 "use client";
 
 import Image from "next/image";
@@ -37,12 +38,11 @@ export default function CartPage() {
             {cartItems.map(({ product, quantity }) => (
               <Card key={product.id} className="flex items-center p-4">
                 <Image
-                  src={product.image || `https://picsum.photos/seed/${product.id}/100/100`}
+                  src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/100/100`}
                   alt={product.name}
                   width={100}
                   height={100}
                   className="rounded-md object-contain aspect-square bg-secondary/50"
-                  data-ai-hint={product.imageHint}
                 />
                 <div className="ml-4 flex-grow">
                   <h3 className="font-semibold">{product.name}</h3>

@@ -2,7 +2,6 @@
 "use client";
 
 import { useState } from 'react';
-import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,6 +9,7 @@ import { Minus, Plus, ShoppingCart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
+import { ProductImageGallery } from '../ProductImageGallery';
 
 export default function StandardLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
   const [quantity, setQuantity] = useState(1);
@@ -23,15 +23,7 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
     <div className="bg-background">
       <div className="container py-12 md:py-20">
         <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-start">
-            <div className="bg-secondary/30 rounded-lg flex items-center justify-center p-8 aspect-square">
-                <Image
-                    src={product.image || `https://picsum.photos/seed/${product.id}/500/500`}
-                    alt={product.name}
-                    width={500}
-                    height={500}
-                    className="object-contain w-full h-full"
-                />
-            </div>
+            <ProductImageGallery images={product.images || []} productName={product.name} />
             <div className="space-y-4">
                  <Badge variant="outline">{product.category}</Badge>
                  <h1 className="text-4xl md:text-5xl font-bold">{product.name}</h1>

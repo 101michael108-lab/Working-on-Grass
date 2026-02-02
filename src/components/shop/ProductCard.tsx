@@ -15,7 +15,7 @@ export default function ProductCard({ product }: { product: Product }) {
     <Card className="flex flex-col group overflow-hidden transition-shadow hover:shadow-lg h-full">
       <Link href={`/shop/${product.id}`} className="block relative aspect-[4/3] bg-secondary overflow-hidden border-b">
         <Image
-          src={product.image || `https://picsum.photos/seed/${product.id}/400/300`}
+          src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/400/300`}
           alt={product.name}
           fill
           className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-300"

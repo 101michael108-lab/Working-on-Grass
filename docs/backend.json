@@ -65,10 +65,13 @@
           "type": "number",
           "description": "Price of the product."
         },
-        "image": {
-          "type": "string",
-          "description": "URL of the product image.",
-          "format": "uri"
+        "images": {
+          "type": "array",
+          "description": "URLs of the product images.",
+          "items": {
+            "type": "string",
+            "format": "uri"
+          }
         },
         "category": {
           "type": "string",

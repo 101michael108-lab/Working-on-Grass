@@ -74,7 +74,7 @@ export default function ProductPage() {
         '@type': 'Product',
         name: product.name,
         description: product.description,
-        image: product.image,
+        image: product.images?.[0],
         sku: product.sku || product.id,
         brand: {
         '@type': 'Brand',

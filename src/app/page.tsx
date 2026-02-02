@@ -181,12 +181,11 @@ export default function Home() {
                                <div className="md:w-1/2 p-6 flex items-center justify-center bg-secondary/30">
                                  <Link href={`/shop/${featuredProduct.id}`}>
                                     <Image 
-                                        src={featuredProduct.image || `https://picsum.photos/seed/${featuredProduct.id}/400/400`} 
+                                        src={featuredProduct.images?.[0] || `https://picsum.photos/seed/${featuredProduct.id}/400/400`} 
                                         alt={featuredProduct.name}
                                         width={400}
                                         height={400}
                                         className="object-contain group-hover:scale-105 transition-transform"
-                                        data-ai-hint={featuredProduct.imageHint}
                                     />
                                   </Link>
                                </div>
