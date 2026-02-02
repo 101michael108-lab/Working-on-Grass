@@ -37,7 +37,6 @@ export type Product = {
       steps: HowItWorksStep[];
   };
   authorityStatement?: string;
-  relatedProductIds?: string[];
 };
 
 

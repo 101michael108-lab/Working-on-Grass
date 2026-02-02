@@ -55,7 +55,6 @@ const formSchema = z.object({
           description: z.string().min(1, "Description is required"),
       })).optional(),
   }).optional(),
-  relatedProductIds: z.string().optional(),
 });
 
 
@@ -87,7 +86,6 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             specifications: product?.specifications || [],
             features: product?.features || [],
             howItWorks: product?.howItWorks || { headline: '', steps: []},
-            relatedProductIds: product?.relatedProductIds?.join(', ') || '',
         },
     });
 
@@ -102,7 +100,6 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             ...values, 
             price: Number(values.price),
             image: selectedImageUrl,
-            relatedProductIds: values.relatedProductIds?.split(',').map(s => s.trim()).filter(Boolean) || [],
         };
         
         if (product) {
@@ -299,19 +296,6 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                             </CardContent>
                         </Card>
                     )}
-
-                    <Card>
-                        <CardHeader><CardTitle>Related Products</CardTitle></CardHeader>
-                        <CardContent>
-                            <FormField name="relatedProductIds" control={form.control} render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Related Product IDs</FormLabel>
-                                    <FormControl><Textarea {...field} placeholder="Enter product IDs, separated by commas" rows={2}/></FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-                        </CardContent>
-                    </Card>
 
                     <Button type="submit" size="lg">{product ? "Save Changes" : "Create Product"}</Button>
                 </form>

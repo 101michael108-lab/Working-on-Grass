@@ -5,7 +5,7 @@ import React from 'react';
 import ProductPageClient from '@/components/shop/product-details';
 import { notFound, useParams } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
-import { doc, collection, query, where, documentId } from 'firebase/firestore';
+import { doc, collection, query, where, documentId, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -48,9 +48,14 @@ export default function ProductPage() {
     const { data: product, isLoading: isLoadingProduct } = useDoc<Product>(productRef);
     
     const relatedProductsQuery = useMemoFirebase(() => {
-        if (!product?.relatedProductIds || product.relatedProductIds.length === 0) return null;
-        return query(collection(firestore, 'products'), where(documentId(), 'in', product.relatedProductIds));
-    }, [product]);
+        if (!product) return null;
+        return query(
+            collection(firestore, 'products'), 
+            where('category', '==', product.category),
+            where(documentId(), '!=', productId),
+            limit(3)
+        );
+    }, [product, productId, firestore]);
 
     const { data: relatedProducts, isLoading: isLoadingRelated } = useCollection<Product>(relatedProductsQuery);
 

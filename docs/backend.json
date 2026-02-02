@@ -129,11 +129,6 @@
         "authorityStatement": {
           "type": "string",
           "description": "A statement to build trust and authority."
-        },
-        "relatedProductIds": {
-          "type": "array",
-          "description": "A list of IDs for related products.",
-          "items": { "type": "string" }
         }
       },
       "required": [
