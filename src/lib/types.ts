@@ -1,9 +1,20 @@
 
+
 export type Service = {
   title: string;
   description: string;
   cta: string;
   whoIsItFor: string;
+};
+
+export type Specification = {
+  feature: string;
+  description: string;
+};
+
+export type HowItWorksStep = {
+    title: string;
+    description: string;
 };
 
 export type Product = {
@@ -15,7 +26,18 @@ export type Product = {
   image?: string;
   sku?: string;
   brand?: string;
+  // new fields
+  productType?: 'e-commerce' | 'inquiry';
+  valueProposition?: string;
+  specifications?: Specification[];
+  howItWorks?: {
+      headline: string;
+      steps: HowItWorksStep[];
+  };
+  authorityStatement?: string;
+  relatedProductIds?: string[];
 };
+
 
 export type CartItem = {
   product: Product;
@@ -70,3 +92,5 @@ export type MediaLibraryItem = {
     description?: string;
     uploadedAt: any; // Firestore Timestamp
 };
+
+    

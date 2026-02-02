@@ -1,198 +1,158 @@
 
-'use client';
+"use client";
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, CheckCircle } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
+import RelatedProducts from './RelatedProducts';
 
-const guideToGrassesFeatures = [
-    "Descriptions and illustration of 320 common and important grasses in southern Africa.",
-    "An easy-to-use identification key.",
-    "More than 1 000 excellent colour photographs.",
-    "Twelve introductory chapter on the grass family.",
-    "Common names of grasses in various languages.",
-    "Icons to provide ecological and morphological information at a glance.",
-];
-
-const veldManagementFeatures = [
-    "Simplifies a rather technical subject by including more than 380 photographs and illustrations.",
-    "Uses easy understandable language.",
-    "Contains four chapters: an introduction to veld management, the natural resources involved, basic ecological principles, and management practices."
-];
-
-
-export default function ProductDetailsClient({ product }: { product: Product }) {
+export default function ProductPageClient({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
 
   const handleQuantityChange = (amount: number) => {
     setQuantity(prev => Math.max(1, prev + amount));
   };
-
-  const isDPM = product.name.toLowerCase().includes('disc pasture meter');
-  const isGuideToGrasses = product.name.toLowerCase().includes('guide to grasses');
-  const isVeldManagementBook = product.name.toLowerCase().includes('veld management');
-  const isBook = isGuideToGrasses || isVeldManagementBook;
+  
+  const isECommerce = product.productType === 'e-commerce';
 
   return (
-    <div className="container py-12 md:py-20">
-      <div className="grid md:grid-cols-2 gap-8 md:gap-12">
-        {/* Image Column */}
-        <div className="bg-secondary/50 rounded-lg flex items-center justify-center p-8 aspect-square">
-          <Image
-            src={product.image || `https://picsum.photos/seed/${product.id}/500/500`}
-            alt={product.name}
-            width={500}
-            height={500}
-            className="object-contain w-full h-full"
-            data-ai-hint={product.imageHint}
-          />
+    <div className="bg-background">
+      {/* 1. Hero Section */}
+      <section className="bg-secondary/30">
+        <div className="container py-12 md:py-20 grid md:grid-cols-2 gap-8 md:gap-12 items-center">
+            <div className="bg-white rounded-lg flex items-center justify-center p-8 aspect-square shadow-md">
+                <Image
+                    src={product.image || `https://picsum.photos/seed/${product.id}/500/500`}
+                    alt={product.name}
+                    width={500}
+                    height={500}
+                    className="object-contain w-full h-full"
+                />
+            </div>
+            <div className="space-y-4">
+                 <Badge variant="outline">{product.category}</Badge>
+                 <h1 className="text-4xl md:text-5xl font-bold">{product.name}</h1>
+                 {product.valueProposition && <p className="text-lg text-muted-foreground">{product.valueProposition}</p>}
+                
+                {isECommerce ? (
+                    <div className="mt-8 bg-background border rounded-lg p-4">
+                        <p className="text-3xl font-bold text-accent mb-4">R{product.price.toFixed(2)}</p>
+                        <div className="flex items-center gap-4">
+                            <div className="flex items-center border rounded-md">
+                                <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)}><Minus className="h-4 w-4" /></Button>
+                                <Input type="number" className="w-16 text-center border-0 shadow-none focus-visible:ring-0" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                                <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)}><Plus className="h-4 w-4" /></Button>
+                            </div>
+                            <Button size="lg" className="flex-grow bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, quantity)}>
+                                <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                            </Button>
+                        </div>
+                    </div>
+                ) : (
+                     <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                        <Button size="lg" asChild><Link href={`/contact?service=Pricing Inquiry: ${product.name}`}>Request Pricing</Link></Button>
+                        {product.howItWorks && <Button size="lg" variant="outline" asChild><Link href="#how-it-works">Learn How It Works</Link></Button>}
+                    </div>
+                )}
+            </div>
         </div>
+      </section>
 
-        {/* Details Column */}
-        <div>
-          <Badge variant="outline" className="mb-2">{product.category}</Badge>
-          <h1 className="text-3xl md:text-4xl font-bold">{product.name}</h1>
-          
-          <div className="mt-4 flex items-baseline gap-4">
-            <p className="text-3xl font-bold text-accent">
-              R{product.price.toFixed(2)}
+      {/* 2. Problem / Benefit Section */}
+      <section className="py-16 md:py-24">
+        <div className="container max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold">Why the {product.name} Matters</h2>
+            <p className="mt-4 text-lg text-muted-foreground">{product.description}</p>
+        </div>
+      </section>
+
+      {/* 3. How It Works Section */}
+      {product.howItWorks && product.howItWorks.steps && product.howItWorks.steps.length > 0 && (
+        <section id="how-it-works" className="py-16 md:py-24 bg-secondary/30">
+            <div className="container">
+                <div className="max-w-4xl mx-auto text-center mb-12">
+                     <h2 className="text-3xl font-bold">{product.howItWorks.headline || "How It Works"}</h2>
+                </div>
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                   {product.howItWorks.steps.map((step, index) => (
+                     <div key={index} className="flex gap-4">
+                        <div className="flex flex-col items-center">
+                           <div className="flex items-center justify-center w-10 h-10 rounded-full bg-primary text-primary-foreground font-bold">{index + 1}</div>
+                           {index < product.howItWorks!.steps!.length - 1 && <div className="w-px h-full bg-border mt-2"></div>}
+                        </div>
+                        <div>
+                           <h3 className="font-semibold text-lg">{step.title}</h3>
+                           <p className="mt-1 text-muted-foreground">{step.description}</p>
+                        </div>
+                     </div>
+                   ))}
+                </div>
+            </div>
+        </section>
+      )}
+
+      {/* 4. Technical Details Section */}
+      {product.specifications && product.specifications.length > 0 && (
+         <section className="py-16 md:py-24">
+            <div className="container max-w-4xl mx-auto">
+                 <h2 className="text-3xl font-bold text-center mb-8">Technical Information</h2>
+                 <div className="border rounded-lg overflow-hidden">
+                    <Table>
+                        <TableBody>
+                            {product.specifications.map((spec, index) => (
+                                <TableRow key={index} className={index % 2 === 0 ? 'bg-secondary/30' : ''}>
+                                    <TableCell className="font-semibold">{spec.feature}</TableCell>
+                                    <TableCell>{spec.description}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                 </div>
+            </div>
+        </section>
+      )}
+      
+      {/* 5. Authority Section */}
+      {product.authorityStatement && (
+        <section className="bg-secondary/30">
+            <div className="container py-12 text-center">
+                 <blockquote className="text-xl italic text-foreground max-w-3xl mx-auto">
+                    "{product.authorityStatement}"
+                </blockquote>
+            </div>
+        </section>
+      )}
+
+      {/* 6. Repeated CTA */}
+       <section className="py-16 md:py-24 border-t">
+          <div className="container text-center">
+            <h2 className="text-3xl font-bold">Ready to improve your land management?</h2>
+             <p className="mt-2 max-w-2xl mx-auto text-muted-foreground">
+                {isECommerce ? "Get yours today and start making data-driven decisions." : "Contact us for pricing and expert advice on how to use this tool effectively."}
             </p>
-            {product.sku && <p className="text-sm text-muted-foreground">SKU: {product.sku}</p>}
+            <div className="mt-8">
+               {isECommerce ? (
+                 <Button size="lg" onClick={() => addToCart(product, quantity)}><ShoppingCart className="mr-2" /> Add to Cart</Button>
+               ) : (
+                 <Button size="lg" asChild><Link href={`/contact?service=Pricing Inquiry: ${product.name}`}>Request Pricing & Consultation</Link></Button>
+               )}
+            </div>
           </div>
+      </section>
 
-          <div className="mt-6 prose text-muted-foreground max-w-none">
-            <p>{product.description}</p>
-          </div>
-          
-          {/* Add to Cart Section */}
-          <div className="mt-8 bg-background/50 border rounded-lg p-4">
-              <div className="flex items-center gap-4">
-              <div className="flex items-center border rounded-md">
-                  <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)}>
-                      <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                      type="number"
-                      className="w-16 text-center border-0 shadow-none focus-visible:ring-0"
-                      value={quantity}
-                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  />
-                  <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)}>
-                      <Plus className="h-4 w-4" />
-                  </Button>
-              </div>
-              <Button
-                  size="lg"
-                  className="flex-grow bg-accent text-accent-foreground hover:bg-accent/90"
-                  onClick={() => addToCart(product, quantity)}
-              >
-                  <ShoppingCart className="mr-2 h-5 w-5" /> 
-                  Add to Cart
-              </Button>
-              </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detailed Info Tabs */}
-      <div className="mt-16">
-        <Tabs defaultValue="details" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-none">
-                <TabsTrigger value="details">Product Details</TabsTrigger>
-                {isDPM && <TabsTrigger value="how-it-works">How It Works</TabsTrigger>}
-                {isDPM && <TabsTrigger value="how-to-calculate">Calculating Biomass</TabsTrigger>}
-                {isBook && <TabsTrigger value="author">About the Author</TabsTrigger>}
-            </TabsList>
-            <TabsContent value="details" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
-                <h3 className="text-foreground">
-                    {isBook ? "Book Details & Features" : "Full Description"}
-                </h3>
-                
-                {isGuideToGrasses && (
-                    <>
-                        <p>Guide to grasses of Southern Africa is the ultimate photographic guide to grasses in southern Africa.</p>
-                        <ul className='not-prose list-none p-0'>
-                            {guideToGrassesFeatures.map((feature, i) => (
-                                <li key={i} className="flex items-start gap-3 mt-2"><CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" /><span>{feature}</span></li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-
-                {isVeldManagementBook && (
-                     <>
-                        <p>Veld management – principles and practices attempts to simplify a rather technical subject by including more than 380 photographs and illustrations and using easy understandable language.</p>
-                        <ul className='not-prose list-none p-0'>
-                            {veldManagementFeatures.map((feature, i) => (
-                                <li key={i} className="flex items-start gap-3 mt-2"><CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" /><span>{feature}</span></li>
-                            ))}
-                        </ul>
-                    </>
-                )}
-                
-                {!isBook && <p>{product.description}</p>}
-
-                 <table className="mt-6">
-                    <tbody>
-                        {isBook && (
-                             <>
-                                <tr><td className="font-semibold text-foreground pr-4 py-1">Author</td><td className='py-1'>Frits van Oudtshoorn</td></tr>
-                                <tr><td className="font-semibold text-foreground pr-4 py-1">Publisher</td><td className='py-1'>Briza publications</td></tr>
-                                {isGuideToGrasses && <tr><td className="font-semibold text-foreground pr-4 py-1">Pages</td><td className='py-1'>289</td></tr>}
-                                {isVeldManagementBook && <tr><td className="font-semibold text-foreground pr-4 py-1">Pages</td><td className='py-1'>256</td></tr>}
-                                <tr><td className="font-semibold text-foreground pr-4 py-1">Cover</td><td className='py-1'>Soft cover</td></tr>
-                            </>
-                        )}
-                        <tr>
-                            <td className="font-semibold text-foreground pr-4 py-1">Category</td>
-                            <td className='py-1'>{product.category}</td>
-                        </tr>
-                        {product.brand && (
-                             <tr>
-                                <td className="font-semibold text-foreground pr-4 py-1">Brand</td>
-                                <td className='py-1'>{product.brand}</td>
-                            </tr>
-                        )}
-                        {product.sku && (
-                             <tr>
-                                <td className="font-semibold text-foreground pr-4 py-1">SKU</td>
-                                <td className='py-1'>{product.sku}</td>
-                            </tr>
-                        )}
-                    </tbody>
-                 </table>
-                 <p className="mt-4">Contact us for more info or quotations.</p>
-            </TabsContent>
-            {isDPM && (
-                 <TabsContent value="how-it-works" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
-                    <h3 className="text-foreground">How The Disc Pasture Meter Works</h3>
-                    <p>The DPM consists of a disc attached to a tube which slides over a rod fitted with measurements in centimetre (see illustration). The disc and tube unit are dropped onto the grass sward with the rod placed vertically to the ground. The height (in centimetres) at which the disc settles is then recorded where the rod meets with the upper fringe of the tube. At least fifty such recordings are made at one sample site after which the average (in cm) is calculated. Recordings are usually done on a straight transect at one-step or one-meter intervals.</p>
-                    <p>Contact us for more info or quotations.</p>
-                 </TabsContent>
-            )}
-             {isDPM && (
-                 <TabsContent value="how-to-calculate" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
-                    <h3 className="text-foreground">How Biomass is Determined</h3>
-                    <p>Grass biomass, or standing crop, in kilogram dry grass per hectare (kg/ha), is then calculated by using an equation. Various equations are developed by pasture scientists through calibrating the DPM for certain grassland and savanna regions. These equations are supplied with the instrument or can be downloaded from our resources page.</p>
-                    <p>Contact us for more info or quotations.</p>
-                 </TabsContent>
-            )}
-            {isBook && (
-                 <TabsContent value="author" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
-                    <h3 className="text-foreground">About the Author: Frits van Oudtshoorn</h3>
-                    <p>Frits van Oudtshoorn is a renowned grassland ecologist and land-use specialist with decades of field experience across Southern Africa. His publications are considered essential resources for farmers, conservationists, and students, blending deep scientific knowledge with practical, on-the-ground application.</p>
-                 </TabsContent>
-            )}
-        </Tabs>
-      </div>
+      {/* 7. Related Resources / Products */}
+      <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
 
     </div>
   );
 }
+
+    

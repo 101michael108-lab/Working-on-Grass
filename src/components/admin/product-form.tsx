@@ -3,7 +3,7 @@
 
 import React from 'react';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import { useFirestore } from "@/firebase";
 import { collection, doc } from "firebase/firestore";
@@ -24,8 +24,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { Product, MediaLibraryItem } from "@/lib/types";
 import { ProductImageSelector } from './product-image-selector';
 import Image from 'next/image';
-import { Image as ImageIcon, XCircle } from 'lucide-react';
-import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Image as ImageIcon, XCircle, PlusCircle, Trash } from 'lucide-react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
@@ -35,6 +35,21 @@ const formSchema = z.object({
   category: z.string().min(2, "Category is required"),
   sku: z.string().optional(),
   brand: z.string().optional(),
+  productType: z.enum(['e-commerce', 'inquiry']),
+  valueProposition: z.string().optional(),
+  authorityStatement: z.string().optional(),
+  specifications: z.array(z.object({
+    feature: z.string().min(1, "Feature is required"),
+    description: z.string().min(1, "Description is required"),
+  })).optional(),
+  howItWorks: z.object({
+      headline: z.string().optional(),
+      steps: z.array(z.object({
+          title: z.string().min(1, "Title is required"),
+          description: z.string().min(1, "Description is required"),
+      })).optional(),
+  }).optional(),
+  relatedProductIds: z.string().optional(),
 });
 
 const productCategories = ["Measurement & Tools", "Books & Field Guides", "Seeds & Pasture Products", "Online Courses"];
@@ -59,7 +74,22 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             category: product?.category || "Measurement & Tools",
             sku: product?.sku || "",
             brand: product?.brand || "",
+            productType: product?.productType || 'e-commerce',
+            valueProposition: product?.valueProposition || "",
+            authorityStatement: product?.authorityStatement || "",
+            specifications: product?.specifications || [],
+            howItWorks: product?.howItWorks || { headline: '', steps: []},
+            relatedProductIds: product?.relatedProductIds?.join(', ') || '',
         },
+    });
+
+    const { fields: specFields, append: appendSpec, remove: removeSpec } = useFieldArray({
+        control: form.control,
+        name: "specifications"
+    });
+     const { fields: howItWorksFields, append: appendHowItWorks, remove: removeHowItWorks } = useFieldArray({
+        control: form.control,
+        name: "howItWorks.steps"
     });
 
     async function onSubmit(values: z.infer<typeof formSchema>) {
@@ -67,6 +97,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             ...values, 
             price: Number(values.price),
             image: selectedImageUrl,
+            relatedProductIds: values.relatedProductIds?.split(',').map(s => s.trim()).filter(Boolean) || [],
         };
         
         if (product) {
@@ -88,48 +119,54 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
     return (
         <>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <div className="md:col-span-2 space-y-4">
-                            <FormField name="name" control={form.control} render={({ field }) => (
-                                <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                            <FormField name="description" control={form.control} render={({ field }) => (
-                                <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>
-                            )} />
-                             <div className="grid grid-cols-2 gap-4">
-                                <FormField name="price" control={form.control} render={({ field }) => (
-                                    <FormItem><FormLabel>Price</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField name="category" control={form.control} render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Category</FormLabel>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                    <FormControl>
-                                        <SelectTrigger>
-                                        <SelectValue placeholder="Select a category" />
-                                        </SelectTrigger>
-                                    </FormControl>
-                                    <SelectContent>
-                                        {productCategories.map(cat => (
-                                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                    </Select>
-                                    <FormMessage />
-                                </FormItem>
-                                )} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <FormField name="sku" control={form.control} render={({ field }) => (
-                                    <FormItem><FormLabel>SKU (Optional)</FormLabel><FormControl><Input placeholder="DPM-001" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                                <FormField name="brand" control={form.control} render={({ field }) => (
-                                    <FormItem><FormLabel>Brand (Optional)</FormLabel><FormControl><Input placeholder="Working on Grass" {...field} /></FormControl><FormMessage /></FormItem>
-                                )} />
-                            </div>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                   {/* Main Details and Image */}
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                        <div className="lg:col-span-2 space-y-6">
+                             <Card>
+                                <CardHeader><CardTitle>Core Details</CardTitle></CardHeader>
+                                <CardContent className="space-y-4">
+                                     <FormField name="name" control={form.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                    <FormField name="description" control={form.control} render={({ field }) => (
+                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>
+                                    )} />
+                                     <div className="grid grid-cols-2 gap-4">
+                                        <FormField name="price" control={form.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Price</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="category" control={form.control} render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Category</FormLabel>
+                                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                            <FormControl>
+                                                <SelectTrigger>
+                                                <SelectValue placeholder="Select a category" />
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {productCategories.map(cat => (
+                                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                            </Select>
+                                            <FormMessage />
+                                        </FormItem>
+                                        )} />
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <FormField name="sku" control={form.control} render={({ field }) => (
+                                            <FormItem><FormLabel>SKU (Optional)</FormLabel><FormControl><Input placeholder="DPM-001" {...field} /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="brand" control={form.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Brand (Optional)</FormLabel><FormControl><Input placeholder="Working on Grass" {...field} /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                    </div>
+                                </CardContent>
+                             </Card>
                         </div>
-                        <div className="md:col-span-1 space-y-2">
+                        <div className="lg:col-span-1 space-y-2">
                              <Label>Product Image</Label>
                              <Card className="overflow-hidden">
                                  <CardContent className="p-0 aspect-square flex items-center justify-center bg-secondary">
@@ -150,7 +187,99 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </div>
                     </div>
 
-                    <Button type="submit">{product ? "Save Changes" : "Create Product"}</Button>
+                    {/* Page Content & Marketing */}
+                    <Card>
+                        <CardHeader><CardTitle>Page Content & SEO</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <FormField name="productType" control={form.control} render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Product Type</FormLabel>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                    <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                                    <SelectContent>
+                                        <SelectItem value="e-commerce">E-commerce (Add to Cart)</SelectItem>
+                                        <SelectItem value="inquiry">Inquiry (Request Pricing)</SelectItem>
+                                    </SelectContent>
+                                    </Select>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                             <FormField name="valueProposition" control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Value Proposition</FormLabel><FormControl><Input {...field} placeholder="e.g. Accurately measure grass biomass..." /></FormControl><FormMessage /></FormItem>
+                            )} />
+                             <FormField name="authorityStatement" control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Authority Statement</FormLabel><FormControl><Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." /></FormControl><FormMessage /></FormItem>
+                            )} />
+                        </CardContent>
+                    </Card>
+
+                    {/* Specifications */}
+                    <Card>
+                        <CardHeader className="flex-row items-center justify-between">
+                            <CardTitle>Specifications</CardTitle>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {specFields.map((field, index) => (
+                                <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                                    <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
+                                        <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="Material" /></FormControl><FormMessage /></FormItem>
+                                    )}/>
+                                     <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
+                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} placeholder="Aluminium"/></FormControl><FormMessage /></FormItem>
+                                    )}/>
+                                    <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
+                                </div>
+                            ))}
+                            {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added.</p>}
+                        </CardContent>
+                    </Card>
+
+                    {/* How It Works */}
+                    <Card>
+                        <CardHeader className="flex-row items-center justify-between">
+                             <div className="space-y-1.5"><CardTitle>How It Works Section</CardTitle></div>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                             <FormField name="howItWorks.headline" control={form.control} render={({ field }) => (
+                                <FormItem><FormLabel>Headline</FormLabel><FormControl><Input {...field} placeholder="How The DPM Works"/></FormControl><FormMessage /></FormItem>
+                            )} />
+                            <div className="flex items-center justify-between">
+                                <Label>Steps</Label>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendHowItWorks({ title: '', description: '' })}><PlusCircle className="mr-2"/>Add Step</Button>
+                            </div>
+                            {howItWorksFields.map((field, index) => (
+                                <div key={field.id} className="grid grid-cols-[1fr_auto] gap-2 items-start p-4 border rounded-md">
+                                    <div className="space-y-2">
+                                        <FormField control={form.control} name={`howItWorks.steps.${index}.title`} render={({ field }) => (
+                                            <FormItem><FormLabel>Step {index + 1} Title</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                                        )}/>
+                                        <FormField control={form.control} name={`howItWorks.steps.${index}.description`} render={({ field }) => (
+                                            <FormItem><FormLabel>Step {index + 1} Description</FormLabel><FormControl><Textarea {...field} rows={2} /></FormControl><FormMessage /></FormItem>
+                                        )}/>
+                                    </div>
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeHowItWorks(index)}><Trash /></Button>
+                                </div>
+                            ))}
+                        </CardContent>
+                    </Card>
+
+                     {/* Related Products */}
+                    <Card>
+                        <CardHeader><CardTitle>Related Products</CardTitle></CardHeader>
+                        <CardContent>
+                            <FormField name="relatedProductIds" control={form.control} render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel>Related Product IDs</FormLabel>
+                                    <FormControl><Textarea {...field} placeholder="Enter product IDs, separated by commas" rows={2}/></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )} />
+                        </CardContent>
+                    </Card>
+
+
+                    <Button type="submit" size="lg">{product ? "Save Changes" : "Create Product"}</Button>
                 </form>
             </Form>
 
@@ -162,3 +291,5 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         </>
     )
 }
+
+    
