@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useMedia } from '@/context/media-context';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function AboutPage() {
@@ -27,11 +26,26 @@ export default function AboutPage() {
       <div className="container py-12 md:py-20 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">About Working on Grass</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Science-based grassland and veld management, grounded in decades of practical experience.
+          An environmental and agricultural services company with a passion for sustainable and regenerative land use, based in South Africa.
         </p>
       </div>
 
-      {/* Main Content Section */}
+      {/* Our Company Section */}
+      <div className="py-16 md:py-24">
+        <div className="container max-w-4xl mx-auto text-center">
+          <h2 className="text-3xl font-bold text-foreground mb-6">Our Company</h2>
+          <div className="text-lg text-muted-foreground space-y-4 text-left md:text-center">
+            <p>
+              Working on Grass is an environmental and agricultural services company with a passion for sustainable and regenerative land use. It is based in South Africa and was started by well-known author and environmentalist Frits van Oudtshoorn.
+            </p>
+            <p>
+              We offer a range of products and services related to environmental management. These include advisory services, seed, ornamental grasses, training and various other products. Working on grass is affiliated with Africa Land-Use Training, which is an accredited training provider in South Africa since 2007.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Meet the Founder Section */}
       <div className="bg-secondary/30 py-16 md:py-24">
         <div className="container">
           <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
