@@ -1,6 +1,7 @@
 
 "use client";
 
+import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -8,8 +9,17 @@ import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
+import { useCart } from '@/context/cart-context';
+import { Input } from '@/components/ui/input';
+import { Minus, Plus, ShoppingCart } from 'lucide-react';
 
 export default function InDepthLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
+  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
+
+  const handleQuantityChange = (amount: number) => {
+    setQuantity(prev => Math.max(1, prev + amount));
+  };
 
   return (
     <div className="bg-background">
@@ -30,9 +40,18 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                  <h1 className="text-4xl md:text-5xl font-bold">{product.name}</h1>
                  {product.valueProposition && <p className="text-lg text-muted-foreground">{product.valueProposition}</p>}
                 
-                 <div className="mt-8 flex flex-col sm:flex-row gap-4">
-                    <Button size="lg" asChild><Link href={`/contact?service=Pricing Inquiry: ${product.name}`}>Request Pricing</Link></Button>
-                    {product.howItWorks && product.howItWorks.steps && product.howItWorks.steps.length > 0 && <Button size="lg" variant="outline" asChild><Link href="#how-it-works">Learn How It Works</Link></Button>}
+                 <div className="mt-8 bg-background border rounded-lg p-4">
+                    <p className="text-3xl font-bold text-accent mb-4">R{product.price.toFixed(2)}</p>
+                    <div className="flex items-center gap-4">
+                        <div className="flex items-center border rounded-md">
+                            <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)}><Minus className="h-4 w-4" /></Button>
+                            <Input type="number" className="w-16 text-center border-0 shadow-none focus-visible:ring-0" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                            <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)}><Plus className="h-4 w-4" /></Button>
+                        </div>
+                        <Button size="lg" className="flex-grow bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, quantity)}>
+                            <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                        </Button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -108,10 +127,12 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
           <div className="container text-center">
             <h2 className="text-3xl font-bold">Ready to improve your land management?</h2>
              <p className="mt-2 max-w-2xl mx-auto text-muted-foreground">
-                Contact us for pricing and expert advice on how to use this tool effectively.
+                Add the {product.name} to your cart to get started.
             </p>
             <div className="mt-8">
-               <Button size="lg" asChild><Link href={`/contact?service=Pricing Inquiry: ${product.name}`}>Request Pricing & Consultation</Link></Button>
+                <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => addToCart(product, quantity)}>
+                    <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                </Button>
             </div>
           </div>
       </section>
