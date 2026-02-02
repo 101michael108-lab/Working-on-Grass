@@ -1,3 +1,4 @@
+
 "use client"
 
 import React, { useState, useEffect, useCallback } from 'react'
@@ -85,7 +86,9 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                     alt={`${productName} - image ${index + 1}`}
                     width={600}
                     height={600}
-                    className="object-contain h-full w-full group-hover:scale-105 transition-transform"
+                    priority={index === 0}
+                    sizes="(max-width: 768px) 100vw, 50vw"
+                    className="object-cover h-full w-full group-hover:scale-105 transition-transform"
                   />
                 </CardContent>
               </Card>

@@ -18,6 +18,7 @@ export default function ProductCard({ product }: { product: Product }) {
           src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/400/300`}
           alt={product.name}
           fill
+          sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
           className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-300"
         />
       </Link>
