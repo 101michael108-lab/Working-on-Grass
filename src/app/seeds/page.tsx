@@ -1,3 +1,4 @@
+
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -152,7 +153,7 @@ export default function SeedsPage() {
       <div className="grid md:grid-cols-5 gap-12">
         <div className="md:col-span-2">
             <h2 className="text-2xl font-bold mb-6">Our Seed Categories</h2>
-             <Accordion type="single" collapsible className="w-full">
+             <Accordion type="single" collapsible className="w-full" defaultValue="Grasses">
                 {seedCategories.map((category: SeedCategory) => {
                     const Icon = categoryIcons[category.name] || Sprout;
                     return (
@@ -164,9 +165,16 @@ export default function SeedsPage() {
                                 </div>
                             </AccordionTrigger>
                             <AccordionContent>
-                                <ul className="list-disc pl-6 text-muted-foreground space-y-1">
-                                    {category.types.map(type => <li key={type}>{type}</li>)}
-                                </ul>
+                                <div className="space-y-4">
+                                {category.subCategories.map(sub => (
+                                    <div key={sub.name}>
+                                        <h4 className="font-semibold text-foreground/90">{sub.name}</h4>
+                                        <p className="text-muted-foreground text-sm">
+                                            {sub.types.join(', ')}
+                                        </p>
+                                    </div>
+                                ))}
+                                </div>
                             </AccordionContent>
                         </AccordionItem>
                     )

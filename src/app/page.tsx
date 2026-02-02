@@ -273,7 +273,7 @@ export default function Home() {
               <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
                   <div className="text-center sm:text-left">
                       <Badge>Coming Soon</Badge>
-                      <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">The Grass Guide App</h2>
+                      <h2 className="mt-2 text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter">GrassPro</h2>
                       <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto sm:mx-0">
                           Your veld management partner, in your pocket. Identify grasses, calculate biomass, and make informed decisions on the go.
                       </p>

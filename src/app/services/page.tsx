@@ -3,13 +3,14 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
-import { services } from "@/lib/static-data";
+import { services, consultationServices } from "@/lib/static-data";
 import { useMedia } from "@/context/media-context";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ConsultationForm } from "@/components/consultation-form";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Check } from "lucide-react";
 
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -23,17 +24,9 @@ export default function ServicesPage() {
     setIsModalOpen(true);
   };
 
-  const InlineConsultationBlock = () => (
-    <div className="bg-secondary/50 rounded-lg p-8 my-12 text-center">
-      <h3 className="text-2xl font-bold">Not sure which service applies to your land?</h3>
-      <p className="mt-2 text-muted-foreground max-w-xl mx-auto">Get expert guidance before making decisions. A short consultation helps determine the most appropriate assessment or management approach.</p>
-      <Button className="mt-4" onClick={() => handleRequestConsultation()}>Request Expert Guidance</Button>
-    </div>
-  );
-
   return (
     <>
-      <div className="container pt-12 md:pt-20">
+      <div className="container pt-12 md:pb-20">
         {/* Hero Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>
@@ -66,7 +59,7 @@ export default function ServicesPage() {
 
         {/* Services Grid */}
         <div id="services" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {services.slice(0, 3).map((service) => (
+          {services.map((service) => (
             <Card key={service.title} className="flex flex-col">
               <CardHeader>
                 <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{service.whoIsItFor}</p>
@@ -84,26 +77,23 @@ export default function ServicesPage() {
           ))}
         </div>
 
-        <InlineConsultationBlock />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-           {services.slice(3).map((service) => (
-            <Card key={service.title} className="flex flex-col">
-              <CardHeader>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{service.whoIsItFor}</p>
-                <CardTitle>{service.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <CardDescription>{service.description}</CardDescription>
-              </CardContent>
-              <CardFooter>
-                 <Button className="w-full bg-accent text-accent-foreground" onClick={() => handleRequestConsultation(service.title)}>
-                  {service.cta}
-                </Button>
-              </CardFooter>
+        {/* Detailed Service List */}
+        <div className="mt-20">
+            <h2 className="text-3xl font-bold text-center mb-8">Our Consultation Services Include</h2>
+            <Card className="max-w-5xl mx-auto">
+                <CardContent className="p-8">
+                    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 text-muted-foreground">
+                        {consultationServices.map((item, index) => (
+                            <li key={index} className="flex items-start gap-2">
+                                <Check className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
+                                <span>{item}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </CardContent>
             </Card>
-          ))}
         </div>
+
 
          {/* Final CTA */}
         <div className="mt-20 text-center bg-secondary/30 py-16 rounded-lg">

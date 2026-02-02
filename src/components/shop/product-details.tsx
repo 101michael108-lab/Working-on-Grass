@@ -6,11 +6,26 @@ import Image from 'next/image';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, BookOpen, CheckCircle } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+
+const guideToGrassesFeatures = [
+    "Descriptions and illustration of 320 common and important grasses in southern Africa.",
+    "An easy-to-use identification key.",
+    "More than 1 000 excellent colour photographs.",
+    "Twelve introductory chapter on the grass family.",
+    "Common names of grasses in various languages.",
+    "Icons to provide ecological and morphological information at a glance.",
+];
+
+const veldManagementFeatures = [
+    "Simplifies a rather technical subject by including more than 380 photographs and illustrations.",
+    "Uses easy understandable language.",
+    "Contains four chapters: an introduction to veld management, the natural resources involved, basic ecological principles, and management practices."
+];
+
 
 export default function ProductDetailsClient({ product }: { product: Product }) {
   const [quantity, setQuantity] = useState(1);
@@ -21,6 +36,9 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
   };
 
   const isDPM = product.name.toLowerCase().includes('disc pasture meter');
+  const isGuideToGrasses = product.name.toLowerCase().includes('guide to grasses');
+  const isVeldManagementBook = product.name.toLowerCase().includes('veld management');
+  const isBook = isGuideToGrasses || isVeldManagementBook;
 
   return (
     <div className="container py-12 md:py-20">
@@ -54,51 +72,84 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
           </div>
           
           {/* Add to Cart Section */}
-          <Card className="mt-8 bg-background/50">
-            <CardContent className="pt-6">
-                <div className="flex items-center gap-4">
-                <div className="flex items-center border rounded-md">
-                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)}>
-                        <Minus className="h-4 w-4" />
-                    </Button>
-                    <Input
-                        type="number"
-                        className="w-16 text-center border-0 shadow-none focus-visible:ring-0"
-                        value={quantity}
-                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                    />
-                    <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)}>
-                        <Plus className="h-4 w-4" />
-                    </Button>
-                </div>
-                <Button
-                    size="lg"
-                    className="flex-grow bg-accent text-accent-foreground hover:bg-accent/90"
-                    onClick={() => addToCart(product, quantity)}
-                >
-                    <ShoppingCart className="mr-2 h-5 w-5" /> 
-                    Add to Cart
-                </Button>
-                </div>
-            </CardContent>
-          </Card>
+          <div className="mt-8 bg-background/50 border rounded-lg p-4">
+              <div className="flex items-center gap-4">
+              <div className="flex items-center border rounded-md">
+                  <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(-1)}>
+                      <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                      type="number"
+                      className="w-16 text-center border-0 shadow-none focus-visible:ring-0"
+                      value={quantity}
+                      onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  />
+                  <Button variant="ghost" size="icon" onClick={() => handleQuantityChange(1)}>
+                      <Plus className="h-4 w-4" />
+                  </Button>
+              </div>
+              <Button
+                  size="lg"
+                  className="flex-grow bg-accent text-accent-foreground hover:bg-accent/90"
+                  onClick={() => addToCart(product, quantity)}
+              >
+                  <ShoppingCart className="mr-2 h-5 w-5" /> 
+                  Add to Cart
+              </Button>
+              </div>
+          </div>
         </div>
       </div>
 
       {/* Detailed Info Tabs */}
       <div className="mt-16">
         <Tabs defaultValue="details" className="w-full">
-            <TabsList>
+            <TabsList className="grid w-full grid-cols-2 md:w-auto md:grid-cols-none">
                 <TabsTrigger value="details">Product Details</TabsTrigger>
                 {isDPM && <TabsTrigger value="how-it-works">How It Works</TabsTrigger>}
                 {isDPM && <TabsTrigger value="how-to-calculate">Calculating Biomass</TabsTrigger>}
-                {product.category === "Books & Field Guides" && <TabsTrigger value="author">About the Author</TabsTrigger>}
+                {isBook && <TabsTrigger value="author">About the Author</TabsTrigger>}
             </TabsList>
             <TabsContent value="details" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
-                <h3 className="text-foreground">Full Description</h3>
-                <p>{product.description}</p>
-                 <table className="mt-4">
+                <h3 className="text-foreground">
+                    {isBook ? "Book Details & Features" : "Full Description"}
+                </h3>
+                
+                {isGuideToGrasses && (
+                    <>
+                        <p>Guide to grasses of Southern Africa is the ultimate photographic guide to grasses in southern Africa.</p>
+                        <ul className='not-prose list-none p-0'>
+                            {guideToGrassesFeatures.map((feature, i) => (
+                                <li key={i} className="flex items-start gap-3 mt-2"><CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" /><span>{feature}</span></li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+
+                {isVeldManagementBook && (
+                     <>
+                        <p>Veld management – principles and practices attempts to simplify a rather technical subject by including more than 380 photographs and illustrations and using easy understandable language.</p>
+                        <ul className='not-prose list-none p-0'>
+                            {veldManagementFeatures.map((feature, i) => (
+                                <li key={i} className="flex items-start gap-3 mt-2"><CheckCircle className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" /><span>{feature}</span></li>
+                            ))}
+                        </ul>
+                    </>
+                )}
+                
+                {!isBook && <p>{product.description}</p>}
+
+                 <table className="mt-6">
                     <tbody>
+                        {isBook && (
+                             <>
+                                <tr><td className="font-semibold text-foreground pr-4 py-1">Author</td><td className='py-1'>Frits van Oudtshoorn</td></tr>
+                                <tr><td className="font-semibold text-foreground pr-4 py-1">Publisher</td><td className='py-1'>Briza publications</td></tr>
+                                {isGuideToGrasses && <tr><td className="font-semibold text-foreground pr-4 py-1">Pages</td><td className='py-1'>289</td></tr>}
+                                {isVeldManagementBook && <tr><td className="font-semibold text-foreground pr-4 py-1">Pages</td><td className='py-1'>256</td></tr>}
+                                <tr><td className="font-semibold text-foreground pr-4 py-1">Cover</td><td className='py-1'>Soft cover</td></tr>
+                            </>
+                        )}
                         <tr>
                             <td className="font-semibold text-foreground pr-4 py-1">Category</td>
                             <td className='py-1'>{product.category}</td>
@@ -117,20 +168,23 @@ export default function ProductDetailsClient({ product }: { product: Product }) 
                         )}
                     </tbody>
                  </table>
+                 <p className="mt-4">Contact us for more info or quotations.</p>
             </TabsContent>
             {isDPM && (
                  <TabsContent value="how-it-works" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
                     <h3 className="text-foreground">How The Disc Pasture Meter Works</h3>
                     <p>The DPM consists of a disc attached to a tube which slides over a rod fitted with measurements in centimetre (see illustration). The disc and tube unit are dropped onto the grass sward with the rod placed vertically to the ground. The height (in centimetres) at which the disc settles is then recorded where the rod meets with the upper fringe of the tube. At least fifty such recordings are made at one sample site after which the average (in cm) is calculated. Recordings are usually done on a straight transect at one-step or one-meter intervals.</p>
+                    <p>Contact us for more info or quotations.</p>
                  </TabsContent>
             )}
              {isDPM && (
                  <TabsContent value="how-to-calculate" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
                     <h3 className="text-foreground">How Biomass is Determined</h3>
                     <p>Grass biomass, or standing crop, in kilogram dry grass per hectare (kg/ha), is then calculated by using an equation. Various equations are developed by pasture scientists through calibrating the DPM for certain grassland and savanna regions. These equations are supplied with the instrument or can be downloaded from our resources page.</p>
+                    <p>Contact us for more info or quotations.</p>
                  </TabsContent>
             )}
-            {product.category === "Books & Guides" && (
+            {isBook && (
                  <TabsContent value="author" className="mt-4 prose max-w-none text-muted-foreground border p-6 rounded-md">
                     <h3 className="text-foreground">About the Author: Frits van Oudtshoorn</h3>
                     <p>Frits van Oudtshoorn is a renowned grassland ecologist and land-use specialist with decades of field experience across Southern Africa. His publications are considered essential resources for farmers, conservationists, and students, blending deep scientific knowledge with practical, on-the-ground application.</p>

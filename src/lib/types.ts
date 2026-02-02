@@ -25,7 +25,10 @@ export type CartItem = {
 
 export type SeedCategory = {
   name: string;
-  types: string[];
+  subCategories: {
+    name: string;
+    types: string[];
+  }[];
 };
 
 export type OrderItem = {
