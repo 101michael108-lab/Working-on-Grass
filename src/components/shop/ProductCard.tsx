@@ -3,7 +3,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
@@ -13,19 +13,14 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <Card className="flex flex-col group overflow-hidden transition-shadow hover:shadow-lg h-full">
-      <CardHeader className="p-0 border-b">
-        <Link href={`/shop/${product.id}`} className="block">
-          <div className="aspect-[4/3] bg-white overflow-hidden flex items-center justify-center">
-            <Image
-              src={product.image || `https://picsum.photos/seed/${product.id}/400/300`}
-              alt={product.name}
-              width={400}
-              height={300}
-              className="object-contain h-full w-full group-hover:scale-105 transition-transform duration-300 p-4"
-            />
-          </div>
-        </Link>
-      </CardHeader>
+      <Link href={`/shop/${product.id}`} className="block relative aspect-[4/3] bg-secondary overflow-hidden border-b">
+        <Image
+          src={product.image || `https://picsum.photos/seed/${product.id}/400/300`}
+          alt={product.name}
+          fill
+          className="object-cover h-full w-full group-hover:scale-105 transition-transform duration-300"
+        />
+      </Link>
       <CardContent className="flex-grow p-4">
         <p className="text-sm text-muted-foreground">{product.category}</p>
         <Link href={`/shop/${product.id}`} className="block mt-1">
