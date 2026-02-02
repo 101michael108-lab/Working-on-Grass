@@ -42,7 +42,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
       <section className="py-16 md:py-24">
         <div className="container max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold">Why the {product.name} Matters</h2>
-            <p className="mt-4 text-lg text-muted-foreground">{product.description}</p>
+            <div className="mt-4 text-lg text-muted-foreground prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: product.description.replace(/•/g, '<br />•') }}/>
         </div>
       </section>
 
