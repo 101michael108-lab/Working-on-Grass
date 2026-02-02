@@ -207,7 +207,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                     </SelectContent>
                                     </Select>
                                     <FormMessage />
-                                    <CardDescription className="pt-2">Choose the page template. This changes the available fields below and how the page looks to customers.</CardDescription>
+                                    <CardDescription className="pt-2">You can change this at any time. The fields below will update dynamically based on your selection.</CardDescription>
                                 </FormItem>
                             )} />
                         </CardContent>
