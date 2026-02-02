@@ -124,16 +124,22 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
       )}
       
       <Dialog open={fullscreenOpen} onOpenChange={setFullscreenOpen}>
-        <DialogContent className="max-w-none w-[90vw] h-[90vh] bg-transparent border-none shadow-none p-0">
-          <DialogHeader className="sr-only">
-            <DialogTitle>Image gallery for {productName}</DialogTitle>
-            <DialogDescription>Use the arrow buttons to navigate through the product images.</DialogDescription>
-          </DialogHeader>
+        <DialogContent className="max-w-none w-[90vw] h-[90vh] bg-transparent border-none shadow-none p-0 flex items-center justify-center">
+            <DialogHeader className="sr-only">
+                <DialogTitle>Image gallery for {productName}</DialogTitle>
+                <DialogDescription>Use the arrow buttons to navigate through the product images.</DialogDescription>
+            </DialogHeader>
           <Carousel className="w-full h-full" setApi={setFullscreenApi} opts={{ startIndex: selectedIndex, loop: true }}>
             <CarouselContent className="h-full">
               {images.map((imgUrl, index) => (
-                <CarouselItem key={index} className="relative">
-                    <Image src={imgUrl} alt={`${productName} - image ${index + 1}`} fill className="object-contain p-4"/>
+                <CarouselItem key={index} className="relative p-4 md:p-8">
+                    <Image 
+                        src={imgUrl} 
+                        alt={`${productName} - image ${index + 1}`} 
+                        fill
+                        sizes="90vw"
+                        className="object-contain"
+                    />
                 </CarouselItem>
               ))}
             </CarouselContent>
