@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -54,8 +55,8 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                         </div>
 
                         {product.valueProposition && (
-                            <div className="bg-accent/5 border-l-4 border-accent p-4 mt-6">
-                                <p className="text-foreground font-body font-bold italic">
+                            <div className="bg-accent/5 border-l-4 border-accent p-4 mt-6 shadow-sm">
+                                <p className="text-foreground font-body font-bold italic leading-relaxed">
                                     {product.valueProposition}
                                 </p>
                             </div>
@@ -181,7 +182,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                         "{product.authorityStatement.split('\n')[0].replace(/[“”"]/g, '')}"
                     </blockquote>
                     <div className="h-1 w-16 bg-accent mx-auto" />
-                    <div className="text-muted-foreground font-body max-w-2xl mx-auto">
+                    <div className="text-muted-foreground font-body max-w-2xl mx-auto italic">
                         {renderFormattedText(product.authorityStatement.split('\n').slice(1).join('\n'))}
                     </div>
                  </div>
@@ -198,8 +199,8 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                     <ShoppingCart className="mr-3 h-6 w-6" /> Add to Cart — R{product.price.toFixed(2)}
                 </Button>
                 <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
-                    <span className="flex items-center gap-1"><Info className="h-4 w-4" /> Secured Payment</span>
-                    <span className="flex items-center gap-1"><Info className="h-4 w-4" /> Nationwide Delivery</span>
+                    <span className="flex items-center gap-1"><Info className="h-4 w-4 text-primary" /> Secured Payment</span>
+                    <span className="flex items-center gap-1"><Info className="h-4 w-4 text-primary" /> Nationwide Delivery</span>
                 </div>
             </div>
           </div>
