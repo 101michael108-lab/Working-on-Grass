@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, Users } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
 
 const renderFormattedText = (text: string) => {
@@ -170,25 +171,8 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
             </div>
         </section>
       )}
-
-      {/* 5. Who It's For (Target Audience) */}
-      {product.targetAudience && (
-        <section className="py-16 md:py-24 bg-secondary/10 border-t-2">
-            <div className="container max-w-4xl">
-                <div className="space-y-8">
-                    <div className="flex items-center gap-3 border-b-4 border-primary/10 pb-4">
-                        <Users className="h-6 w-6 text-primary" />
-                        <h2 className="text-3xl font-bold font-headline">Who It's For</h2>
-                    </div>
-                    <div className="text-lg text-muted-foreground font-body leading-relaxed">
-                        {renderFormattedText(product.targetAudience)}
-                    </div>
-                </div>
-            </div>
-        </section>
-      )}
       
-      {/* 6. Authority Statement */}
+      {/* 5. Authority Statement */}
       {product.authorityStatement && (
         <section className="bg-primary text-primary-foreground py-16 md:py-24">
             <div className="container text-center px-4 max-w-4xl">
@@ -206,7 +190,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
 
-      {/* 7. Final CTA Purchase Area */}
+      {/* 6. Final CTA Purchase Area */}
        <section className="py-16 md:py-24 border-t-2 border-border text-center bg-muted/10">
           <div className="container">
             <h2 className="text-3xl font-bold font-headline mb-8">Ready for Assessment?</h2>

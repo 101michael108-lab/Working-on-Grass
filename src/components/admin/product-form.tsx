@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -226,33 +227,35 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </CardContent>
                     </Card>
 
-                    {/* Common Section: Who It's For */}
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Who It's For (Target Audience)</CardTitle>
-                            <CardDescription>Describe the ideal reader or user for this product.</CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                            <FormField name="targetAudience" control={form.control} render={({ field }) => (
-                                <FormItem>
-                                    <FormControl>
-                                        <Textarea 
-                                            rows={6} 
-                                            placeholder="• Farmers assessing grazing...&#10;• Ecologists conducting surveys..." 
-                                            {...field} 
-                                        />
-                                    </FormControl>
-                                    <FormMessage />
-                                </FormItem>
-                            )} />
-                        </CardContent>
-                    </Card>
+                    {/* Conditional Section: Who It's For (Books Only) */}
+                    {layout === 'book' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Who It's For (Target Audience)</CardTitle>
+                                <CardDescription>Describe the ideal reader for this publication.</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <FormField name="targetAudience" control={form.control} render={({ field }) => (
+                                    <FormItem>
+                                        <FormControl>
+                                            <Textarea 
+                                                rows={6} 
+                                                placeholder="• Farmers assessing grazing...&#10;• Ecologists conducting surveys..." 
+                                                {...field} 
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )} />
+                            </CardContent>
+                        </Card>
+                    )}
 
                     {/* Conditional Fields based on Layout */}
                     {layout === 'in-depth' && (
                         <>
                             <Card>
-                                <CardHeader><CardTitle>Premium technical Details</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>Premium Technical Details</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
                                     <FormField name="valueProposition" control={form.control} render={({ field }) => (
                                         <FormItem>
