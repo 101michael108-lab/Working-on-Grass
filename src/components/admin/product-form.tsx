@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -49,6 +50,7 @@ const formSchema = z.object({
 
   howItWorks: z.string().optional(),
   fieldUse: z.string().optional(),
+  calibrationNote: z.string().optional(),
 });
 
 
@@ -81,6 +83,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             features: product?.features || [],
             howItWorks: product?.howItWorks || "",
             fieldUse: product?.fieldUse || "",
+            calibrationNote: product?.calibrationNote || "",
         },
     });
 
@@ -133,7 +136,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                     )} />
                                     <FormField name="description" control={form.control} render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Description</FormLabel>
+                                            <FormLabel>Description (Short Technical Overview)</FormLabel>
                                             <FormControl>
                                                 <Textarea 
                                                     rows={8} 
@@ -239,9 +242,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                     )} />
                                     <FormField name="authorityStatement" control={form.control} render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Authority Statement (Quote)</FormLabel>
+                                            <FormLabel>Authority Statement (Quote + Attribution)</FormLabel>
                                             <FormControl>
-                                                <Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." />
+                                                <Textarea rows={4} {...field} placeholder="Quote — Expert Name, Biography..." />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -271,6 +274,19 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                                     {...field} 
                                                     rows={6} 
                                                     placeholder="Practical instructions for using this tool in the field.&#10;• Step 1...&#10;• Step 2..." 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                     <FormField name="calibrationNote" control={form.control} render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Calibration Note (Technical Alert)</FormLabel>
+                                            <FormControl>
+                                                <Textarea 
+                                                    {...field} 
+                                                    rows={4} 
+                                                    placeholder="Specific scientific or technical note regarding calibration or usage precision." 
                                                 />
                                             </FormControl>
                                             <FormMessage />

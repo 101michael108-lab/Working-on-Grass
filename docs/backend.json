@@ -122,6 +122,10 @@
         "authorityStatement": {
           "type": "string",
           "description": "A statement to build trust and authority."
+        },
+        "calibrationNote": {
+          "type": "string",
+          "description": "Specific scientific or technical note regarding calibration or usage precision."
         }
       },
       "required": [

@@ -29,6 +29,7 @@ export type Product = {
   howItWorks?: string;
   fieldUse?: string;
   authorityStatement?: string;
+  calibrationNote?: string;
 };
 
 
