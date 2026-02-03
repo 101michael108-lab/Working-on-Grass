@@ -4,73 +4,35 @@
 
 @layer base {
   :root {
-    --background: 40 30% 96%;
-    --foreground: 40 10% 20%;
-    --card: 40 30% 99%;
-    --card-foreground: 40 10% 20%;
-    --popover: 40 30% 99%;
-    --popover-foreground: 40 10% 20%;
-    --primary: 112 43% 37%;
-    --primary-foreground: 112 25% 95%;
-    --secondary: 40 20% 92%;
-    --secondary-foreground: 40 10% 25%;
-    --muted: 40 20% 90%;
-    --muted-foreground: 40 10% 45%;
-    --accent: 88 70% 40%;
-    --accent-foreground: 88 25% 98%;
-    --destructive: 0 84.2% 60.2%;
+    /* Earthy, grounded palette */
+    --background: 40 30% 94%;
+    --foreground: 40 10% 15%;
+    --card: 40 30% 98%;
+    --card-foreground: 40 10% 15%;
+    --popover: 40 30% 98%;
+    --popover-foreground: 40 10% 15%;
+    --primary: 120 25% 25%; /* Deep Forest Green */
+    --primary-foreground: 40 25% 95%;
+    --secondary: 40 20% 88%;
+    --secondary-foreground: 40 10% 20%;
+    --muted: 40 15% 85%;
+    --muted-foreground: 40 10% 40%;
+    --accent: 25 40% 40%; /* Terracotta / Clay */
+    --accent-foreground: 40 25% 98%;
+    --destructive: 0 60% 40%;
     --destructive-foreground: 0 0% 98%;
-    --border: 40 20% 88%;
-    --input: 40 20% 88%;
-    --ring: 88 70% 45%;
-    --chart-1: 112 43% 37%;
-    --chart-2: 88 70% 40%;
-    --chart-3: 40 20% 90%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 40 30% 97%;
+    --border: 40 15% 80%;
+    --input: 40 15% 80%;
+    --ring: 120 25% 30%;
+    --radius: 0.375rem; /* Sturdier, less rounded corners */
+    --sidebar-background: 40 30% 95%;
     --sidebar-foreground: 40 10% 15%;
-    --sidebar-primary: 112 43% 37%;
-    --sidebar-primary-foreground: 112 25% 95%;
-    --sidebar-accent: 40 20% 90%;
+    --sidebar-primary: 120 25% 25%;
+    --sidebar-primary-foreground: 40 25% 95%;
+    --sidebar-accent: 40 20% 88%;
     --sidebar-accent-foreground: 40 10% 15%;
-    --sidebar-border: 40 20% 88%;
-    --sidebar-ring: 88 70% 45%;
-  }
-  .dark {
-    --background: 40 10% 10%;
-    --foreground: 40 10% 95%;
-    --card: 40 10% 12%;
-    --card-foreground: 40 10% 95%;
-    --popover: 40 10% 10%;
-    --popover-foreground: 40 10% 95%;
-    --primary: 112 43% 45%;
-    --primary-foreground: 112 25% 95%;
-    --secondary: 40 10% 15%;
-    --secondary-foreground: 40 10% 95%;
-    --muted: 40 10% 20%;
-    --muted-foreground: 40 10% 65%;
-    --accent: 88 70% 45%;
-    --accent-foreground: 88 10% 10%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 40 10% 20%;
-    --input: 40 10% 20%;
-    --ring: 88 70% 50%;
-    --chart-1: 112 43% 45%;
-    --chart-2: 88 70% 45%;
-    --chart-3: 40 10% 15%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --sidebar-background: 40 10% 12%;
-    --sidebar-foreground: 40 10% 95%;
-    --sidebar-primary: 112 43% 45%;
-    --sidebar-primary-foreground: 112 25% 95%;
-    --sidebar-accent: 40 10% 20%;
-    --sidebar-accent-foreground: 40 10% 95%;
-    --sidebar-border: 40 10% 20%;
-    --sidebar-ring: 88 70% 50%;
+    --sidebar-border: 40 15% 80%;
+    --sidebar-ring: 120 25% 30%;
   }
 }
 
@@ -82,6 +44,6 @@
     @apply bg-background text-foreground;
   }
   h1, h2, h3, h4, h5, h6 {
-    @apply font-headline;
+    @apply font-headline font-bold;
   }
 }

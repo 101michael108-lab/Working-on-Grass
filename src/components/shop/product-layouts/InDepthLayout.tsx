@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -9,7 +8,7 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, Info } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Info, CheckCircle2 } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
 
 export default function InDepthLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
@@ -22,39 +21,39 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
 
   return (
     <div className="bg-background">
-      {/* 1. Hero Section */}
-      <section className="bg-secondary/30 border-b">
-        <div className="container py-12 md:py-24">
-            <div className="grid lg:grid-cols-12 gap-12 items-center">
+      {/* 1. Practical Header Section */}
+      <section className="border-b-2 border-primary/10">
+        <div className="container py-12 md:py-20">
+            <div className="grid lg:grid-cols-12 gap-12 items-start">
                 <div className="lg:col-span-7">
                     <ProductImageGallery images={product.images || []} productName={product.name} />
                 </div>
                 <div className="lg:col-span-5 space-y-8">
                     <div className="space-y-4">
-                        <Badge variant="outline" className="px-3 py-1 text-xs uppercase tracking-widest">{product.category}</Badge>
-                        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline leading-tight">{product.name}</h1>
+                        <span className="text-xs font-bold uppercase tracking-widest text-primary/70">{product.category}</span>
+                        <h1 className="text-4xl md:text-5xl font-bold font-headline leading-tight">{product.name}</h1>
                         {product.valueProposition && (
-                            <p className="text-xl md:text-2xl text-muted-foreground font-body leading-relaxed">
+                            <p className="text-xl text-muted-foreground font-body leading-relaxed border-l-4 border-accent pl-4 italic">
                                 {product.valueProposition}
                             </p>
                         )}
                     </div>
                     
-                    <div className="bg-card border rounded-2xl p-8 shadow-sm">
+                    <div className="bg-muted/30 border-2 border-border p-8 rounded-lg">
                         <div className="flex items-baseline gap-2 mb-6">
-                            <span className="text-4xl font-bold text-accent">R{product.price.toFixed(2)}</span>
+                            <span className="text-4xl font-bold font-headline text-accent">R{product.price.toFixed(2)}</span>
                             <span className="text-sm text-muted-foreground uppercase font-semibold">Incl. VAT</span>
                         </div>
                         
                         <div className="space-y-4">
                             <div className="flex items-center gap-4">
-                                <div className="flex items-center border rounded-lg h-12">
+                                <div className="flex items-center border-2 border-border rounded bg-background h-12">
                                     <Button variant="ghost" size="icon" className="h-full w-12" onClick={() => handleQuantityChange(-1)}>
                                         <Minus className="h-4 w-4" />
                                     </Button>
                                     <Input 
                                         type="number" 
-                                        className="w-16 text-center border-0 shadow-none focus-visible:ring-0 text-lg font-semibold" 
+                                        className="w-16 text-center border-0 shadow-none focus-visible:ring-0 text-lg font-bold" 
                                         value={quantity} 
                                         onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} 
                                     />
@@ -62,13 +61,13 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                                         <Plus className="h-4 w-4" />
                                     </Button>
                                 </div>
-                                <Button size="lg" className="flex-grow h-12 bg-accent text-accent-foreground hover:bg-accent/90 text-lg shadow-md" onClick={() => addToCart(product, quantity)}>
+                                <Button size="lg" className="flex-grow h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold" onClick={() => addToCart(product, quantity)}>
                                     <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
                                 </Button>
                             </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center">
-                                <Info className="h-3 w-3" />
-                                <span>Fast shipping across Southern Africa</span>
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground justify-center pt-2">
+                                <CheckCircle2 className="h-4 w-4 text-primary" />
+                                <span className="font-medium uppercase tracking-wider">In Stock & Field Ready</span>
                             </div>
                         </div>
                     </div>
@@ -77,46 +76,52 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </div>
       </section>
 
-      {/* 2. Problem / Benefit Section */}
-      <section className="py-20 md:py-32">
-        <div className="container max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline mb-8">Why the {product.name} Matters</h2>
+      {/* 2. Technical Brief Section */}
+      <section className="py-16 md:py-24">
+        <div className="container max-w-4xl">
+            <div className="mb-12 border-b-4 border-primary/20 pb-4">
+                <h2 className="text-3xl font-bold font-headline">Technical Overview</h2>
+            </div>
             <div 
-                className="text-lg md:text-xl text-muted-foreground leading-relaxed font-body space-y-6" 
+                className="text-lg text-foreground/80 leading-relaxed font-body space-y-6 prose prose-zinc max-w-none" 
                 dangerouslySetInnerHTML={{ __html: product.description.replace(/•/g, '<br /><span class="text-primary font-bold mr-2">•</span>') }}
             />
         </div>
       </section>
 
-      {/* 3. How It Works Section */}
+      {/* 3. Operational Guide Section */}
       {product.howItWorks && (
-        <section id="how-it-works" className="py-20 md:py-32 bg-secondary/30">
-            <div className="container">
-                <div className="max-w-4xl mx-auto">
-                     <div className="text-center space-y-6">
-                        <Badge className="bg-primary/10 text-primary border-none hover:bg-primary/10">In Action</Badge>
-                        <h2 className="text-3xl md:text-4xl font-bold font-headline">How It Works</h2>
-                        <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-body italic">
-                            "{product.howItWorks}"
+        <section id="how-it-works" className="py-16 md:py-24 bg-muted/20 border-y-2 border-primary/5">
+            <div className="container max-w-4xl">
+                 <div className="space-y-8">
+                    <div className="border-b-4 border-primary/20 pb-4">
+                        <h2 className="text-3xl font-bold font-headline">How It Works in the Field</h2>
+                    </div>
+                    <div className="bg-background border-2 border-border p-8 rounded-lg relative overflow-hidden">
+                        <div className="absolute top-0 right-0 p-2 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-widest">Operator Note</div>
+                        <p className="text-lg text-muted-foreground leading-relaxed font-body">
+                            {product.howItWorks}
                         </p>
-                     </div>
-                </div>
+                    </div>
+                 </div>
             </div>
         </section>
       )}
 
-      {/* 4. Technical Details Section */}
+      {/* 4. Specifications Table */}
       {product.specifications && product.specifications.length > 0 && (
-         <section className="py-20 md:py-32">
-            <div className="container max-w-3xl mx-auto">
-                 <h2 className="text-3xl font-bold font-headline text-center mb-12">Technical Specifications</h2>
-                 <div className="border rounded-2xl overflow-hidden shadow-sm">
+         <section className="py-16 md:py-24">
+            <div className="container max-w-3xl">
+                 <div className="mb-10 text-center">
+                    <h2 className="text-3xl font-bold font-headline inline-block border-b-4 border-accent pb-2">Technical Specifications</h2>
+                 </div>
+                 <div className="border-2 border-border rounded overflow-hidden">
                     <Table>
                         <TableBody>
                             {product.specifications.map((spec, index) => (
-                                <TableRow key={index} className={index % 2 === 0 ? 'bg-secondary/30' : ''}>
-                                    <TableCell className="font-bold text-foreground/80 py-4 pl-6 uppercase tracking-wider text-xs">{spec.feature}</TableCell>
-                                    <TableCell className="py-4 pr-6 text-muted-foreground">{spec.description}</TableCell>
+                                <TableRow key={index} className={index % 2 === 0 ? 'bg-muted/30' : 'bg-background'}>
+                                    <TableCell className="font-bold text-primary py-4 pl-6 uppercase tracking-wider text-xs w-1/3">{spec.feature}</TableCell>
+                                    <TableCell className="py-4 pr-6 text-foreground font-body">{spec.description}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
@@ -126,34 +131,36 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
       
-      {/* 5. Authority Section */}
+      {/* 5. Authority Statement */}
       {product.authorityStatement && (
-        <section className="bg-primary text-primary-foreground py-20 md:py-32">
-            <div className="container text-center px-4">
-                 <blockquote className="text-2xl md:text-4xl font-headline italic leading-snug max-w-4xl mx-auto">
+        <section className="bg-primary text-primary-foreground py-16 md:py-20">
+            <div className="container text-center px-4 max-w-3xl">
+                 <p className="text-xs font-bold uppercase tracking-[0.3em] mb-6 opacity-70 text-primary-foreground/80">Expert Recommendation</p>
+                 <blockquote className="text-2xl md:text-3xl font-headline italic leading-relaxed">
                     "{product.authorityStatement}"
                 </blockquote>
-                <div className="mt-8 h-1 w-20 bg-accent mx-auto" />
+                <div className="mt-8 h-1 w-16 bg-accent mx-auto" />
             </div>
         </section>
       )}
 
-      {/* 6. Repeated CTA */}
-       <section className="py-20 md:py-32 border-t text-center">
+      {/* 6. Purchase Area */}
+       <section className="py-16 md:py-24 border-t-2 border-border text-center bg-muted/10">
           <div className="container">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline mb-4">Ready to improve your land management?</h2>
-             <p className="mt-2 max-w-2xl mx-auto text-muted-foreground text-lg mb-10">
-                Join hundreds of farmers and land managers using the {product.name}.
-            </p>
-            <div className="flex flex-col items-center gap-4">
-                <Button size="lg" className="h-14 px-12 bg-accent text-accent-foreground hover:bg-accent/90 text-xl font-bold shadow-xl" onClick={() => addToCart(product, quantity)}>
-                    <ShoppingCart className="mr-2 h-6 w-6" /> Add to Cart — R{product.price.toFixed(2)}
+            <h2 className="text-3xl font-bold font-headline mb-8">Ready for Assessment?</h2>
+            <div className="flex flex-col items-center gap-6">
+                <Button size="lg" className="h-16 px-12 bg-accent text-accent-foreground hover:bg-accent/90 text-xl font-bold" onClick={() => addToCart(product, quantity)}>
+                    <ShoppingCart className="mr-3 h-6 w-6" /> Add to Cart — R{product.price.toFixed(2)}
                 </Button>
+                <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
+                    <span className="flex items-center gap-1"><Info className="h-4 w-4" /> Secured Payment</span>
+                    <span className="flex items-center gap-1"><Info className="h-4 w-4" /> Nationwide Delivery</span>
+                </div>
             </div>
           </div>
       </section>
 
-      {/* 7. Related Resources / Products */}
+      {/* 7. Related Resources */}
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
 
     </div>
