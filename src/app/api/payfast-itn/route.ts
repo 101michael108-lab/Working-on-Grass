@@ -1,7 +1,9 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { initializeFirebase } from '@/firebase';
-import { doc, updateDoc } from 'firebase/firestore';
+import { doc, updateDoc, getDoc, increment } from 'firebase/firestore';
+import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/services/email-service';
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,8 +13,6 @@ export async function POST(req: NextRequest) {
     let pfData: Record<string, FormDataEntryValue> = {};
     let checkString = '';
 
-    // Build the parameter string and data object, preserving order from form data
-    // This is important for signature validation.
     for (const [key, value] of body.entries()) {
         pfData[key] = value;
         if (key !== 'signature') {
@@ -20,10 +20,7 @@ export async function POST(req: NextRequest) {
         }
     }
     
-    // Remove last ampersand
     checkString = checkString.slice(0, -1);
-
-    // Append passphrase from environment variables
     const passphrase = process.env.PAYFAST_PASSPHRASE;
     if (passphrase) {
         checkString += `&passphrase=${passphrase}`;
@@ -33,35 +30,68 @@ export async function POST(req: NextRequest) {
     const receivedSignature = pfData.signature as string;
 
     if (calculatedSignature !== receivedSignature) {
-        console.warn("PayFast ITN: Signatures do not match.", { calculated: calculatedSignature, received: receivedSignature });
+        console.warn("PayFast ITN: Signatures do not match.");
         return new NextResponse('Invalid signature', { status: 400 });
     }
 
-    // Validation successful, update database
     const orderId = pfData.m_payment_id as string;
     const userId = pfData.custom_str1 as string;
     const paymentStatus = pfData.payment_status as string;
 
     if (!userId || !orderId) {
-       console.error("PayFast ITN: Missing userId or orderId in callback data.");
        return new NextResponse('Missing custom data', { status: 400 });
     }
 
     const orderRef = doc(firestore, 'users', userId, 'orders', orderId);
-    
-    // Determine new order status based on payment status
-    const newStatus = paymentStatus === 'COMPLETE' ? 'Processing' : 'Cancelled';
+    const orderSnap = await getDoc(orderRef);
 
+    if (!orderSnap.exists()) {
+        return new NextResponse('Order not found', { status: 404 });
+    }
+
+    const orderData = orderSnap.data();
+    const isSuccess = paymentStatus === 'COMPLETE';
+    const newStatus = isSuccess ? 'Processing' : 'Cancelled';
+
+    // 1. Update Order Status
     await updateDoc(orderRef, {
       status: newStatus,
       paymentInfo: {
-        ...pfData, // Store the full ITN payload for reference
+        ...pfData,
         itn_validated_at: new Date().toISOString(),
       },
     });
 
-    console.log(`PayFast ITN: Order ${orderId} for user ${userId} updated to ${newStatus}.`);
-    
+    // 2. If Successful, handle post-payment logic
+    if (isSuccess) {
+        // A. Inventory Management: Reduce stock for each item
+        for (const item of (orderData.items || [])) {
+            const productRef = doc(firestore, 'products', item.productId);
+            await updateDoc(productRef, {
+                stock: increment(-item.quantity)
+            }).catch(e => console.error(`Failed to decrement stock for ${item.productId}`, e));
+        }
+
+        // B. Trigger Customer Email
+        await sendOrderConfirmationEmail({
+            to: orderData.shippingInfo.email,
+            orderId: orderId,
+            customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
+            totalAmount: orderData.totalAmount,
+            items: orderData.items,
+        }).catch(e => console.error("Email failed", e));
+
+        // C. Trigger Admin Notification
+        await sendAdminOrderNotification({
+            to: 'admin@workingongrass.co.za', // Should come from settings
+            orderId: orderId,
+            customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
+            totalAmount: orderData.totalAmount,
+            items: orderData.items,
+        });
+    }
+
+    console.log(`PayFast ITN: Order ${orderId} updated to ${newStatus}. Inventory adjusted.`);
     return new NextResponse('OK', { status: 200 });
 
   } catch (error: any) {

@@ -145,36 +145,17 @@
         "layout"
       ]
     },
-    "Service": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "Service",
+    "SiteSettings": {
+      "title": "Site Settings",
       "type": "object",
-      "description": "Represents a service offered by Working on Grass.",
+      "description": "Global configuration for the website and store.",
       "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the service."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the service."
-        },
-        "description": {
-          "type": "string",
-          "description": "Detailed description of the service."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "URL of an image representing the service.",
-          "format": "uri"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "description",
-        "imageUrl"
-      ]
+        "storeName": { "type": "string" },
+        "contactEmail": { "type": "string", "format": "email" },
+        "shippingFee": { "type": "number" },
+        "payfastMerchantId": { "type": "string" },
+        "payfastMerchantKey": { "type": "string" }
+      }
     },
     "Order": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -243,153 +224,6 @@
         "status",
         "items"
       ]
-    },
-    "ContactFormEntry": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ContactFormEntry",
-      "type": "object",
-      "description": "Represents an entry from the contact form.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the contact form entry."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the person submitting the form."
-        },
-        "email": {
-          "type": "string",
-          "description": "Email address of the person submitting the form.",
-          "format": "email"
-        },
-        "phone": {
-          "type": "string",
-          "description": "Phone number of the person submitting the form."
-        },
-        "location": {
-          "type": "string",
-          "description": "Location or Farm Name of the person submitting the form."
-        },
-        "serviceInterestedIn": {
-          "type": "string",
-          "description": "The service the user is interested in."
-        },
-        "message": {
-          "type": "string",
-          "description": "Message submitted through the form."
-        },
-        "submissionDate": {
-          "type": "string",
-          "description": "Date and time when the form was submitted.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "email",
-        "serviceInterestedIn",
-        "submissionDate"
-      ]
-    },
-    "ConsultationRequest": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "ConsultationRequest",
-      "type": "object",
-      "description": "Represents an inquiry for a consultation submitted through the website.",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "Unique identifier for the request."
-        },
-        "name": {
-          "type": "string",
-          "description": "Name of the person requesting the consultation."
-        },
-        "contactDetail": {
-          "type": "string",
-          "description": "Email or phone number of the person."
-        },
-        "location": {
-          "type": "string",
-          "description": "Location or farm name provided by the user."
-        },
-        "needs": {
-          "type": "string",
-          "description": "Description of what the user needs help with."
-        },
-        "service": {
-          "type": "string",
-          "description": "The specific service the user is interested in, if any."
-        },
-        "submissionDate": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp of the submission."
-        }
-      },
-      "required": [
-        "id",
-        "name",
-        "contactDetail",
-        "needs",
-        "submissionDate"
-      ]
-    },
-    "SiteImage": {
-      "title": "Site Image",
-      "type": "object",
-      "description": "Represents a managed image used across the website, like the hero or about page image.",
-      "properties": {
-        "description": {
-          "type": "string",
-          "description": "A description of the image for alt text."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "The URL of the image.",
-          "format": "uri"
-        },
-        "imageHint": {
-          "type": "string",
-          "description": "A hint for AI image generation services."
-        }
-      },
-      "required": [
-        "description",
-        "imageUrl"
-      ]
-    },
-    "MediaLibraryItem": {
-      "title": "Media Library Item",
-      "type": "object",
-      "description": "Represents an image in the media library.",
-      "properties": {
-        "name": {
-          "type": "string",
-          "description": "The name or title of the image."
-        },
-        "imageUrl": {
-          "type": "string",
-          "description": "The URL of the image.",
-          "format": "uri"
-        },
-        "description": {
-          "type": "string",
-          "description": "A description of the image for alt text."
-        },
-        "uploadedAt": {
-          "type": "string",
-          "description": "Timestamp of when the image was uploaded.",
-          "format": "date-time"
-        }
-      },
-      "required": [
-        "name",
-        "imageUrl",
-        "uploadedAt"
-      ]
     }
   },
   "auth": {
@@ -407,12 +241,9 @@
           "schema": {
             "$ref": "#/backend/entities/User"
           },
-          "description": "Stores user data, including email, display name, role, and timestamps. The 'role' field facilitates role-based access control (DBAC).",
+          "description": "Stores user data.",
           "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            }
+            { "name": "userId", "description": "The unique identifier for the user." }
           ]
         }
       },
@@ -423,116 +254,23 @@
           "schema": {
             "$ref": "#/backend/entities/Product"
           },
-          "description": "Stores product information, including name, description, price, stock, image URL, and category.",
+          "description": "Stores product information.",
           "params": [
-            {
-              "name": "productId",
-              "description": "The unique identifier for the product."
-            }
+            { "name": "productId", "description": "The unique identifier for the product." }
           ]
         }
       },
       {
-        "path": "/services/{serviceId}",
+        "path": "/settings/config",
         "definition": {
-          "entityName": "Service",
+          "entityName": "SiteSettings",
           "schema": {
-            "$ref": "#/backend/entities/Service"
+            "$ref": "#/backend/entities/SiteSettings"
           },
-          "description": "Stores service information, including name, description, and image URL.",
-          "params": [
-            {
-              "name": "serviceId",
-              "description": "The unique identifier for the service."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/users/{userId}/orders/{orderId}",
-        "definition": {
-          "entityName": "Order",
-          "schema": {
-            "$ref": "#/backend/entities/Order"
-          },
-          "description": "Stores order information for each user, including order date, total amount, status, and embedded order items. Path-based ownership ensures secure access to user-specific orders.",
-          "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user."
-            },
-            {
-              "name": "orderId",
-              "description": "The unique identifier for the order."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/siteImages/{siteImageId}",
-        "definition": {
-          "entityName": "SiteImage",
-          "schema": {
-            "$ref": "#/backend/entities/SiteImage"
-          },
-          "description": "Stores assigned images for specific spots on the website. The document ID (e.g., 'hero', 'about-frits') is the spot name and is used to reference the image in the code.",
-          "params": [
-            {
-              "name": "siteImageId",
-              "description": "The unique slug for the image spot."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/mediaLibrary/{mediaId}",
-        "definition": {
-            "entityName": "MediaLibraryItem",
-            "schema": {
-                "$ref": "#/backend/entities/MediaLibraryItem"
-            },
-            "description": "A collection of all uploaded media assets. These can be assigned to various 'spots' on the site.",
-            "params": [
-                {
-                    "name": "mediaId",
-                    "description": "The unique identifier for the media item."
-                }
-            ]
-        }
-      },
-      {
-        "path": "/contactFormEntries/{contactFormEntryId}",
-        "definition": {
-          "entityName": "ContactFormEntry",
-          "schema": {
-            "$ref": "#/backend/entities/ContactFormEntry"
-          },
-          "description": "Stores contact form entries, including name, email, message, and submission date.",
-          "params": [
-            {
-              "name": "contactFormEntryId",
-              "description": "The unique identifier for the contact form entry."
-            }
-          ]
-        }
-      },
-      {
-        "path": "/consultationRequests/{consultationRequestId}",
-        "definition": {
-          "entityName": "ConsultationRequest",
-          "schema": {
-            "$ref": "#/backend/entities/ConsultationRequest"
-          },
-          "description": "Stores user inquiries for expert consultations, submitted through the services page modal.",
-          "params": [
-            {
-              "name": "consultationRequestId",
-              "description": "The unique identifier for the consultation request."
-            }
-          ]
+          "description": "Global singleton configuration for the site.",
+          "params": []
         }
       }
-    ],
-    "reasoning": "This Firestore data structure is designed to support the 'Working on Grass' application, focusing on secure user authentication, role-based access control, and efficient data management for products, services, orders, and gallery images. The structure prioritizes authorization independence and supports list operations (QAPs) by avoiding hierarchical authorization dependencies and using structural segregation. User roles are stored directly in the `users` collection, enabling easy management and modification of roles. To ensure Authorization Independence (CRITICAL), there are no `get()` calls required in the rules due to denormalization of user roles into the relevant collections if needed. This design facilitates simple, robust, and easily debuggable security rules."
+    ]
   }
 }

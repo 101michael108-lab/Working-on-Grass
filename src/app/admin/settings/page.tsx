@@ -1,33 +1,96 @@
 
 "use client"
 
+import React from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
-import Link from "next/link"
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
-import { ExternalLink } from "lucide-react"
+import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
+import { doc } from "firebase/firestore";
+import { updateDocumentNonBlocking, setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminSettingsPage() {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+  
+  const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
+  const { data: settings, isLoading } = useDoc(settingsRef);
+
+  const [formData, setFormData] = React.useState({
+    storeName: "Working on Grass",
+    contactEmail: "courses@alut.co.za",
+    shippingFee: 150,
+    payfastMerchantId: "",
+    payfastMerchantKey: "",
+  });
+
+  React.useEffect(() => {
+    if (settings) {
+      setFormData({
+        storeName: settings.storeName || "Working on Grass",
+        contactEmail: settings.contactEmail || "courses@alut.co.za",
+        shippingFee: settings.shippingFee || 150,
+        payfastMerchantId: settings.payfastMerchantId || "",
+        payfastMerchantKey: settings.payfastMerchantKey || "",
+      });
+    }
+  }, [settings]);
+
+  const handleSave = () => {
+    // We use set with merge true to ensure the document exists
+    setDocumentNonBlocking(settingsRef, formData, { merge: true });
+    toast({ title: "Settings Saved", description: "Global site configuration has been updated." });
+  };
+
+  if (isLoading) {
+    return (
+        <div className="space-y-6">
+            <Skeleton className="h-[200px] w-full" />
+            <Skeleton className="h-[300px] w-full" />
+        </div>
+    )
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Settings</CardTitle>
-        <CardDescription>Manage your store settings and integrations.</CardDescription>
+        <CardTitle>Global Site Settings</CardTitle>
+        <CardDescription>Manage core store parameters and payment integrations.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-8">
         <div className="space-y-4">
-            <h3 className="text-lg font-semibold">General Settings</h3>
-            <div className="space-y-4">
-                 <div>
-                    <Label htmlFor="store-name">Store Name</Label>
-                    <Input id="store-name" defaultValue="Working on Grass" />
+            <h3 className="text-lg font-semibold">General Store Configuration</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-2">
+                    <Label htmlFor="store-name">Display Store Name</Label>
+                    <Input 
+                        id="store-name" 
+                        value={formData.storeName} 
+                        onChange={(e) => setFormData(p => ({ ...p, storeName: e.target.value }))}
+                    />
                 </div>
-                 <div>
-                    <Label htmlFor="store-email">Contact Email</Label>
-                    <Input id="store-email" type="email" defaultValue="courses@alut.co.za" />
+                 <div className="space-y-2">
+                    <Label htmlFor="store-email">Notification / Contact Email</Label>
+                    <Input 
+                        id="store-email" 
+                        type="email" 
+                        value={formData.contactEmail} 
+                        onChange={(e) => setFormData(p => ({ ...p, contactEmail: e.target.value }))}
+                    />
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="shipping-fee">Flat Rate Shipping Fee (R)</Label>
+                    <Input 
+                        id="shipping-fee" 
+                        type="number" 
+                        value={formData.shippingFee} 
+                        onChange={(e) => setFormData(p => ({ ...p, shippingFee: Number(e.target.value) }))}
+                    />
+                    <p className="text-[10px] text-muted-foreground italic">Applied to all orders during checkout.</p>
                 </div>
             </div>
         </div>
@@ -35,34 +98,35 @@ export default function AdminSettingsPage() {
         <Separator />
 
          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Payment Gateway</h3>
+            <h3 className="text-lg font-semibold">PayFast API Integration</h3>
             <p className="text-sm text-muted-foreground">
-                The current checkout flow is a simulation. To accept real payments, you need to complete the PayFast integration.
+                Enter your live credentials from the PayFast dashboard to process real payments.
             </p>
-            <Alert>
-                <AlertTitle className="flex items-center gap-2">
-                    <ExternalLink className="h-4 w-4" />
-                    Next Steps for PayFast
-                </AlertTitle>
-                <AlertDescription>
-                    A full PayFast integration requires a backend to handle secure information. We've created a guide to walk you through the necessary steps.
-                    <Button asChild variant="link" className="p-0 h-auto ml-1">
-                        <Link href="/payfast-guide">View Integration Guide</Link>
-                    </Button>
-                </AlertDescription>
-            </Alert>
-            <div className="space-y-4 pt-4">
-                 <div>
-                    <Label htmlFor="payfast-merchant-id">PayFast Merchant ID</Label>
-                    <Input id="payfast-merchant-id" placeholder="10000100" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
+                 <div className="space-y-2">
+                    <Label htmlFor="pf-id">Merchant ID</Label>
+                    <Input 
+                        id="pf-id" 
+                        placeholder="e.g. 10000100" 
+                        value={formData.payfastMerchantId}
+                        onChange={(e) => setFormData(p => ({ ...p, payfastMerchantId: e.target.value }))}
+                    />
                 </div>
-                 <div>
-                    <Label htmlFor="payfast-merchant-key">PayFast Merchant Key</Label>
-                    <Input id="payfast-merchant-key" type="password" placeholder="••••••••••••••••" />
+                 <div className="space-y-2">
+                    <Label htmlFor="pf-key">Merchant Key</Label>
+                    <Input 
+                        id="pf-key" 
+                        type="password" 
+                        placeholder="••••••••••••••••" 
+                        value={formData.payfastMerchantKey}
+                        onChange={(e) => setFormData(p => ({ ...p, payfastMerchantKey: e.target.value }))}
+                    />
                 </div>
             </div>
         </div>
-        <Button>Save Changes</Button>
+        <div className="pt-4 border-t flex justify-end">
+            <Button onClick={handleSave} size="lg" className="px-12">Save Changes</Button>
+        </div>
       </CardContent>
     </Card>
   )

@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore, addDocumentNonBlocking, useAuth, setDocumentNonBlocking } from "@/firebase";
+import { useUser, useFirestore, addDocumentNonBlocking, useAuth, setDocumentNonBlocking, useDoc, useMemoFirebase } from "@/firebase";
 import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
@@ -46,6 +46,10 @@ export default function CheckoutPage() {
   const [payfastConfig, setPayfastConfig] = useState<Record<string, string> | null>(null);
   const payfastFormRef = useRef<HTMLFormElement>(null);
 
+  // Fetch real shipping fee from settings
+  const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
+  const { data: settings } = useDoc(settingsRef);
+  const shippingFee = settings?.shippingFee ?? 150;
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -68,13 +72,12 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (user) {
         form.reset({
-            ...form.getValues(), // keep address, etc. if entered
+            ...form.getValues(),
             email: user.email || form.getValues().email,
             firstName: user.displayName?.split(' ')[0] || form.getValues().firstName,
             lastName: user.displayName?.split(' ')[1] || form.getValues().lastName || "",
         });
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   useEffect(() => {
@@ -86,14 +89,12 @@ export default function CheckoutPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsProcessing(true);
-    
     let effectiveUser = user;
     
     if (!effectiveUser) {
         try {
             const userCredential = await signInAnonymously(auth);
             effectiveUser = userCredential.user;
-
             const userDocRef = doc(firestore, 'users', effectiveUser.uid);
             const userData = {
                 id: effectiveUser.uid,
@@ -105,25 +106,13 @@ export default function CheckoutPage() {
             };
             setDocumentNonBlocking(userDocRef, userData, { merge: false });
         } catch (error) {
-            console.error("Anonymous sign-in failed:", error);
-            toast({
-                variant: "destructive",
-                title: "Could not create guest session.",
-                description: "Please try again later or log in.",
-            });
+            toast({ variant: "destructive", title: "Could not create guest session." });
             setIsProcessing(false);
             return;
         }
     }
 
-    if (!effectiveUser) {
-      toast({ variant: "destructive", title: "Authentication error", description: "Could not verify user. Please refresh and try again." });
-      setIsProcessing(false);
-      return;
-    }
-
-
-    const totalAmount = subtotal + 150; // Assuming R150 shipping
+    const totalAmount = subtotal + shippingFee;
     const ordersCollection = collection(firestore, 'users', effectiveUser.uid, 'orders');
 
     const orderData = {
@@ -141,31 +130,18 @@ export default function CheckoutPage() {
     };
 
     try {
-      // We await here to get the order ID for the redirect
       const docRef = await addDocumentNonBlocking(ordersCollection, orderData);
-
-      toast({
-        title: "Order Received!",
-        description: "Redirecting to payment...",
-      });
-      
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-
-      const returnUrl = new URL(`/checkout/success?orderId=${docRef.id}`, origin);
-      const cancelUrl = new URL('/cart', origin);
-      const notifyUrl = new URL('/api/payfast-itn', origin);
-
+      
       const payfastData = {
-        merchant_id: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID!,
-        merchant_key: process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY!,
-        return_url: returnUrl.href,
-        cancel_url: cancelUrl.href,
-        notify_url: notifyUrl.href,
-        
+        merchant_id: settings?.payfastMerchantId || process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID || "10000100",
+        merchant_key: settings?.payfastMerchantKey || process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY || "46f0cd694581a",
+        return_url: new URL(`/checkout/success?orderId=${docRef.id}`, origin).href,
+        cancel_url: new URL('/cart', origin).href,
+        notify_url: new URL('/api/payfast-itn', origin).href,
         name_first: values.firstName,
         name_last: values.lastName,
         email_address: values.email,
-
         m_payment_id: docRef.id,
         amount: totalAmount.toFixed(2),
         item_name: `Working on Grass - Order #${docRef.id.substring(0, 8)}`,
@@ -174,18 +150,12 @@ export default function CheckoutPage() {
 
       setPayfastConfig(payfastData);
       clearCart();
-
     } catch (error: any) {
-       toast({
-          variant: "destructive",
-          title: "Uh oh! Something went wrong.",
-          description: error.message || 'Could not save your order.',
-        });
+       toast({ variant: "destructive", title: "Uh oh!", description: error.message });
        setIsProcessing(false);
     }
   }
 
-  // Redirect if cart is empty on client side
   if (typeof window !== 'undefined' && cartItems.length === 0 && !payfastConfig) {
      router.replace('/shop');
      return null;
@@ -197,29 +167,20 @@ export default function CheckoutPage() {
             <Card className="w-full max-w-lg">
                 <CardHeader>
                     <CardTitle>Proceeding to Payment</CardTitle>
-                    <CardDescription>You are being redirected to PayFast to complete your payment securely.</CardDescription>
+                    <CardDescription>You are being redirected to PayFast securely.</CardDescription>
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground">Please wait...</p>
-                    {/* This form will auto-submit */}
                     <form ref={payfastFormRef} action={process.env.NEXT_PUBLIC_PAYFAST_PROCESS_URL || "https://sandbox.payfast.co.za/eng/process"} method="post">
                         {Object.entries(payfastConfig).map(([key, value]) => (
                            <input key={key} type="hidden" name={key} value={value as string} />
                         ))}
                     </form>
-                     <Button onClick={() => payfastFormRef.current?.submit()} className="mt-4">
-                        Click here if you are not redirected
-                    </Button>
-                    <div className="mt-6 p-4 bg-amber-50 border border-amber-200 rounded-md text-left text-xs text-amber-800">
-                        <h4 className="font-bold mb-2">Developer Note:</h4>
-                        <p>This form is redirecting to the PayFast Sandbox. For a real transaction, a secure <code className="font-mono">signature</code> must be generated on your backend using your PayFast passphrase. See the <Link href="/payfast-guide" className="underline">PayFast Integration Guide</Link> for details.</p>
-                    </div>
                 </CardContent>
             </Card>
         </div>
     )
   }
-
 
   return (
     <div className="container py-12 md:py-20">
@@ -254,7 +215,7 @@ export default function CheckoutPage() {
                   <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
-              <Button type="submit" size="lg" className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90" disabled={isProcessing}>
+              <Button type="submit" size="lg" className="w-full mt-6 bg-accent text-accent-foreground" disabled={isProcessing}>
                 {isProcessing ? 'Processing...' : 'Proceed to Payment'}
               </Button>
             </form>
@@ -262,9 +223,7 @@ export default function CheckoutPage() {
         </div>
         <div>
           <Card>
-            <CardHeader>
-              <CardTitle>Your Order</CardTitle>
-            </CardHeader>
+            <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {cartItems.map(({ product, quantity }) => (
@@ -274,8 +233,8 @@ export default function CheckoutPage() {
                         <Image src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/64/64`} alt={product.name} width={64} height={64} className="rounded-md object-contain bg-secondary/50"/>
                         <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-sm">{quantity}</span>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-sm">{product.name}</h3>
+                      <div className="max-w-[150px]">
+                        <h3 className="font-semibold text-sm truncate">{product.name}</h3>
                         <p className="text-sm text-muted-foreground">R{product.price.toFixed(2)}</p>
                       </div>
                     </div>
@@ -290,18 +249,15 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-muted-foreground">
                   <span>Shipping</span>
-                  <span>R150.00</span>
+                  <span>R{shippingFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-lg">
                   <span>Total</span>
-                  <span>R{(subtotal + 150).toFixed(2)}</span>
+                  <span>R{(subtotal + shippingFee).toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
-           <div className="mt-6 text-center text-muted-foreground text-sm">
-            <p>You will be redirected to our secure payment partner to complete your purchase.</p>
-          </div>
         </div>
       </div>
     </div>
