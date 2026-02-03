@@ -8,8 +8,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
+import { Eye, Package, Truck, CheckCircle, XCircle } from "lucide-react";
 import type { Order, User } from "@/lib/types";
 
 const statusOptions = ['Pending', 'Processing', 'Shipped', 'Fulfilled', 'Delivered', 'Cancelled'] as const;
@@ -36,13 +38,13 @@ export default function AdminOrdersPage() {
     const { toast } = useToast();
     const [orders, setOrders] = useState<(Order & { customerName?: string; userId: string })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedOrder, setSelectedOrder] = useState<(Order & { customerName?: string }) | null>(null);
 
     const fetchAllOrders = async () => {
         if (!firestore) return;
         setIsLoading(true);
         
         try {
-            // 1. Fetch all users to create a name map
             const userMap = new Map<string, string>();
             const usersSnapshot = await getDocs(collection(firestore, 'users'));
             usersSnapshot.forEach(doc => {
@@ -50,7 +52,6 @@ export default function AdminOrdersPage() {
                 userMap.set(doc.id, userData.displayName);
             });
 
-            // 2. Fetch all orders using a collection group query
             const ordersQuery = query(collectionGroup(firestore, 'orders'), orderBy('orderDate', 'desc'));
             const ordersSnapshot = await getDocs(ordersQuery);
             
@@ -83,60 +84,148 @@ export default function AdminOrdersPage() {
         updateDocumentNonBlocking(orderRef, { status: newStatus });
         
         setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus as any } : o));
+        if (selectedOrder?.id === orderId) {
+            setSelectedOrder(prev => prev ? { ...prev, status: newStatus as any } : null);
+        }
         toast({ title: "Status Updated", description: `Order ${orderId.substring(0, 8)} set to ${newStatus}.` });
     }
 
     return (
-        <Card>
-            <CardHeader>
-                <CardTitle>Manage Orders</CardTitle>
-                <CardDescription>View and update the fulfillment status of customer orders.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                {isLoading && <p>Loading all orders...</p>}
-                {!isLoading && (
-                    <Table>
-                        <TableHeader>
-                            <TableRow>
-                                <TableHead>Order ID</TableHead>
-                                <TableHead>Customer</TableHead>
-                                <TableHead>Date</TableHead>
-                                <TableHead>Status</TableHead>
-                                <TableHead>Update Status</TableHead>
-                                <TableHead className="text-right">Total</TableHead>
-                            </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                            {orders.map(order => (
-                                <TableRow key={order.id}>
-                                    <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
-                                    <TableCell>{order.customerName}</TableCell>
-                                    <TableCell>{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString() : 'N/A'}</TableCell>
-                                    <TableCell>
-                                        <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
-                                    </TableCell>
-                                    <TableCell>
-                                        <Select 
-                                            defaultValue={order.status} 
-                                            onValueChange={(val) => handleStatusChange(order.id, order.userId, val)}
-                                        >
-                                            <SelectTrigger className="h-8 w-[130px] text-xs">
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {statusOptions.map(opt => (
-                                                    <SelectItem key={opt} value={opt} className="text-xs">{opt}</SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
-                                    </TableCell>
-                                    <TableCell className="text-right">R{order.totalAmount.toFixed(2)}</TableCell>
+        <div className="space-y-6">
+            <Card>
+                <CardHeader>
+                    <CardTitle>Manage Orders</CardTitle>
+                    <CardDescription>Monitor payments and manage fulfillment statuses.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    {isLoading && <p>Loading all orders...</p>}
+                    {!isLoading && (
+                        <Table>
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Order ID</TableHead>
+                                    <TableHead>Customer</TableHead>
+                                    <TableHead>Date</TableHead>
+                                    <TableHead>Status</TableHead>
+                                    <TableHead>Actions</TableHead>
+                                    <TableHead className="text-right">Total</TableHead>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                )}
-            </CardContent>
-        </Card>
+                            </TableHeader>
+                            <TableBody>
+                                {orders.map(order => (
+                                    <TableRow key={order.id}>
+                                        <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
+                                        <TableCell className="font-medium">{order.customerName}</TableCell>
+                                        <TableCell>{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString() : 'N/A'}</TableCell>
+                                        <TableCell>
+                                            <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="flex items-center gap-2">
+                                                <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}>
+                                                    <Eye className="h-4 w-4" />
+                                                </Button>
+                                                <Select 
+                                                    defaultValue={order.status} 
+                                                    onValueChange={(val) => handleStatusChange(order.id, order.userId, val)}
+                                                >
+                                                    <SelectTrigger className="h-8 w-[130px] text-xs">
+                                                        <SelectValue />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        {statusOptions.map(opt => (
+                                                            <SelectItem key={opt} value={opt} className="text-xs">{opt}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                            </div>
+                                        </TableCell>
+                                        <TableCell className="text-right">R{order.totalAmount.toFixed(2)}</TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    )}
+                </CardContent>
+            </Card>
+
+            <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
+                <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>Order Details: #{selectedOrder?.id.substring(0, 8)}</DialogTitle>
+                        <DialogDescription>Customer and shipping information for fulfillment.</DialogDescription>
+                    </DialogHeader>
+                    
+                    {selectedOrder && (
+                        <div className="space-y-6 py-4">
+                            <div className="grid grid-cols-2 gap-8">
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Shipping Address</h4>
+                                    <div className="text-sm font-body bg-muted/30 p-3 rounded border">
+                                        <p className="font-bold">{selectedOrder.shippingInfo.firstName} {selectedOrder.shippingInfo.lastName}</p>
+                                        <p>{selectedOrder.shippingInfo.address}</p>
+                                        <p>{selectedOrder.shippingInfo.city}, {selectedOrder.shippingInfo.postalCode}</p>
+                                        <p>{selectedOrder.shippingInfo.country}</p>
+                                        <p className="mt-2 text-primary">{selectedOrder.shippingInfo.email}</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Status & Payment</h4>
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2">
+                                            <Badge variant={getStatusVariant(selectedOrder.status)} className="text-sm px-3">{selectedOrder.status}</Badge>
+                                        </div>
+                                        <div className="text-xs text-muted-foreground">
+                                            Ordered: {new Date(selectedOrder.orderDate.toDate()).toLocaleString()}
+                                        </div>
+                                        <div className="text-sm font-bold">
+                                            Total Paid: R{selectedOrder.totalAmount.toFixed(2)}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Ordered Items</h4>
+                                <div className="border rounded overflow-hidden">
+                                    <Table>
+                                        <TableHeader className="bg-muted/50">
+                                            <TableRow>
+                                                <TableHead className="h-8">Item</TableHead>
+                                                <TableHead className="h-8 text-center">Qty</TableHead>
+                                                <TableHead className="h-8 text-right">Price</TableHead>
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {selectedOrder.items.map((item, i) => (
+                                                <TableRow key={i}>
+                                                    <TableCell className="py-2 text-sm font-medium">{item.name}</TableCell>
+                                                    <TableCell className="py-2 text-center text-sm">{item.quantity}</TableCell>
+                                                    <TableCell className="py-2 text-right text-sm">R{item.price.toFixed(2)}</TableCell>
+                                                </TableRow>
+                                            ))}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-2 pt-4 border-t">
+                                <Button variant="outline" onClick={() => setSelectedOrder(null)}>Close</Button>
+                                {selectedOrder.status === 'Processing' && (
+                                    <Button onClick={() => handleStatusChange(selectedOrder.id, selectedOrder.userId, 'Shipped')}>
+                                        <Truck className="mr-2 h-4 w-4" /> Mark as Shipped
+                                    </Button>
+                                )}
+                                {selectedOrder.status === 'Shipped' && (
+                                    <Button className="bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange(selectedOrder.id, selectedOrder.userId, 'Delivered')}>
+                                        <CheckCircle className="mr-2 h-4 w-4" /> Mark Delivered
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+        </div>
     );
 }
