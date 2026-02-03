@@ -12,6 +12,25 @@ import { Input } from '@/components/ui/input';
 import { Minus, Plus, ShoppingCart, Info, CheckCircle2, MapPin } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
 
+const renderFormattedText = (text: string) => {
+  if (!text) return null;
+  return text.split('\n').map((line, i) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      // Extract the bullet character and the text
+      const bulletChar = trimmed[0];
+      const content = trimmed.substring(1).trim();
+      return (
+        <div key={i} className="flex items-start gap-3 mb-3 pl-2">
+          <span className="text-primary font-bold mt-1.5 flex-shrink-0 text-xs">•</span>
+          <span className="text-foreground/80 leading-relaxed">{content}</span>
+        </div>
+      );
+    }
+    return line ? <p key={i} className="mb-4 text-foreground/80 leading-relaxed">{line}</p> : <div key={i} className="h-4" />;
+  });
+};
+
 export default function InDepthLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
@@ -83,10 +102,9 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
             <div className="mb-12 border-b-4 border-primary/20 pb-4">
                 <h2 className="text-3xl font-bold font-headline">Technical Overview</h2>
             </div>
-            <div 
-                className="text-lg text-foreground/80 leading-relaxed font-body space-y-6 prose prose-zinc max-w-none" 
-                dangerouslySetInnerHTML={{ __html: product.description.replace(/•/g, '<br /><span class="text-primary font-bold mr-2">•</span>') }}
-            />
+            <div className="text-lg font-body">
+                {renderFormattedText(product.description)}
+            </div>
         </div>
       </section>
 
@@ -101,9 +119,9 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                     </div>
                     <div className="bg-background border-2 border-border p-8 rounded-lg relative overflow-hidden shadow-sm">
                         <div className="absolute top-0 right-0 p-2 bg-accent text-white text-[10px] font-bold uppercase tracking-widest">Operator Note</div>
-                        <p className="text-lg text-muted-foreground leading-relaxed font-body whitespace-pre-line">
-                            {product.fieldUse}
-                        </p>
+                        <div className="text-lg text-muted-foreground font-body">
+                            {renderFormattedText(product.fieldUse)}
+                        </div>
                     </div>
                  </div>
             </div>
@@ -118,9 +136,9 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                     <div className="border-b-4 border-primary/20 pb-4">
                         <h2 className="text-3xl font-bold font-headline">Operational Instructions</h2>
                     </div>
-                    <p className="text-lg text-muted-foreground leading-relaxed font-body">
-                        {product.howItWorks}
-                    </p>
+                    <div className="text-lg text-muted-foreground font-body">
+                        {renderFormattedText(product.howItWorks)}
+                    </div>
                  </div>
             </div>
         </section>

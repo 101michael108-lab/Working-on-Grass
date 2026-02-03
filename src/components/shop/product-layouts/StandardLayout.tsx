@@ -11,6 +11,23 @@ import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
+const renderFormattedText = (text: string) => {
+  if (!text) return null;
+  return text.split('\n').map((line, i) => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
+      const content = trimmed.substring(1).trim();
+      return (
+        <div key={i} className="flex items-start gap-2 mb-2">
+          <span className="text-primary font-bold mt-1 flex-shrink-0 text-xs">•</span>
+          <span>{content}</span>
+        </div>
+      );
+    }
+    return line ? <p key={i} className="mb-4">{line}</p> : <div key={i} className="h-2" />;
+  });
+};
+
 export default function StandardLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
@@ -55,8 +72,8 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                         </span>
                     </div>
 
-                    <div className="text-lg text-foreground/80 font-body leading-relaxed whitespace-pre-line">
-                        {product.description}
+                    <div className="text-lg text-foreground/80 font-body leading-relaxed">
+                        {renderFormattedText(product.description)}
                     </div>
                 </div>
                 

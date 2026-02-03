@@ -133,7 +133,17 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                         <FormItem><FormLabel>Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField name="description" control={form.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Description</FormLabel><FormControl><Textarea rows={5} {...field} /></FormControl><FormMessage /></FormItem>
+                                        <FormItem>
+                                            <FormLabel>Description</FormLabel>
+                                            <FormControl>
+                                                <Textarea 
+                                                    rows={8} 
+                                                    placeholder="Enter product description. Start lines with '•' to create bullet points." 
+                                                    {...field} 
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )} />
                                      <div className="grid grid-cols-2 gap-4">
                                         <FormField name="price" control={form.control} render={({ field }) => (
@@ -220,7 +230,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                 <CardHeader><CardTitle>In-Depth Layout Content</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
                                     <FormField name="valueProposition" control={form.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Value Proposition</FormLabel><FormControl><Input {...field} placeholder="e.g. Accurately measure grass biomass..." /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Value Proposition</FormLabel><FormControl><Input {...field} placeholder="e.g. Accurately measure grass biomass..." /></FormControl><FormMessage /></FormMessage>
                                     )} />
                                     <FormField name="authorityStatement" control={form.control} render={({ field }) => (
                                         <FormItem><FormLabel>Authority Statement (Quote)</FormLabel><FormControl><Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." /></FormControl><FormMessage /></FormItem>
@@ -237,7 +247,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                         <FormItem>
                                             <FormLabel>Operational Guide (Technical)</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} rows={4} placeholder="Explain how the product works technically..." />
+                                                <Textarea {...field} rows={4} placeholder="Explain how the product works technically. Supports bullet points." />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -246,7 +256,11 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                         <FormItem>
                                             <FormLabel>Field Use Description (Practical)</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} rows={4} placeholder="Practical instructions for using this tool in the field..." />
+                                                <Textarea 
+                                                    {...field} 
+                                                    rows={6} 
+                                                    placeholder="Practical instructions for using this tool in the field.&#10;• Step 1...&#10;• Step 2..." 
+                                                />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
