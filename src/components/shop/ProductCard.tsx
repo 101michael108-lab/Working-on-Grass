@@ -12,9 +12,9 @@ export default function ProductCard({ product }: { product: Product }) {
 
   return (
     <Card className="flex flex-col group overflow-hidden transition-all hover:border-primary/50 h-full border-2">
-      <Link href={`/shop/${product.id}`} className="block relative aspect-[4/3] bg-muted/50 overflow-hidden border-b-2">
+      <Link href={`/shop/${product.id}`} className="block relative aspect-square bg-muted/50 overflow-hidden border-b-2">
         <Image
-          src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/400/300`}
+          src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/400/400`}
           alt={product.name}
           fill
           sizes="(min-width: 1280px) 33vw, (min-width: 640px) 50vw, 100vw"
