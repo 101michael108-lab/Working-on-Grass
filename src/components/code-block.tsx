@@ -1,3 +1,4 @@
+
 "use client";
 
 // Note: This is a very simple component without syntax highlighting
