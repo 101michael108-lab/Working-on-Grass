@@ -72,23 +72,23 @@ export async function POST(req: NextRequest) {
             }).catch(e => console.error(`Failed to decrement stock for ${item.productId}`, e));
         }
 
-        // B. Trigger Customer Email
+        // B. Trigger Customer Email (via Firestore queue for Trigger Email extension)
         await sendOrderConfirmationEmail({
             to: orderData.shippingInfo.email,
             orderId: orderId,
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,
             items: orderData.items,
-        }).catch(e => console.error("Email failed", e));
+        }, firestore).catch(e => console.error("Email queuing failed", e));
 
         // C. Trigger Admin Notification
         await sendAdminOrderNotification({
-            to: 'admin@workingongrass.co.za', // Should come from settings
+            to: 'admin@workingongrass.co.za', // Fallback, normally the service handles it
             orderId: orderId,
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,
             items: orderData.items,
-        });
+        }, firestore).catch(e => console.error("Admin notification queuing failed", e));
     }
 
     console.log(`PayFast ITN: Order ${orderId} updated to ${newStatus}. Inventory adjusted.`);

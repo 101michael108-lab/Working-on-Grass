@@ -157,6 +157,22 @@
         "payfastMerchantKey": { "type": "string" }
       }
     },
+    "Mail": {
+      "title": "Mail",
+      "type": "object",
+      "description": "Outgoing email document used by the Firebase Trigger Email extension.",
+      "properties": {
+        "to": { "type": "string" },
+        "message": {
+          "type": "object",
+          "properties": {
+            "subject": { "type": "string" },
+            "html": { "type": "string" },
+            "text": { "type": "string" }
+          }
+        }
+      }
+    },
     "Order": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Order",
@@ -269,6 +285,19 @@
           },
           "description": "Global singleton configuration for the site.",
           "params": []
+        }
+      },
+      {
+        "path": "/mail/{mailId}",
+        "definition": {
+          "entityName": "Mail",
+          "schema": {
+            "$ref": "#/backend/entities/Mail"
+          },
+          "description": "Collection for the Trigger Email extension.",
+          "params": [
+            { "name": "mailId", "description": "Unique identifier for the email document." }
+          ]
         }
       }
     ]
