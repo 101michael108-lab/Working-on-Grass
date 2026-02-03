@@ -27,6 +27,7 @@ import type { Product } from "@/lib/types";
 import ProductCard from "@/components/shop/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 export default function Home() {
@@ -64,14 +65,14 @@ export default function Home() {
   const { data: featuredProducts, isLoading: isLoadingFeatured } = useCollection<Omit<Product, 'id'>>(featuredProductQuery);
   const featuredProduct = featuredProducts?.[0];
 
-  // Fetch 2 other products for the sidebar grid
+  // Fetch more products for the scrollable sidebar
   const otherProductsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
-    return query(collection(firestore, 'products'), orderBy('name'), limit(3));
+    return query(collection(firestore, 'products'), orderBy('name'), limit(8));
   }, [firestore]);
   const { data: allOtherProducts, isLoading: isLoadingOthers } = useCollection<Omit<Product, 'id'>>(otherProductsQuery);
   
-  const otherProducts = allOtherProducts?.filter(p => p.id !== featuredProduct?.id).slice(0, 2);
+  const otherProducts = allOtherProducts?.filter(p => p.id !== featuredProduct?.id);
 
   const isLoading = isLoadingFeatured || isLoadingOthers;
 
@@ -179,92 +180,101 @@ export default function Home() {
                         </div>
                     </div>
                 ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-                    {/* Featured Flagship Layout - Technical Bulletin Style */}
-                    {featuredProduct && (
-                        <div className="lg:col-span-2">
-                            <div className="relative border-4 border-primary/20 bg-card rounded-md overflow-hidden shadow-xl flex flex-col">
-                                {/* Bulletin Header */}
-                                <div className="bg-primary text-primary-foreground p-4 flex justify-between items-center">
-                                    <div className="flex items-center gap-3">
-                                        <FileText className="h-5 w-5 opacity-80" />
-                                        <span className="text-xs font-bold uppercase tracking-[0.3em]">Technical Bulletin No. 01</span>
-                                    </div>
-                                    <Badge className="bg-accent text-white font-bold px-3 border-none">FLAGSHIP TOOL</Badge>
-                                </div>
-                                
-                                <div className="grid md:grid-cols-5 bg-white/40">
-                                    <div className="md:col-span-2 p-6 flex items-center justify-center bg-white/60 border-r-2 border-primary/5">
-                                        <Link href={`/shop/${featuredProduct.id}`} className="block relative aspect-square w-full">
-                                            <Image 
-                                                src={featuredProduct.images?.[0] || `https://picsum.photos/seed/${featuredProduct.id}/600/600`} 
-                                                alt={featuredProduct.name}
-                                                fill
-                                                className="object-contain hover:scale-105 transition-transform duration-500"
-                                            />
-                                        </Link>
-                                    </div>
-                                    <div className="md:col-span-3 p-8 flex flex-col">
-                                        <div className="space-y-2 mb-6">
-                                            <h3 className="text-4xl font-headline font-bold leading-tight text-foreground">
-                                                {featuredProduct.name}
-                                            </h3>
-                                            <p className="text-sm font-bold text-accent uppercase tracking-widest italic">
-                                                {featuredProduct.valueProposition || "Professional Field Measurement"}
-                                            </p>
+                <>
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-stretch">
+                        {/* Featured Flagship Layout - Technical Bulletin Style */}
+                        {featuredProduct && (
+                            <div className="lg:col-span-2 flex flex-col">
+                                <div className="relative border-4 border-primary/20 bg-card rounded-md overflow-hidden shadow-xl flex flex-col h-full">
+                                    {/* Bulletin Header */}
+                                    <div className="bg-primary text-primary-foreground p-4 flex justify-between items-center">
+                                        <div className="flex items-center gap-3">
+                                            <FileText className="h-5 w-5 opacity-80" />
+                                            <span className="text-xs font-bold uppercase tracking-[0.3em]">Technical Bulletin No. 01</span>
                                         </div>
-
-                                        <div className="space-y-4 font-body">
-                                            <div className="bg-secondary/20 p-4 rounded border-l-4 border-primary">
-                                                <p className="text-sm text-muted-foreground leading-relaxed">
-                                                    {featuredProduct.description.substring(0, 180)}...
+                                        <Badge className="bg-accent text-white font-bold px-3 border-none">FLAGSHIP TOOL</Badge>
+                                    </div>
+                                    
+                                    <div className="grid md:grid-cols-5 bg-white/40 flex-grow">
+                                        <div className="md:col-span-2 p-6 flex items-center justify-center bg-white/60 border-r-2 border-primary/5">
+                                            <Link href={`/shop/${featuredProduct.id}`} className="block relative aspect-square w-full">
+                                                <Image 
+                                                    src={featuredProduct.images?.[0] || `https://picsum.photos/seed/${featuredProduct.id}/600/600`} 
+                                                    alt={featuredProduct.name}
+                                                    fill
+                                                    className="object-contain hover:scale-105 transition-transform duration-500"
+                                                />
+                                            </Link>
+                                        </div>
+                                        <div className="md:col-span-3 p-8 flex flex-col">
+                                            <div className="space-y-2 mb-6">
+                                                <h3 className="text-4xl font-headline font-bold leading-tight text-foreground">
+                                                    {featuredProduct.name}
+                                                </h3>
+                                                <p className="text-sm font-bold text-accent uppercase tracking-widest italic">
+                                                    {featuredProduct.valueProposition || "Professional Field Measurement"}
                                                 </p>
                                             </div>
-                                            
-                                            {/* Technical Spec Snippet */}
-                                            <div className="grid grid-cols-2 gap-4 pt-2">
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-bold uppercase text-primary/60">Field Utility</p>
-                                                    <p className="text-xs font-medium">Biomass Estimation</p>
-                                                </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-bold uppercase text-primary/60">Build Grade</p>
-                                                    <p className="text-xs font-medium">Field-Tested Rugged</p>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                        <div className="mt-auto pt-8 border-t-2 border-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                            <div className="text-left">
-                                                <p className="text-3xl font-headline font-bold text-accent leading-none">R{featuredProduct.price.toFixed(2)}</p>
-                                                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Excl. Delivery & VAT</p>
+                                            <div className="space-y-4 font-body">
+                                                <div className="bg-secondary/20 p-4 rounded border-l-4 border-primary">
+                                                    <p className="text-sm text-muted-foreground leading-relaxed">
+                                                        {featuredProduct.description.substring(0, 180)}...
+                                                    </p>
+                                                </div>
+                                                
+                                                {/* Technical Spec Snippet */}
+                                                <div className="grid grid-cols-2 gap-4 pt-2">
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold uppercase text-primary/60">Field Utility</p>
+                                                        <p className="text-xs font-medium">Biomass Estimation</p>
+                                                    </div>
+                                                    <div className="space-y-1">
+                                                        <p className="text-[10px] font-bold uppercase text-primary/60">Build Grade</p>
+                                                        <p className="text-xs font-medium">Field-Tested Rugged</p>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 shadow-md">
-                                                <Link href={`/shop/${featuredProduct.id}`}>View Technical Brief <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                                            </Button>
+
+                                            <div className="mt-auto pt-8 border-t-2 border-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+                                                <div className="text-left">
+                                                    <p className="text-3xl font-headline font-bold text-accent leading-none">R{featuredProduct.price.toFixed(2)}</p>
+                                                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Excl. Delivery & VAT</p>
+                                                </div>
+                                                <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 shadow-md">
+                                                    <Link href={`/shop/${featuredProduct.id}`}>View Technical Brief <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                        )}
+                        
+                        {/* Sidebar Grid for other curated products - Now Scrollable */}
+                        <div className="lg:col-span-1 flex flex-col h-full">
+                            <div className="bg-secondary/20 p-4 border-l-4 border-accent mb-4 shrink-0">
+                                <h4 className="font-headline font-bold text-xl leading-tight">Recommended by Frits</h4>
+                                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em] font-bold">Essential Field Materials</p>
+                            </div>
+                            
+                            <ScrollArea className="flex-grow pr-4 h-[500px] lg:h-auto">
+                                <div className="space-y-6">
+                                    {otherProducts?.map((product) => (
+                                        <ProductCard key={product.id} product={product} />
+                                    ))}
+                                </div>
+                            </ScrollArea>
                         </div>
-                    )}
+                    </div>
                     
-                    {/* Sidebar Grid for other curated products */}
-                    <div className="lg:col-span-1 space-y-8">
-                        <div className="bg-secondary/20 p-4 border-l-4 border-accent mb-4">
-                            <h4 className="font-headline font-bold text-xl leading-tight">Recommended by Frits</h4>
-                            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em] font-bold">Essential Field Materials</p>
-                        </div>
-                        <div className="space-y-6">
-                            {otherProducts?.map((product) => (
-                                <ProductCard key={product.id} product={product} />
-                            ))}
-                        </div>
-                        <Button asChild variant="outline" className="w-full h-12 border-2 font-bold uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-colors">
+                    {/* Centered Footer Action */}
+                    <div className="mt-12 flex justify-center">
+                        <Button asChild variant="outline" className="w-full max-w-md h-12 border-2 font-bold uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-colors">
                             <Link href="/shop">Browse Full Catalog</Link>
                         </Button>
                     </div>
-                </div>
+                </>
                 )}
             </div>
             </div>
