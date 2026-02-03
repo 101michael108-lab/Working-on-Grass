@@ -1,11 +1,10 @@
-
 "use client";
 
 import { useState } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag, Info, Users } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag, Users } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
@@ -78,10 +77,10 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                 
                 {/* Who It's For - Replaces Technical Specifications per request */}
                 {product.targetAudience && (
-                    <div className="space-y-4 pt-4">
-                        <div className="flex items-center gap-2 border-b pb-2">
+                    <div className="space-y-4 pt-4 border-t-2 border-border border-dashed">
+                        <div className="flex items-center gap-2 pb-2">
                             <Users className="h-5 w-5 text-primary" />
-                            <h3 className="text-lg font-bold font-headline">Who It's For</h3>
+                            <h3 className="text-xl font-bold font-headline">Who It's For</h3>
                         </div>
                         <div className="text-base text-foreground/80 font-body leading-relaxed">
                             {renderFormattedText(product.targetAudience)}

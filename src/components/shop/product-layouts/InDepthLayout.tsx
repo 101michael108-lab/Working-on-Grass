@@ -1,15 +1,13 @@
-
 "use client";
 
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import type { Product } from '@/lib/types';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, Info, CheckCircle2, MapPin, AlertCircle } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, Users } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
 
 const renderFormattedText = (text: string) => {
@@ -51,7 +49,6 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                         <span className="text-xs font-bold uppercase tracking-widest text-primary/70">{product.category}</span>
                         <h1 className="text-4xl md:text-5xl font-bold font-headline leading-tight">{product.name}</h1>
                         
-                        {/* Short Description positioned next to CTA */}
                         <div className="text-lg text-muted-foreground font-body leading-relaxed">
                             {renderFormattedText(product.description)}
                         </div>
@@ -150,7 +147,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                         <TableBody>
                             {product.specifications.map((spec, index) => (
                                 <TableRow key={index} className={index % 2 === 0 ? 'bg-muted/30' : 'bg-background'}>
-                                    <TableCell className="font-bold text-primary py-4 pl-6 uppercase tracking-wider text-xs w-1/3">{spec.feature}</TableCell>
+                                    <TableCell className="font-bold text-primary py-4 pl-6 uppercase tracking-wider text-xs w-1/3 border-r">{spec.feature}</TableCell>
                                     <TableCell className="py-4 pr-6 text-foreground font-body">{spec.description}</TableCell>
                                 </TableRow>
                             ))}
@@ -173,15 +170,32 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
             </div>
         </section>
       )}
+
+      {/* 5. Who It's For (Target Audience) */}
+      {product.targetAudience && (
+        <section className="py-16 md:py-24 bg-secondary/10 border-t-2">
+            <div className="container max-w-4xl">
+                <div className="space-y-8">
+                    <div className="flex items-center gap-3 border-b-4 border-primary/10 pb-4">
+                        <Users className="h-6 w-6 text-primary" />
+                        <h2 className="text-3xl font-bold font-headline">Who It's For</h2>
+                    </div>
+                    <div className="text-lg text-muted-foreground font-body leading-relaxed">
+                        {renderFormattedText(product.targetAudience)}
+                    </div>
+                </div>
+            </div>
+        </section>
+      )}
       
-      {/* 5. Authority Statement */}
+      {/* 6. Authority Statement */}
       {product.authorityStatement && (
         <section className="bg-primary text-primary-foreground py-16 md:py-24">
             <div className="container text-center px-4 max-w-4xl">
                  <p className="text-xs font-bold uppercase tracking-[0.3em] mb-8 opacity-70 text-primary-foreground/80">Expert Recommendation</p>
                  <div className="space-y-8">
                     <blockquote className="text-2xl md:text-4xl font-headline italic leading-relaxed">
-                        "{product.authorityStatement.split('\n')[0]}"
+                        "{product.authorityStatement.split('\n')[0].replace(/[“”"]/g, '')}"
                     </blockquote>
                     <div className="h-1 w-16 bg-accent mx-auto" />
                     <div className="text-primary-foreground/80 font-body max-w-2xl mx-auto">
@@ -192,7 +206,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
 
-      {/* 6. Final CTA Purchase Area */}
+      {/* 7. Final CTA Purchase Area */}
        <section className="py-16 md:py-24 border-t-2 border-border text-center bg-muted/10">
           <div className="container">
             <h2 className="text-3xl font-bold font-headline mb-8">Ready for Assessment?</h2>
@@ -208,7 +222,6 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
           </div>
       </section>
 
-      {/* 7. Related Resources */}
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
 
     </div>

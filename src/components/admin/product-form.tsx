@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -138,7 +137,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                     )} />
                                     <FormField name="description" control={form.control} render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Description (Short Technical Overview)</FormLabel>
+                                            <FormLabel>Description (Technical Overview)</FormLabel>
                                             <FormControl>
                                                 <Textarea 
                                                     rows={8} 
@@ -221,7 +220,29 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                     </SelectContent>
                                     </Select>
                                     <FormMessage />
-                                    <CardDescription className="pt-2">You can change this at any time. The sections below will update based on your choice.</CardDescription>
+                                    <CardDescription className="pt-2">Layout determines which specialized sections are displayed.</CardDescription>
+                                </FormItem>
+                            )} />
+                        </CardContent>
+                    </Card>
+
+                    {/* Common Section: Who It's For */}
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Who It's For (Target Audience)</CardTitle>
+                            <CardDescription>Describe the ideal reader or user for this product.</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <FormField name="targetAudience" control={form.control} render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Textarea 
+                                            rows={6} 
+                                            placeholder="• Farmers assessing grazing...&#10;• Ecologists conducting surveys..." 
+                                            {...field} 
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
                                 </FormItem>
                             )} />
                         </CardContent>
@@ -231,13 +252,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                     {layout === 'in-depth' && (
                         <>
                             <Card>
-                                <CardHeader><CardTitle>In-Depth Layout Content</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>Premium technical Details</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
                                     <FormField name="valueProposition" control={form.control} render={({ field }) => (
                                         <FormItem>
                                             <FormLabel>Value Proposition</FormLabel>
                                             <FormControl>
-                                                <Input {...field} placeholder="e.g. Accurately measure grass biomass..." />
+                                                <Input {...field} placeholder="e.g. Accurate pasture evaluation in minutes..." />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -246,7 +267,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                         <FormItem>
                                             <FormLabel>Authority Statement (Quote + Attribution)</FormLabel>
                                             <FormControl>
-                                                <Textarea rows={4} {...field} placeholder="Quote — Expert Name, Biography..." />
+                                                <Textarea rows={6} {...field} placeholder="“The DPM offers a rapid, objective measure...”&#10;— Frits van Oudtshoorn, Ecologist..." />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
@@ -256,26 +277,25 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                             <Card>
                                 <CardHeader>
                                     <CardTitle>How It Works & Field Use</CardTitle>
-                                    <CardDescription>Explain the technical operation and practical field application.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <FormField name="howItWorks" control={form.control} render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Operational Guide (Technical)</FormLabel>
+                                            <FormLabel>Operational Instructions (Technical)</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} rows={4} placeholder="Explain how the product works technically. Supports bullet points." />
+                                                <Textarea {...field} rows={6} placeholder="Describe the steps to use the tool...&#10;1. Position...&#10;2. Release..." />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>
                                     )} />
                                     <FormField name="fieldUse" control={form.control} render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>Field Use Description (Practical)</FormLabel>
+                                            <FormLabel>Field Application (Practical)</FormLabel>
                                             <FormControl>
                                                 <Textarea 
                                                     {...field} 
                                                     rows={6} 
-                                                    placeholder="Practical instructions for using this tool in the field.&#10;• Step 1...&#10;• Step 2..." 
+                                                    placeholder="In real-world conditions, the DPM is deployed...&#10;• Grazing capacity...&#10;• Fire planning..." 
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -288,7 +308,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                                 <Textarea 
                                                     {...field} 
                                                     rows={4} 
-                                                    placeholder="Specific scientific or technical note regarding calibration or usage precision." 
+                                                    placeholder="DPM readings must be calibrated to local grass species..." 
                                                 />
                                             </FormControl>
                                             <FormMessage />
@@ -299,46 +319,28 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </>
                     )}
 
-                    {(layout === 'book' || layout === 'standard') && (
+                    {layout === 'book' && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>{layout === 'book' ? 'Book Details & Audience' : 'Target Audience'}</CardTitle>
-                                <CardDescription>Information about who this product is intended for.</CardDescription>
+                                <CardTitle>Book Key Features</CardTitle>
+                                <CardDescription>Botanical or publication highlights.</CardDescription>
                             </CardHeader>
-                            <CardContent className="space-y-6">
-                                <FormField name="targetAudience" control={form.control} render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Who It's For (Target Audience)</FormLabel>
-                                        <FormControl>
-                                            <Textarea 
-                                                rows={6} 
-                                                placeholder="Describe the ideal reader/user. Supports bullet points.&#10;• Farmers assessing grazing...&#10;• Ecologists conducting surveys..." 
-                                                {...field} 
-                                            />
-                                        </FormControl>
-                                        <FormMessage />
-                                    </FormItem>
-                                )} />
-                                
-                                {layout === 'book' && (
-                                    <div className="space-y-4">
-                                        <div className="flex items-center justify-between">
-                                            <Label>Key Features (Botanical/Publication Highlights)</Label>
-                                            <Button type="button" variant="outline" size="sm" onClick={() => appendFeature('')}><PlusCircle className="mr-2"/>Add Feature</Button>
+                            <CardContent className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <Label>Highlights List</Label>
+                                    <Button type="button" variant="outline" size="sm" onClick={() => appendFeature('')}><PlusCircle className="mr-2"/>Add Feature</Button>
+                                </div>
+                                <div className="space-y-2">
+                                    {featureFields.map((field, index) => (
+                                        <div key={field.id} className="flex items-center gap-2">
+                                            <FormField control={form.control} name={`features.${index}`} render={({ field }) => (
+                                                <FormItem className="flex-grow"><FormControl><Input {...field} placeholder="e.g. 1000+ full-colour photographs" /></FormControl><FormMessage /></FormItem>
+                                            )}/>
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => removeFeature(index)}><Trash className="h-4 w-4" /></Button>
                                         </div>
-                                        <div className="space-y-2">
-                                            {featureFields.map((field, index) => (
-                                                <div key={field.id} className="flex items-center gap-2">
-                                                    <FormField control={form.control} name={`features.${index}`} render={({ field }) => (
-                                                        <FormItem className="flex-grow"><FormControl><Input {...field} placeholder="e.g. 1000+ full-colour photographs" /></FormControl><FormMessage /></FormItem>
-                                                    )}/>
-                                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeFeature(index)}><Trash /></Button>
-                                                </div>
-                                            ))}
-                                            {featureFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No features added.</p>}
-                                        </div>
-                                    </div>
-                                )}
+                                    ))}
+                                    {featureFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No features added.</p>}
+                                </div>
                             </CardContent>
                         </Card>
                     )}
@@ -348,18 +350,18 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         <Card>
                             <CardHeader className="flex-row items-center justify-between">
                                 <CardTitle>{layout === 'book' ? 'Publication Info' : 'Technical Specifications'}</CardTitle>
-                                <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Row</Button>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {specFields.map((field, index) => (
                                     <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
                                         <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
-                                            <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="e.g. ISBN, Pages, Weight" /></FormControl><FormMessage /></FormItem>
+                                            <FormItem><FormControl><Input {...field} placeholder="e.g. Material or ISBN" /></FormControl><FormMessage /></FormItem>
                                         )}/>
                                         <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
-                                            <FormItem><FormLabel>Value</FormLabel><FormControl><Input {...field} placeholder="e.g. 978-0-..., 289, 1.2kg"/></FormControl><FormMessage /></FormItem>
+                                            <FormItem><FormControl><Input {...field} placeholder="Details..."/></FormControl><FormMessage /></FormItem>
                                         )}/>
-                                        <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
+                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeSpec(index)}><Trash className="h-4 w-4" /></Button>
                                     </div>
                                 ))}
                                 {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added.</p>}
@@ -367,7 +369,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </Card>
                     )}
 
-                    <Button type="submit" size="lg">{product ? "Save Changes" : "Create Product"}</Button>
+                    <Button type="submit" size="lg" className="w-full">{product ? "Save Changes" : "Create Product"}</Button>
                 </form>
             </Form>
 
