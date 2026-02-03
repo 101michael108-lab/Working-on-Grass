@@ -49,6 +49,7 @@ const formSchema = z.object({
   features: z.array(z.string().min(1, "Feature text is required")).optional(),
 
   howItWorks: z.string().optional(),
+  fieldUse: z.string().optional(),
 });
 
 
@@ -80,6 +81,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             specifications: product?.specifications || [],
             features: product?.features || [],
             howItWorks: product?.howItWorks || "",
+            fieldUse: product?.fieldUse || "",
         },
     });
 
@@ -227,14 +229,24 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                             </Card>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>How It Works</CardTitle>
-                                    <CardDescription>A descriptive paragraph explaining the field use of this product.</CardDescription>
+                                    <CardTitle>How It Works & Field Use</CardTitle>
+                                    <CardDescription>Explain the technical operation and practical field application.</CardDescription>
                                 </CardHeader>
-                                <CardContent>
+                                <CardContent className="space-y-6">
                                     <FormField name="howItWorks" control={form.control} render={({ field }) => (
                                         <FormItem>
+                                            <FormLabel>Operational Guide (Technical)</FormLabel>
                                             <FormControl>
-                                                <Textarea {...field} rows={6} placeholder="Explain how the product works in a detailed paragraph..." />
+                                                <Textarea {...field} rows={4} placeholder="Explain how the product works technically..." />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )} />
+                                    <FormField name="fieldUse" control={form.control} render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Field Use Description (Practical)</FormLabel>
+                                            <FormControl>
+                                                <Textarea {...field} rows={4} placeholder="Practical instructions for using this tool in the field..." />
                                             </FormControl>
                                             <FormMessage />
                                         </FormItem>

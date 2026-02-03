@@ -115,6 +115,10 @@
           "type": "string",
           "description": "A paragraph explaining how the product works."
         },
+        "fieldUse": {
+          "type": "string",
+          "description": "Practical instructions or advice for using the product in the field."
+        },
         "authorityStatement": {
           "type": "string",
           "description": "A statement to build trust and authority."
@@ -500,7 +504,7 @@
           ]
         }
       },
-       {
+      {
         "path": "/consultationRequests/{consultationRequestId}",
         "definition": {
           "entityName": "ConsultationRequest",

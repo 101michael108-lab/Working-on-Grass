@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from 'react';
@@ -8,7 +9,7 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, Info, CheckCircle2 } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Info, CheckCircle2, MapPin } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
 
 export default function InDepthLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
@@ -89,18 +90,19 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </div>
       </section>
 
-      {/* 3. Operational Guide Section */}
-      {product.howItWorks && (
-        <section id="how-it-works" className="py-16 md:py-24 bg-muted/20 border-y-2 border-primary/5">
+      {/* 3. Field Use Description Section */}
+      {product.fieldUse && (
+        <section id="field-use" className="py-16 md:py-24 bg-secondary/20 border-y-2 border-primary/5">
             <div className="container max-w-4xl">
                  <div className="space-y-8">
-                    <div className="border-b-4 border-primary/20 pb-4">
-                        <h2 className="text-3xl font-bold font-headline">How It Works in the Field</h2>
+                    <div className="flex items-center gap-3 border-b-4 border-primary/20 pb-4">
+                        <MapPin className="h-6 w-6 text-primary" />
+                        <h2 className="text-3xl font-bold font-headline">Field Application & Use</h2>
                     </div>
-                    <div className="bg-background border-2 border-border p-8 rounded-lg relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-2 bg-accent/10 text-accent text-[10px] font-bold uppercase tracking-widest">Operator Note</div>
-                        <p className="text-lg text-muted-foreground leading-relaxed font-body">
-                            {product.howItWorks}
+                    <div className="bg-background border-2 border-border p-8 rounded-lg relative overflow-hidden shadow-sm">
+                        <div className="absolute top-0 right-0 p-2 bg-accent text-white text-[10px] font-bold uppercase tracking-widest">Operator Note</div>
+                        <p className="text-lg text-muted-foreground leading-relaxed font-body whitespace-pre-line">
+                            {product.fieldUse}
                         </p>
                     </div>
                  </div>
@@ -108,7 +110,23 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
 
-      {/* 4. Specifications Table */}
+      {/* 4. Operational Guide Section */}
+      {product.howItWorks && (
+        <section id="how-it-works" className="py-16 md:py-24 border-b-2 border-primary/5">
+            <div className="container max-w-4xl">
+                 <div className="space-y-8">
+                    <div className="border-b-4 border-primary/20 pb-4">
+                        <h2 className="text-3xl font-bold font-headline">Operational Instructions</h2>
+                    </div>
+                    <p className="text-lg text-muted-foreground leading-relaxed font-body">
+                        {product.howItWorks}
+                    </p>
+                 </div>
+            </div>
+        </section>
+      )}
+
+      {/* 5. Specifications Table */}
       {product.specifications && product.specifications.length > 0 && (
          <section className="py-16 md:py-24">
             <div className="container max-w-3xl">
@@ -131,7 +149,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
       
-      {/* 5. Authority Statement */}
+      {/* 6. Authority Statement */}
       {product.authorityStatement && (
         <section className="bg-primary text-primary-foreground py-16 md:py-20">
             <div className="container text-center px-4 max-w-3xl">
@@ -144,7 +162,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
 
-      {/* 6. Purchase Area */}
+      {/* 7. Purchase Area */}
        <section className="py-16 md:py-24 border-t-2 border-border text-center bg-muted/10">
           <div className="container">
             <h2 className="text-3xl font-bold font-headline mb-8">Ready for Assessment?</h2>
@@ -160,7 +178,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
           </div>
       </section>
 
-      {/* 7. Related Resources */}
+      {/* 8. Related Resources */}
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
 
     </div>

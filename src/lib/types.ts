@@ -27,6 +27,7 @@ export type Product = {
   specifications?: Specification[];
   features?: string[];
   howItWorks?: string;
+  fieldUse?: string;
   authorityStatement?: string;
 };
 
