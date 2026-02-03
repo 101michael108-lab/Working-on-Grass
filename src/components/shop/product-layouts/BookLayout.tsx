@@ -5,9 +5,8 @@ import { useState } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, Check, BookOpen, ScrollText, Users } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Check, BookOpen, Users } from 'lucide-react';
 import type { Product } from '@/lib/types';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
 
@@ -106,8 +105,10 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                         </ul>
                     </div>
                 )}
+            </div>
 
-                {/* Who It's For */}
+            {/* Who It's For Sidebar */}
+            <div className="lg:col-span-5 space-y-8">
                 {product.targetAudience && (
                     <div className="space-y-8">
                         <div className="flex items-center gap-3 border-b-2 border-accent/10 pb-4">
@@ -121,39 +122,14 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                         </div>
                     </div>
                 )}
-            </div>
-
-            {/* Publication Specs Sidebar */}
-            {product.specifications && product.specifications.length > 0 && (
-                <div className="lg:col-span-5 space-y-8">
-                    <div className="flex items-center gap-3 border-b-2 border-border pb-4">
-                        <ScrollText className="h-6 w-6 text-muted-foreground" />
-                        <h3 className="text-3xl font-bold font-headline">Publication Info</h3>
-                    </div>
-                    <div className="border-2 border-border rounded overflow-hidden shadow-sm bg-white">
-                        <Table>
-                            <TableBody>
-                                {product.specifications.map((spec, index) => (
-                                    <TableRow key={index} className={index % 2 === 0 ? 'bg-muted/30' : 'bg-white'}>
-                                        <TableCell className="font-bold text-primary/70 py-4 pl-6 uppercase tracking-wider text-[10px] w-1/3 border-r">
-                                            {spec.feature}
-                                        </TableCell>
-                                        <TableCell className="py-4 pr-6 text-foreground font-body font-medium">
-                                            {spec.description}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </div>
-                    <div className="p-6 bg-secondary/20 rounded-md border-2 border-dashed border-border text-center">
-                        <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Technical Standard</p>
-                        <p className="text-sm text-muted-foreground leading-relaxed">
-                            Peer-reviewed and field-tested for maximum reliability in Southern African ecological conditions.
-                        </p>
-                    </div>
+                
+                <div className="p-6 bg-secondary/20 rounded-md border-2 border-dashed border-border text-center">
+                    <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">Technical Standard</p>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                        Peer-reviewed and field-tested for maximum reliability in Southern African ecological conditions.
+                    </p>
                 </div>
-            )}
+            </div>
         </div>
       </section>
       

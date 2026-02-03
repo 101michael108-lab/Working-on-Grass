@@ -348,18 +348,18 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </Card>
                     )}
 
-                    {/* Technical Specifications - Applicable to In-Depth and Book */}
-                    {(layout === 'in-depth' || layout === 'book') && (
+                    {/* Technical Specifications - Applicable only to In-Depth */}
+                    {layout === 'in-depth' && (
                         <Card>
                             <CardHeader className="flex-row items-center justify-between">
-                                <CardTitle>{layout === 'book' ? 'Publication Info' : 'Technical Specifications'}</CardTitle>
+                                <CardTitle>Technical Specifications</CardTitle>
                                 <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Row</Button>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 {specFields.map((field, index) => (
                                     <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
                                         <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
-                                            <FormItem><FormControl><Input {...field} placeholder="e.g. Material or ISBN" /></FormControl><FormMessage /></FormItem>
+                                            <FormItem><FormControl><Input {...field} placeholder="e.g. Material" /></FormControl><FormMessage /></FormItem>
                                         )}/>
                                         <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
                                             <FormItem><FormControl><Input {...field} placeholder="Details..."/></FormControl><FormMessage /></FormItem>
