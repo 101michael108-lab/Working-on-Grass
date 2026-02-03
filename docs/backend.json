@@ -126,6 +126,10 @@
         "calibrationNote": {
           "type": "string",
           "description": "Specific scientific or technical note regarding calibration or usage precision."
+        },
+        "targetAudience": {
+          "type": "string",
+          "description": "A description of who the product is intended for, often used for books."
         }
       },
       "required": [

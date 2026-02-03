@@ -30,6 +30,7 @@ export type Product = {
   fieldUse?: string;
   authorityStatement?: string;
   calibrationNote?: string;
+  targetAudience?: string;
 };
 
 
