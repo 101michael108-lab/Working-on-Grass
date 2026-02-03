@@ -12,6 +12,7 @@ import {
   Camera,
   Calculator,
   CheckCircle2,
+  FileText,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -179,17 +180,21 @@ export default function Home() {
                     </div>
                 ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 items-start">
-                    {/* Featured Flagship Layout */}
+                    {/* Featured Flagship Layout - Technical Bulletin Style */}
                     {featuredProduct && (
                         <div className="lg:col-span-2">
-                            <div className="relative border-4 border-primary/10 bg-card rounded-lg overflow-hidden shadow-2xl flex flex-col">
-                                <div className="bg-primary/5 p-4 border-b-2 border-primary/10 flex justify-between items-center">
-                                    <Badge className="bg-primary text-white font-bold tracking-widest px-3">FLAGSHIP TOOL</Badge>
-                                    <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Professional Grade</span>
+                            <div className="relative border-4 border-primary/20 bg-card rounded-md overflow-hidden shadow-xl flex flex-col">
+                                {/* Bulletin Header */}
+                                <div className="bg-primary text-primary-foreground p-4 flex justify-between items-center">
+                                    <div className="flex items-center gap-3">
+                                        <FileText className="h-5 w-5 opacity-80" />
+                                        <span className="text-xs font-bold uppercase tracking-[0.3em]">Technical Bulletin No. 01</span>
+                                    </div>
+                                    <Badge className="bg-accent text-white font-bold px-3 border-none">FLAGSHIP TOOL</Badge>
                                 </div>
                                 
-                                <div className="grid md:grid-cols-2">
-                                    <div className="p-8 flex items-center justify-center bg-white/50 border-r-2 border-primary/5">
+                                <div className="grid md:grid-cols-5 bg-white/40">
+                                    <div className="md:col-span-2 p-6 flex items-center justify-center bg-white/60 border-r-2 border-primary/5">
                                         <Link href={`/shop/${featuredProduct.id}`} className="block relative aspect-square w-full">
                                             <Image 
                                                 src={featuredProduct.images?.[0] || `https://picsum.photos/seed/${featuredProduct.id}/600/600`} 
@@ -199,33 +204,42 @@ export default function Home() {
                                             />
                                         </Link>
                                     </div>
-                                    <div className="p-8 flex flex-col">
-                                        <h3 className="text-4xl font-headline font-bold leading-tight text-foreground">
-                                            {featuredProduct.name}
-                                        </h3>
-                                        <p className="mt-4 text-muted-foreground leading-relaxed line-clamp-4 font-body italic text-lg">
-                                            {featuredProduct.valueProposition || featuredProduct.description}
-                                        </p>
-                                        
-                                        {featuredProduct.specifications && featuredProduct.specifications.length > 0 && (
-                                            <div className="mt-6 space-y-2">
-                                                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Technical Specs</p>
-                                                {featuredProduct.specifications.slice(0, 3).map((spec, i) => (
-                                                    <div key={i} className="flex items-center gap-2 text-sm text-muted-foreground border-b border-dashed border-primary/10 pb-1">
-                                                        <CheckCircle2 className="h-3 w-3 text-primary" />
-                                                        <span className="font-bold text-foreground/80">{spec.feature}:</span>
-                                                        <span>{spec.description}</span>
-                                                    </div>
-                                                ))}
+                                    <div className="md:col-span-3 p-8 flex flex-col">
+                                        <div className="space-y-2 mb-6">
+                                            <h3 className="text-4xl font-headline font-bold leading-tight text-foreground">
+                                                {featuredProduct.name}
+                                            </h3>
+                                            <p className="text-sm font-bold text-accent uppercase tracking-widest italic">
+                                                {featuredProduct.valueProposition || "Professional Field Measurement"}
+                                            </p>
+                                        </div>
+
+                                        <div className="space-y-4 font-body">
+                                            <div className="bg-secondary/20 p-4 rounded border-l-4 border-primary">
+                                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                                    {featuredProduct.description.substring(0, 180)}...
+                                                </p>
                                             </div>
-                                        )}
+                                            
+                                            {/* Technical Spec Snippet */}
+                                            <div className="grid grid-cols-2 gap-4 pt-2">
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-bold uppercase text-primary/60">Field Utility</p>
+                                                    <p className="text-xs font-medium">Biomass Estimation</p>
+                                                </div>
+                                                <div className="space-y-1">
+                                                    <p className="text-[10px] font-bold uppercase text-primary/60">Build Grade</p>
+                                                    <p className="text-xs font-medium">Field-Tested Rugged</p>
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <div className="mt-auto pt-8 border-t-2 border-primary/5 flex flex-col sm:flex-row items-center justify-between gap-4">
-                                            <div>
-                                                <p className="text-3xl font-headline font-bold text-accent">R{featuredProduct.price.toFixed(2)}</p>
-                                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Excl. Delivery</p>
+                                            <div className="text-left">
+                                                <p className="text-3xl font-headline font-bold text-accent leading-none">R{featuredProduct.price.toFixed(2)}</p>
+                                                <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground mt-1">Excl. Delivery & VAT</p>
                                             </div>
-                                            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 px-8">
+                                            <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 shadow-md">
                                                 <Link href={`/shop/${featuredProduct.id}`}>View Technical Brief <ArrowRight className="ml-2 h-4 w-4" /></Link>
                                             </Button>
                                         </div>
@@ -239,12 +253,14 @@ export default function Home() {
                     <div className="lg:col-span-1 space-y-8">
                         <div className="bg-secondary/20 p-4 border-l-4 border-accent mb-4">
                             <h4 className="font-headline font-bold text-xl leading-tight">Recommended by Frits</h4>
-                            <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest">Field-Tested Essentials</p>
+                            <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em] font-bold">Essential Field Materials</p>
                         </div>
-                        {otherProducts?.map((product) => (
-                            <ProductCard key={product.id} product={product} />
-                        ))}
-                        <Button asChild variant="outline" className="w-full h-12 border-2 font-bold uppercase tracking-widest text-xs">
+                        <div className="space-y-6">
+                            {otherProducts?.map((product) => (
+                                <ProductCard key={product.id} product={product} />
+                            ))}
+                        </div>
+                        <Button asChild variant="outline" className="w-full h-12 border-2 font-bold uppercase tracking-widest text-[10px] hover:bg-primary hover:text-white transition-colors">
                             <Link href="/shop">Browse Full Catalog</Link>
                         </Button>
                     </div>
