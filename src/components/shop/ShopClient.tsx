@@ -19,7 +19,11 @@ export default function ShopClient({ products }: { products: Product[] }) {
     return order.filter(cat => productCategories.includes(cat));
   }, [products]);
 
-  const maxPrice = useMemo(() => Math.ceil(Math.max(...products.map(p => p.price).filter(p => p > 0), 0)), [products]);
+  const maxPrice = useMemo(() => {
+    const prices = products.map(p => p.price).filter(p => p > 0);
+    return prices.length > 0 ? Math.ceil(Math.max(...prices)) : 1000;
+  }, [products]);
+
   const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrice]);
 
   React.useEffect(() => {
@@ -27,9 +31,10 @@ export default function ShopClient({ products }: { products: Product[] }) {
   }, [maxPrice]);
 
 
-  const { productsByCategory, totalFilteredProducts } = useMemo(() => {
+  const { filteredProducts, totalFilteredProducts } = useMemo(() => {
     const filtered = products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                           product.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
       
       const isForSale = product.layout === 'standard' || product.layout === 'book';
@@ -39,25 +44,8 @@ export default function ShopClient({ products }: { products: Product[] }) {
       return matchesSearch && matchesCategory && matchesPrice;
     });
 
-    const productsByCategory = filtered.reduce((acc, product) => {
-      const category = product.category;
-      if (!acc[category]) {
-        acc[category] = [];
-      }
-      acc[category].push(product);
-      return acc;
-    }, {} as Record<string, Product[]>);
-
-    // Order the categories based on `allCategories`
-    const orderedProductsByCategory: Record<string, Product[]> = {};
-    for (const category of allCategories) {
-        if (productsByCategory[category]) {
-            orderedProductsByCategory[category] = productsByCategory[category];
-        }
-    }
-
-    return { productsByCategory: orderedProductsByCategory, totalFilteredProducts: filtered.length };
-  }, [searchTerm, selectedCategories, priceRange, products, allCategories]);
+    return { filteredProducts: filtered, totalFilteredProducts: filtered.length };
+  }, [searchTerm, selectedCategories, priceRange, products]);
 
   const handleCategoryChange = (category: string) => {
     setSelectedCategories(prev =>
@@ -94,20 +82,12 @@ export default function ShopClient({ products }: { products: Product[] }) {
           />
         </div>
 
-         <div className="space-y-16">
+         <div>
             {totalFilteredProducts > 0 ? (
-                Object.entries(productsByCategory).map(([category, catProducts]) => {
-                    if (catProducts.length === 0) return null;
-                    return (
-                        <section key={category}>
-                            <h2 className="text-2xl font-bold tracking-tight mb-6 pb-2 border-b">{category}</h2>
-                            <ProductGrid products={catProducts} />
-                        </section>
-                    );
-                })
+                <ProductGrid products={filteredProducts} />
             ) : (
                 <div className="text-center py-20">
-                    <h3 className="text-xl font-semibold">No Products Found</h3>
+                    <h3 className="text-xl font-semibold font-headline">No Products Found</h3>
                     <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria.</p>
                 </div>
             )}
