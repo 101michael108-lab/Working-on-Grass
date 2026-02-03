@@ -53,6 +53,8 @@ export default function Home() {
   ];
 
   const firestore = useFirestore();
+  
+  // Specifically fetch the Disc Pasture Meter to feature it
   const featuredProductQuery = useMemoFirebase(() => 
     query(collection(firestore, 'products'), where('name', '==', 'Disc Pasture Meter'), limit(1)),
     [firestore]
@@ -60,8 +62,10 @@ export default function Home() {
   const { data: featuredProducts, isLoading: isLoadingFeatured } = useCollection<Omit<Product, 'id'>>(featuredProductQuery);
   const featuredProduct = featuredProducts?.[0];
 
+  // Fetch 2 other products for the sidebar grid
   const otherProductsQuery = useMemoFirebase(() => {
     if (!firestore) return null;
+    // We try to get products that aren't the featured one
     return query(collection(firestore, 'products'), where('name', '!=', 'Disc Pasture Meter'), limit(2));
   }, [firestore]);
   const { data: otherProducts, isLoading: isLoadingOthers } = useCollection<Omit<Product, 'id'>>(otherProductsQuery);
@@ -175,6 +179,7 @@ export default function Home() {
 
                 ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+                    {/* Featured Large Product */}
                     {featuredProduct && (
                         <div className="lg:col-span-2">
                             <Card className="flex flex-col md:flex-row group h-full overflow-hidden border-2 border-primary/20 hover:border-primary/50 transition-colors shadow-lg">
@@ -191,22 +196,25 @@ export default function Home() {
                                </div>
                                <div className="flex flex-col md:w-1/2">
                                     <CardHeader className="p-6">
-                                        <Badge>Featured Product</Badge>
-                                        <CardTitle className="text-2xl mt-2">{featuredProduct.name}</CardTitle>
+                                        <Badge variant="default" className="w-fit mb-2">Featured Product</Badge>
+                                        <CardTitle className="text-3xl font-headline mt-2">{featuredProduct.name}</CardTitle>
                                     </CardHeader>
                                     <CardContent className="p-6 pt-0 flex-grow">
-                                        <p className="text-muted-foreground text-sm line-clamp-4">{featuredProduct.description}</p>
+                                        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-5">
+                                            {featuredProduct.description}
+                                        </p>
                                     </CardContent>
-                                    <CardFooter className="p-6 flex flex-wrap justify-between items-center gap-4">
-                                        <p className="text-3xl font-bold text-accent">R{featuredProduct.price.toFixed(2)}</p>
+                                    <CardFooter className="p-6 flex flex-wrap justify-between items-center gap-4 border-t bg-muted/10">
+                                        <p className="text-3xl font-bold font-headline text-accent">R{featuredProduct.price.toFixed(2)}</p>
                                         <Button asChild size="lg">
-                                            <Link href={`/shop/${featuredProduct.id}`}>View Details <ArrowRight className="ml-2" /></Link>
+                                            <Link href={`/shop/${featuredProduct.id}`}>View Details <ArrowRight className="ml-2 h-4 w-4" /></Link>
                                         </Button>
                                     </CardFooter>
                                </div>
                             </Card>
                         </div>
                     )}
+                    {/* Sidebar Grid for other products */}
                     <div className="lg:col-span-1 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-8">
                         {otherProducts?.map((product) => (
                             <ProductCard key={product.id} product={product} />
