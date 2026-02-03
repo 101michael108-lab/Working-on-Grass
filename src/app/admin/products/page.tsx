@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from "firebase/firestore";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import type { Product } from "@/lib/types";
+import { Badge } from "@/components/ui/badge";
 
 export default function AdminProductsPage() {
   const firestore = useFirestore();
@@ -20,7 +21,7 @@ export default function AdminProductsPage() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
             <CardTitle>Manage Products</CardTitle>
-            <CardDescription>Add, edit, or remove products from your store.</CardDescription>
+            <CardDescription>Add, edit, or remove products and manage inventory.</CardDescription>
         </div>
         <Button asChild>
           <Link href="/admin/products/new">
@@ -38,6 +39,7 @@ export default function AdminProductsPage() {
                     <TableHead>Product Name</TableHead>
                     <TableHead>Category</TableHead>
                     <TableHead>Price</TableHead>
+                    <TableHead>Stock</TableHead>
                     <TableHead>Actions</TableHead>
                 </TableRow>
             </TableHeader>
@@ -47,6 +49,16 @@ export default function AdminProductsPage() {
                         <TableCell className="font-medium">{product.name}</TableCell>
                         <TableCell>{product.category}</TableCell>
                         <TableCell>R{product.price.toFixed(2)}</TableCell>
+                        <TableCell>
+                            <div className="flex items-center gap-2">
+                                <span>{product.stock ?? 0}</span>
+                                {product.stock <= 5 && (
+                                    <Badge variant="destructive" className="h-5 px-1.5 flex gap-1">
+                                        <AlertTriangle className="h-3 w-3" /> Low
+                                    </Badge>
+                                )}
+                            </div>
+                        </TableCell>
                         <TableCell>
                             <Button variant="outline" size="sm" asChild>
                               <Link href={`/admin/products/${product.id}`}>Edit</Link>

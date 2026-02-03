@@ -31,7 +31,8 @@ import { Label } from '@/components/ui/label';
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
   description: z.string().min(10, "Description is required"),
-  price: z.coerce.number().positive("Price must be positive"),
+  price: z.coerce.number().nonnegative("Price must be positive or zero"),
+  stock: z.coerce.number().int().nonnegative("Stock cannot be negative"),
   category: z.string().min(2, "Category is required"),
   sku: z.string().optional(),
   brand: z.string().optional(),
@@ -74,6 +75,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
             name: product?.name || "",
             description: product?.description || "",
             price: product?.price || 0,
+            stock: product?.stock || 0,
             category: product?.category || "Measurement & Tools",
             sku: product?.sku || "",
             brand: product?.brand || "",
@@ -98,6 +100,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
         const productData = { 
             ...values, 
             price: Number(values.price),
+            stock: Number(values.stock),
             images: images,
         };
         
@@ -149,9 +152,12 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                             <FormMessage />
                                         </FormItem>
                                     )} />
-                                     <div className="grid grid-cols-2 gap-4">
+                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <FormField name="price" control={form.control} render={({ field }) => (
-                                            <FormItem><FormLabel>Price</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
+                                            <FormItem><FormLabel>Price (R)</FormLabel><FormControl><Input type="number" step="0.01" {...field} /></FormControl><FormMessage /></FormItem>
+                                        )} />
+                                        <FormField name="stock" control={form.control} render={({ field }) => (
+                                            <FormItem><FormLabel>Inventory Count</FormLabel><FormControl><Input type="number" {...field} /></FormControl><FormMessage /></FormItem>
                                         )} />
                                         <FormField name="category" control={form.control} render={({ field }) => (
                                         <FormItem>
