@@ -7,9 +7,8 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, GraduationCap, ArrowRight } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, ArrowRight } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
-import Link from 'next/link';
 
 const renderFormattedText = (text: string) => {
   if (!text) return null;
@@ -120,23 +119,6 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
 
-      {/* Contextual Service Link - Need Expert Help? */}
-      <section className="py-12 bg-primary text-primary-foreground">
-          <div className="container max-w-4xl flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
-              <div className="space-y-2">
-                  <div className="flex items-center justify-center md:justify-start gap-2 text-accent font-bold uppercase tracking-widest text-xs">
-                      <GraduationCap className="h-4 w-4" />
-                      <span>Professional Advisory</span>
-                  </div>
-                  <h3 className="text-2xl font-bold font-headline">Need a Professional Assessment?</h3>
-                  <p className="opacity-80 font-body">While the DPM is an excellent tool, Frits can provide a comprehensive ecological audit for your property.</p>
-              </div>
-              <Button asChild variant="secondary" size="lg" className="shrink-0 font-bold">
-                  <Link href="/services">Request Veld Assessment <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-          </div>
-      </section>
-
       {/* 3. Operational Instructions Section */}
       {product.howItWorks && (
         <section id="how-it-works" className="py-16 md:py-24 border-b-2 border-primary/5">
@@ -210,7 +192,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
       {/* 6. Final CTA Purchase Area */}
        <section className="py-16 md:py-24 border-t-2 border-border text-center bg-muted/10">
           <div className="container">
-            <h2 className="text-3xl font-bold font-headline mb-8">Ready for Assessment?</h2>
+            <h2 className="text-3xl font-bold font-headline mb-8">Ready to Order?</h2>
             <div className="flex flex-col items-center gap-6">
                 <Button size="lg" className="h-16 px-12 bg-accent text-accent-foreground hover:bg-accent/90 text-xl font-bold shadow-lg" onClick={() => addToCart(product, quantity)}>
                     <ShoppingCart className="mr-3 h-6 w-6" /> Add to Cart — R{product.price.toFixed(2)}
