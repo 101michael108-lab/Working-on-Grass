@@ -1,13 +1,15 @@
+
 "use client";
 
 import { useState } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag, Info } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
+import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 export default function StandardLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
   const [quantity, setQuantity] = useState(1);
@@ -38,7 +40,7 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                     </h1>
                     {product.brand && (
                         <p className="text-sm text-muted-foreground font-bold uppercase tracking-wider">
-                            Manufacturer: {product.brand}
+                            Brand: {product.brand}
                         </p>
                     )}
                 </div>
@@ -53,13 +55,36 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                         </span>
                     </div>
 
-                    <div className="text-lg text-foreground/80 font-body leading-relaxed max-w-none prose prose-stone">
-                        <p className="whitespace-pre-line">{product.description}</p>
+                    <div className="text-lg text-foreground/80 font-body leading-relaxed whitespace-pre-line">
+                        {product.description}
                     </div>
                 </div>
                 
+                {/* Technical Specifications - For the "Farmer-Made" Technical Feel */}
+                {product.specifications && product.specifications.length > 0 && (
+                    <div className="space-y-4 pt-4">
+                        <h3 className="text-lg font-bold font-headline border-b pb-2">Technical Specifications</h3>
+                        <div className="border rounded-md overflow-hidden bg-white/50 shadow-sm">
+                            <Table>
+                                <TableBody>
+                                    {product.specifications.map((spec, index) => (
+                                        <TableRow key={index} className={index % 2 === 0 ? 'bg-muted/30' : ''}>
+                                            <TableCell className="font-bold text-primary/80 py-3 pl-4 uppercase tracking-wider text-[10px] w-1/3">
+                                                {spec.feature}
+                                            </TableCell>
+                                            <TableCell className="py-3 pr-4 text-sm font-medium">
+                                                {spec.description}
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+                )}
+                
                 {/* Functional Action Area */}
-                <div className="bg-muted/30 border-2 border-border p-8 rounded-md space-y-6">
+                <div className="bg-secondary/30 border-2 border-border p-8 rounded-md space-y-6 shadow-sm">
                     <div className="flex flex-col sm:flex-row items-center gap-4">
                         <div className="flex items-center border-2 border-border rounded bg-background h-12">
                             <Button 
@@ -87,7 +112,7 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                         </div>
                         <Button 
                             size="lg" 
-                            className="flex-grow w-full sm:w-auto h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold" 
+                            className="flex-grow w-full sm:w-auto h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold shadow-md" 
                             onClick={() => addToCart(product, quantity)}
                         >
                             <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart

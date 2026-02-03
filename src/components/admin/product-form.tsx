@@ -25,7 +25,7 @@ import type { Product, MediaLibraryItem } from "@/lib/types";
 import { ProductImageSelector } from './product-image-selector';
 import Image from 'next/image';
 import { ImagePlus, XCircle, PlusCircle, Trash } from 'lucide-react';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 
 const formSchema = z.object({
@@ -205,7 +205,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                     </SelectContent>
                                     </Select>
                                     <FormMessage />
-                                    <CardDescription className="pt-2">You can change this at any time. The fields below will update dynamically based on your selection.</CardDescription>
+                                    <CardDescription className="pt-2">You can change this at any time. The sections below will update based on your choice.</CardDescription>
                                 </FormItem>
                             )} />
                         </CardContent>
@@ -215,24 +215,24 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                     {layout === 'in-depth' && (
                         <>
                             <Card>
-                                <CardHeader><CardTitle>In-Depth Layout: Page Content</CardTitle></CardHeader>
+                                <CardHeader><CardTitle>In-Depth Layout Content</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
                                     <FormField name="valueProposition" control={form.control} render={({ field }) => (
                                         <FormItem><FormLabel>Value Proposition</FormLabel><FormControl><Input {...field} placeholder="e.g. Accurately measure grass biomass..." /></FormControl><FormMessage /></FormItem>
                                     )} />
                                     <FormField name="authorityStatement" control={form.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Authority Statement</FormLabel><FormControl><Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." /></FormControl><FormMessage /></FormItem>
+                                        <FormItem><FormLabel>Authority Statement (Quote)</FormLabel><FormControl><Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." /></FormControl><FormMessage /></FormItem>
                                     )} />
                                 </CardContent>
                             </Card>
                             <Card>
                                 <CardHeader>
-                                    <CardTitle>In-Depth Layout: "How It Works" Section</CardTitle>
+                                    <CardTitle>How It Works</CardTitle>
+                                    <CardDescription>A descriptive paragraph explaining the field use of this product.</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <FormField name="howItWorks" control={form.control} render={({ field }) => (
                                         <FormItem>
-                                            <FormLabel>How it Works Paragraph</FormLabel>
                                             <FormControl>
                                                 <Textarea {...field} rows={6} placeholder="Explain how the product works in a detailed paragraph..." />
                                             </FormControl>
@@ -247,7 +247,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                     {layout === 'book' && (
                         <Card>
                             <CardHeader className="flex-row items-center justify-between">
-                                <CardTitle>Book Layout: Key Features</CardTitle>
+                                <CardTitle>Book Key Features</CardTitle>
                                 <Button type="button" variant="outline" size="sm" onClick={() => appendFeature('')}><PlusCircle className="mr-2"/>Add Feature</Button>
                             </CardHeader>
                             <CardContent className="space-y-2">
@@ -264,28 +264,27 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </Card>
                     )}
 
-                    {(layout === 'in-depth' || layout === 'book') && (
-                        <Card>
-                            <CardHeader className="flex-row items-center justify-between">
-                                <CardTitle>Specifications</CardTitle>
-                                <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
-                                {specFields.map((field, index) => (
-                                    <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
-                                        <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
-                                            <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="e.g. Author, Pages, Material" /></FormControl><FormMessage /></FormItem>
-                                        )}/>
-                                        <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
-                                            <FormItem><FormLabel>Description</FormLabel><FormControl><Input {...field} placeholder="e.g. Frits van Oudtshoorn, 289, Aluminium"/></FormControl><FormMessage /></FormItem>
-                                        )}/>
-                                        <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
-                                    </div>
-                                ))}
-                                {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added.</p>}
-                            </CardContent>
-                        </Card>
-                    )}
+                    {/* Technical Specifications - Applicable to all for that grounded technical feel */}
+                    <Card>
+                        <CardHeader className="flex-row items-center justify-between">
+                            <CardTitle>Technical Specifications</CardTitle>
+                            <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {specFields.map((field, index) => (
+                                <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                                    <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
+                                        <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="e.g. Material, Pages, Weight" /></FormControl><FormMessage /></FormItem>
+                                    )}/>
+                                    <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
+                                        <FormItem><FormLabel>Value</FormLabel><FormControl><Input {...field} placeholder="e.g. Aluminum, 289, 1.2kg"/></FormControl><FormMessage /></FormItem>
+                                    )}/>
+                                    <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
+                                </div>
+                            ))}
+                            {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added. These are displayed in a technical table.</p>}
+                        </CardContent>
+                    </Card>
 
                     <Button type="submit" size="lg">{product ? "Save Changes" : "Create Product"}</Button>
                 </form>
