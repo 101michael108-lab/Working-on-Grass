@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -47,6 +46,9 @@ export function Header() {
   const firestore = useFirestore();
   const [isAdmin, setIsAdmin] = React.useState(false);
 
+  // Hide header on admin pages
+  const isAdminPage = pathname?.startsWith('/admin');
+
   React.useEffect(() => {
     if (user && firestore) {
       const userDocRef = doc(firestore, 'users', user.uid);
@@ -61,6 +63,8 @@ export function Header() {
       setIsAdmin(false);
     }
   }, [user, firestore]);
+
+  if (isAdminPage) return null;
 
   const NavLink = ({ href, label }: { href: string; label: string }) => (
     <Link

@@ -1,8 +1,16 @@
+"use client";
+
 import { Logo } from "@/components/logo";
 import Link from "next/link";
 import { Mail, Phone } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
+  const pathname = usePathname();
+  const isAdminPage = pathname?.startsWith('/admin');
+
+  if (isAdminPage) return null;
+
   return (
     <footer className="w-full bg-secondary/50">
       <div className="container py-12 px-4 md:px-6">
