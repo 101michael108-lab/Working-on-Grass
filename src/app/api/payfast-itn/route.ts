@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
-import { firestore } from '@/firebase/server-init';
+import { initializeFirebase } from '@/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.formData();
+    const { firestore } = initializeFirebase();
     
     let pfData: Record<string, FormDataEntryValue> = {};
     let checkString = '';
@@ -32,7 +34,6 @@ export async function POST(req: NextRequest) {
 
     if (calculatedSignature !== receivedSignature) {
         console.warn("PayFast ITN: Signatures do not match.", { calculated: calculatedSignature, received: receivedSignature });
-        // In production, perform secondary validation against Payfast's servers.
         return new NextResponse('Invalid signature', { status: 400 });
     }
 
@@ -46,12 +47,12 @@ export async function POST(req: NextRequest) {
        return new NextResponse('Missing custom data', { status: 400 });
     }
 
-    const orderRef = firestore.collection('users').doc(userId).collection('orders').doc(orderId);
+    const orderRef = doc(firestore, 'users', userId, 'orders', orderId);
     
     // Determine new order status based on payment status
     const newStatus = paymentStatus === 'COMPLETE' ? 'Processing' : 'Cancelled';
 
-    await orderRef.update({
+    await updateDoc(orderRef, {
       status: newStatus,
       paymentInfo: {
         ...pfData, // Store the full ITN payload for reference

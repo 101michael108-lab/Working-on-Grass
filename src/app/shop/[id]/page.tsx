@@ -1,6 +1,7 @@
 import React from 'react';
 import { Metadata, ResolvingMetadata } from 'next';
-import { firestore } from '@/firebase/server-init';
+import { initializeFirebase } from '@/firebase';
+import { doc, getDoc } from 'firebase/firestore';
 import ProductPageContent from './product-page-content';
 import { notFound } from 'next/navigation';
 
@@ -13,13 +14,15 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { id } = await params;
-  const doc = await firestore.collection('products').doc(id).get();
+  const { firestore } = initializeFirebase();
+  const docRef = doc(firestore, 'products', id);
+  const docSnap = await getDoc(docRef);
   
-  if (!doc.exists) {
+  if (!docSnap.exists()) {
     return { title: 'Product Not Found' };
   }
 
-  const product = doc.data();
+  const product = docSnap.data();
   const previousImages = (await parent).openGraph?.images || [];
 
   return {

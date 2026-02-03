@@ -1,14 +1,15 @@
-
 import { MetadataRoute } from 'next';
-import { firestore } from '@/firebase/server-init';
+import { initializeFirebase } from '@/firebase';
+import { collection, getDocs } from 'firebase/firestore';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za';
+  const { firestore } = initializeFirebase();
 
   // Fetch all products to include in sitemap
   let productEntries: MetadataRoute.Sitemap = [];
   try {
-    const productsSnapshot = await firestore.collection('products').get();
+    const productsSnapshot = await getDocs(collection(firestore, 'products'));
     productEntries = productsSnapshot.docs.map((doc) => ({
       url: `${baseUrl}/shop/${doc.id}`,
       lastModified: new Date(),
