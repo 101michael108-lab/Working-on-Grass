@@ -9,6 +9,7 @@ import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag } from 'lucide-react
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
+import Link from 'next/link';
 
 const renderFormattedText = (text: string) => {
   if (!text) return null;
@@ -47,10 +48,13 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
             {/* Product Info */}
             <div className="lg:col-span-5 space-y-8">
                 <div className="space-y-4 border-b-2 border-border pb-6">
-                    <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
+                    <Link 
+                      href={`/shop?category=${encodeURIComponent(product.category)}`}
+                      className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest hover:text-primary/80 transition-colors"
+                    >
                         <Tag className="h-3 w-3" />
                         {product.category}
-                    </div>
+                    </Link>
                     <h1 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
                         {product.name}
                     </h1>

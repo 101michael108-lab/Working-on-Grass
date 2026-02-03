@@ -9,6 +9,7 @@ import { Minus, Plus, ShoppingCart, Check, BookOpen, Users } from 'lucide-react'
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
+import Link from 'next/link';
 
 const renderFormattedText = (text: string) => {
   if (!text) return null;
@@ -46,7 +47,12 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
             <div className="lg:col-span-7 space-y-8">
                 <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold uppercase tracking-widest text-primary/70">{product.category}</span>
+                        <Link 
+                          href={`/shop?category=${encodeURIComponent(product.category)}`}
+                          className="text-xs font-bold uppercase tracking-widest text-primary/70 hover:text-primary transition-colors"
+                        >
+                          {product.category}
+                        </Link>
                         <span className="h-1 w-1 rounded-full bg-primary/30" />
                         <span className="text-xs font-bold uppercase tracking-widest text-accent">Essential Field Guide</span>
                     </div>

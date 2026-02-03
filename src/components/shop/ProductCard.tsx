@@ -1,3 +1,4 @@
+
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -22,9 +23,12 @@ export default function ProductCard({ product }: { product: Product }) {
         />
       </Link>
       <CardContent className="flex-grow p-5">
-        <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded">
+        <Link 
+          href={`/shop?category=${encodeURIComponent(product.category)}`}
+          className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground bg-muted px-2 py-0.5 rounded hover:bg-primary hover:text-primary-foreground transition-colors inline-block"
+        >
           {product.category}
-        </span>
+        </Link>
         <Link href={`/shop/${product.id}`} className="block mt-2">
           <h3 className="font-headline text-xl hover:text-primary transition-colors line-clamp-2 leading-tight">
             {product.name}

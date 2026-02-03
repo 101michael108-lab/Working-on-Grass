@@ -7,6 +7,7 @@ import { collection, query, orderBy } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Breadcrumbs } from '@/components/breadcrumbs';
+import { Suspense } from 'react';
 
 export default function ShopPage() {
   const firestore = useFirestore();
@@ -31,14 +32,6 @@ export default function ShopPage() {
                         ))}
                     </div>
                 </div>
-                 <div>
-                    <Skeleton className="h-8 w-1/3 mb-6 pb-2" />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-                        {[...Array(2)].map((_, i) => (
-                            <Skeleton key={i} className="h-[450px] w-full rounded-lg" />
-                        ))}
-                    </div>
-                </div>
             </div>
         </main>
     </div>
@@ -53,7 +46,9 @@ export default function ShopPage() {
           A curated selection of tools, books, and seeds, field-tested and recommended by Working on Grass.
         </p>
       </div>
-      {isLoading ? <LoadingSkeleton /> : <ShopClient products={products || []} />}
+      <Suspense fallback={<LoadingSkeleton />}>
+        {isLoading ? <LoadingSkeleton /> : <ShopClient products={products || []} />}
+      </Suspense>
     </div>
   );
 }

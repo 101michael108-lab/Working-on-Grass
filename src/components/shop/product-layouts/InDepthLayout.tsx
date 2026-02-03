@@ -8,8 +8,9 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, ArrowRight } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
+import Link from 'next/link';
 
 const renderFormattedText = (text: string) => {
   if (!text) return null;
@@ -47,7 +48,12 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                 </div>
                 <div className="lg:col-span-5 space-y-8">
                     <div className="space-y-4">
-                        <span className="text-xs font-bold uppercase tracking-widest text-primary/70">{product.category}</span>
+                        <Link 
+                          href={`/shop?category=${encodeURIComponent(product.category)}`}
+                          className="text-xs font-bold uppercase tracking-widest text-primary/70 hover:text-primary transition-colors"
+                        >
+                          {product.category}
+                        </Link>
                         <h1 className="text-4xl md:text-5xl font-bold font-headline leading-tight">{product.name}</h1>
                         
                         <div className="text-lg text-muted-foreground font-body leading-relaxed">

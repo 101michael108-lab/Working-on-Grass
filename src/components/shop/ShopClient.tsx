@@ -1,19 +1,29 @@
 
 "use client";
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import ShopSidebar from '@/components/shop/ShopSidebar';
 import ProductGrid from '@/components/shop/ProductGrid';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import type { Product } from '@/lib/types';
+import { useSearchParams } from 'next/navigation';
 
 export default function ShopClient({ products }: { products: Product[] }) {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category');
+  
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   
+  // Sync URL param to state
+  useEffect(() => {
+    if (categoryParam) {
+      setSelectedCategories([categoryParam]);
+    }
+  }, [categoryParam]);
+
   const allCategories = useMemo(() => {
-    // A specific order might be better than alphabetical for this store
     const order = ["Measurement & Tools", "Books & Field Guides", "Online Courses", "Seeds & Pasture Products"];
     const productCategories = [...new Set(products.map(p => p.category))];
     return order.filter(cat => productCategories.includes(cat));
@@ -26,7 +36,7 @@ export default function ShopClient({ products }: { products: Product[] }) {
 
   const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrice]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setPriceRange([0, maxPrice]);
   }, [maxPrice]);
 
@@ -38,7 +48,6 @@ export default function ShopClient({ products }: { products: Product[] }) {
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
       
       const isForSale = product.layout === 'standard' || product.layout === 'book';
-      // Only filter by price if the product is for sale and has a price.
       const matchesPrice = !isForSale || product.price === 0 || (product.price >= priceRange[0] && product.price <= priceRange[1]);
 
       return matchesSearch && matchesCategory && matchesPrice;
