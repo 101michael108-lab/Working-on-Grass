@@ -5,11 +5,10 @@ import { useState } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag, Info } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag, Info, Users } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
-import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 
 const renderFormattedText = (text: string) => {
   if (!text) return null;
@@ -18,13 +17,13 @@ const renderFormattedText = (text: string) => {
     if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
       const content = trimmed.substring(1).trim();
       return (
-        <div key={i} className="flex items-start gap-2 mb-2">
-          <span className="text-primary font-bold mt-1 flex-shrink-0 text-xs">•</span>
-          <span>{content}</span>
+        <div key={i} className="flex items-start gap-3 mb-3 pl-2">
+          <span className="text-primary font-bold mt-1.5 flex-shrink-0 text-xs">•</span>
+          <span className="text-foreground/80 leading-relaxed">{content}</span>
         </div>
       );
     }
-    return line ? <p key={i} className="mb-4">{line}</p> : <div key={i} className="h-2" />;
+    return line ? <p key={i} className="mb-4 text-foreground/80 leading-relaxed">{line}</p> : <div key={i} className="h-4" />;
   });
 };
 
@@ -77,25 +76,15 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                     </div>
                 </div>
                 
-                {/* Technical Specifications - For the "Farmer-Made" Technical Feel */}
-                {product.specifications && product.specifications.length > 0 && (
+                {/* Who It's For - Replaces Technical Specifications per request */}
+                {product.targetAudience && (
                     <div className="space-y-4 pt-4">
-                        <h3 className="text-lg font-bold font-headline border-b pb-2">Technical Specifications</h3>
-                        <div className="border rounded-md overflow-hidden bg-white/50 shadow-sm">
-                            <Table>
-                                <TableBody>
-                                    {product.specifications.map((spec, index) => (
-                                        <TableRow key={index} className={index % 2 === 0 ? 'bg-muted/30' : ''}>
-                                            <TableCell className="font-bold text-primary/80 py-3 pl-4 uppercase tracking-wider text-[10px] w-1/3">
-                                                {spec.feature}
-                                            </TableCell>
-                                            <TableCell className="py-3 pr-4 text-sm font-medium">
-                                                {spec.description}
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
+                        <div className="flex items-center gap-2 border-b pb-2">
+                            <Users className="h-5 w-5 text-primary" />
+                            <h3 className="text-lg font-bold font-headline">Who It's For</h3>
+                        </div>
+                        <div className="text-base text-foreground/80 font-body leading-relaxed">
+                            {renderFormattedText(product.targetAudience)}
                         </div>
                     </div>
                 )}

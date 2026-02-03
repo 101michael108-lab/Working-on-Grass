@@ -299,11 +299,11 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                         </>
                     )}
 
-                    {layout === 'book' && (
+                    {(layout === 'book' || layout === 'standard') && (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Book Details & Audience</CardTitle>
-                                <CardDescription>Information specific to publications and guides.</CardDescription>
+                                <CardTitle>{layout === 'book' ? 'Book Details & Audience' : 'Target Audience'}</CardTitle>
+                                <CardDescription>Information about who this product is intended for.</CardDescription>
                             </CardHeader>
                             <CardContent className="space-y-6">
                                 <FormField name="targetAudience" control={form.control} render={({ field }) => (
@@ -312,7 +312,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                         <FormControl>
                                             <Textarea 
                                                 rows={6} 
-                                                placeholder="Describe the ideal reader. Supports bullet points.&#10;• Farmers assessing grazing...&#10;• Ecologists conducting surveys..." 
+                                                placeholder="Describe the ideal reader/user. Supports bullet points.&#10;• Farmers assessing grazing...&#10;• Ecologists conducting surveys..." 
                                                 {...field} 
                                             />
                                         </FormControl>
@@ -320,48 +320,52 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                     </FormItem>
                                 )} />
                                 
-                                <div className="space-y-4">
-                                    <div className="flex items-center justify-between">
-                                        <Label>Key Features (Botanical/Publication Highlights)</Label>
-                                        <Button type="button" variant="outline" size="sm" onClick={() => appendFeature('')}><PlusCircle className="mr-2"/>Add Feature</Button>
+                                {layout === 'book' && (
+                                    <div className="space-y-4">
+                                        <div className="flex items-center justify-between">
+                                            <Label>Key Features (Botanical/Publication Highlights)</Label>
+                                            <Button type="button" variant="outline" size="sm" onClick={() => appendFeature('')}><PlusCircle className="mr-2"/>Add Feature</Button>
+                                        </div>
+                                        <div className="space-y-2">
+                                            {featureFields.map((field, index) => (
+                                                <div key={field.id} className="flex items-center gap-2">
+                                                    <FormField control={form.control} name={`features.${index}`} render={({ field }) => (
+                                                        <FormItem className="flex-grow"><FormControl><Input {...field} placeholder="e.g. 1000+ full-colour photographs" /></FormControl><FormMessage /></FormItem>
+                                                    )}/>
+                                                    <Button type="button" variant="ghost" size="icon" onClick={() => removeFeature(index)}><Trash /></Button>
+                                                </div>
+                                            ))}
+                                            {featureFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No features added.</p>}
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        {featureFields.map((field, index) => (
-                                            <div key={field.id} className="flex items-center gap-2">
-                                                <FormField control={form.control} name={`features.${index}`} render={({ field }) => (
-                                                    <FormItem className="flex-grow"><FormControl><Input {...field} placeholder="e.g. 1000+ full-colour photographs" /></FormControl><FormMessage /></FormItem>
-                                                )}/>
-                                                <Button type="button" variant="ghost" size="icon" onClick={() => removeFeature(index)}><Trash /></Button>
-                                            </div>
-                                        ))}
-                                        {featureFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No features added.</p>}
-                                    </div>
-                                </div>
+                                )}
                             </CardContent>
                         </Card>
                     )}
 
-                    {/* Technical Specifications - Applicable to all for that grounded technical feel */}
-                    <Card>
-                        <CardHeader className="flex-row items-center justify-between">
-                            <CardTitle>Technical Specifications</CardTitle>
-                            <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {specFields.map((field, index) => (
-                                <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
-                                    <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
-                                        <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="e.g. ISBN, Pages, Weight" /></FormControl><FormMessage /></FormItem>
-                                    )}/>
-                                    <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
-                                        <FormItem><FormLabel>Value</FormLabel><FormControl><Input {...field} placeholder="e.g. 978-0-..., 289, 1.2kg"/></FormControl><FormMessage /></FormItem>
-                                    )}/>
-                                    <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
-                                </div>
-                            ))}
-                            {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added.</p>}
-                        </CardContent>
-                    </Card>
+                    {/* Technical Specifications - Applicable to In-Depth and Book */}
+                    {(layout === 'in-depth' || layout === 'book') && (
+                        <Card>
+                            <CardHeader className="flex-row items-center justify-between">
+                                <CardTitle>{layout === 'book' ? 'Publication Info' : 'Technical Specifications'}</CardTitle>
+                                <Button type="button" variant="outline" size="sm" onClick={() => appendSpec({ feature: '', description: '' })}><PlusCircle className="mr-2"/>Add Spec</Button>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                {specFields.map((field, index) => (
+                                    <div key={field.id} className="grid grid-cols-[1fr_2fr_auto] gap-2 items-start">
+                                        <FormField control={form.control} name={`specifications.${index}.feature`} render={({ field }) => (
+                                            <FormItem><FormLabel>Feature</FormLabel><FormControl><Input {...field} placeholder="e.g. ISBN, Pages, Weight" /></FormControl><FormMessage /></FormItem>
+                                        )}/>
+                                        <FormField control={form.control} name={`specifications.${index}.description`} render={({ field }) => (
+                                            <FormItem><FormLabel>Value</FormLabel><FormControl><Input {...field} placeholder="e.g. 978-0-..., 289, 1.2kg"/></FormControl><FormMessage /></FormItem>
+                                        )}/>
+                                        <Button type="button" variant="ghost" size="icon" className="mt-8" onClick={() => removeSpec(index)}><Trash /></Button>
+                                    </div>
+                                ))}
+                                {specFields.length === 0 && <p className="text-sm text-muted-foreground text-center py-4">No specifications added.</p>}
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Button type="submit" size="lg">{product ? "Save Changes" : "Create Product"}</Button>
                 </form>
