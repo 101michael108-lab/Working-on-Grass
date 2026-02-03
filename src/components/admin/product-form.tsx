@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from 'react';
@@ -230,10 +229,22 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                 <CardHeader><CardTitle>In-Depth Layout Content</CardTitle></CardHeader>
                                 <CardContent className="space-y-4">
                                     <FormField name="valueProposition" control={form.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Value Proposition</FormLabel><FormControl><Input {...field} placeholder="e.g. Accurately measure grass biomass..." /></FormControl><FormMessage /></FormMessage>
+                                        <FormItem>
+                                            <FormLabel>Value Proposition</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="e.g. Accurately measure grass biomass..." />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )} />
                                     <FormField name="authorityStatement" control={form.control} render={({ field }) => (
-                                        <FormItem><FormLabel>Authority Statement (Quote)</FormLabel><FormControl><Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." /></FormControl><FormMessage /></FormItem>
+                                        <FormItem>
+                                            <FormLabel>Authority Statement (Quote)</FormLabel>
+                                            <FormControl>
+                                                <Input {...field} placeholder="e.g. Used by Frits van Oudtshoorn..." />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
                                     )} />
                                 </CardContent>
                             </Card>
