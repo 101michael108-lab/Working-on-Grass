@@ -1,4 +1,3 @@
-
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -10,8 +9,12 @@ import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { MediaProvider } from "@/context/media-context";
 
 export const metadata: Metadata = {
-  title: "Working on Grass",
-  description: "Environmental and agricultural services for sustainable and regenerative land use.",
+  title: {
+    default: "Working on Grass | Veld & Pasture Management Southern Africa",
+    template: "%s | Working on Grass"
+  },
+  description: "Professional environmental and agricultural services for sustainable and regenerative land use in Southern Africa. Led by ecologist Frits van Oudtshoorn.",
+  keywords: ["veld management", "pasture assessment", "grass identification", "Southern Africa", "disc pasture meter", "regenerative agriculture", "Frits van Oudtshoorn"],
   icons: {
     icon: "/favicon.ico",
   },

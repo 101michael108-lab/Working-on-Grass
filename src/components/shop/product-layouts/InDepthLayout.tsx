@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from 'react';
@@ -8,8 +7,9 @@ import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, GraduationCap, ArrowRight } from 'lucide-react';
 import { ProductImageGallery } from '../ProductImageGallery';
+import Link from 'next/link';
 
 const renderFormattedText = (text: string) => {
   if (!text) return null;
@@ -120,6 +120,23 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
         </section>
       )}
 
+      {/* Contextual Service Link - Need Expert Help? */}
+      <section className="py-12 bg-primary text-primary-foreground">
+          <div className="container max-w-4xl flex flex-col md:flex-row items-center justify-between gap-8 text-center md:text-left">
+              <div className="space-y-2">
+                  <div className="flex items-center justify-center md:justify-start gap-2 text-accent font-bold uppercase tracking-widest text-xs">
+                      <GraduationCap className="h-4 w-4" />
+                      <span>Professional Advisory</span>
+                  </div>
+                  <h3 className="text-2xl font-bold font-headline">Need a Professional Assessment?</h3>
+                  <p className="opacity-80 font-body">While the DPM is an excellent tool, Frits can provide a comprehensive ecological audit for your property.</p>
+              </div>
+              <Button asChild variant="secondary" size="lg" className="shrink-0 font-bold">
+                  <Link href="/services">Request Veld Assessment <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              </Button>
+          </div>
+      </section>
+
       {/* 3. Operational Instructions Section */}
       {product.howItWorks && (
         <section id="how-it-works" className="py-16 md:py-24 border-b-2 border-primary/5">
@@ -174,15 +191,15 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
       
       {/* 5. Authority Statement */}
       {product.authorityStatement && (
-        <section className="bg-primary text-primary-foreground py-16 md:py-24">
+        <section className="bg-muted py-16 md:py-24 border-y-2 border-border">
             <div className="container text-center px-4 max-w-4xl">
-                 <p className="text-xs font-bold uppercase tracking-[0.3em] mb-8 opacity-70 text-primary-foreground/80">Expert Recommendation</p>
+                 <p className="text-xs font-bold uppercase tracking-[0.3em] mb-8 opacity-70 text-muted-foreground">Expert Recommendation</p>
                  <div className="space-y-8">
-                    <blockquote className="text-2xl md:text-4xl font-headline italic leading-relaxed">
+                    <blockquote className="text-2xl md:text-4xl font-headline italic leading-relaxed text-foreground">
                         "{product.authorityStatement.split('\n')[0].replace(/[“”"]/g, '')}"
                     </blockquote>
                     <div className="h-1 w-16 bg-accent mx-auto" />
-                    <div className="text-primary-foreground/80 font-body max-w-2xl mx-auto">
+                    <div className="text-muted-foreground font-body max-w-2xl mx-auto">
                         {renderFormattedText(product.authorityStatement.split('\n').slice(1).join('\n'))}
                     </div>
                  </div>
