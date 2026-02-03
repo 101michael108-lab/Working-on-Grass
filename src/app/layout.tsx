@@ -1,3 +1,4 @@
+
 import type { Metadata } from "next";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -9,12 +10,16 @@ import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { MediaProvider } from "@/context/media-context";
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za'),
   title: {
     default: "Working on Grass | Veld & Pasture Management Southern Africa",
     template: "%s | Working on Grass"
   },
   description: "Professional environmental and agricultural services for sustainable and regenerative land use in Southern Africa. Led by ecologist Frits van Oudtshoorn.",
   keywords: ["veld management", "pasture assessment", "grass identification", "Southern Africa", "disc pasture meter", "regenerative agriculture", "Frits van Oudtshoorn"],
+  alternates: {
+    canonical: '/',
+  },
   icons: {
     icon: "/favicon.ico",
   },
@@ -25,12 +30,36 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const organizationJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Organization',
+    name: 'Working on Grass',
+    alternateName: 'Africa Land-Use Training',
+    url: 'https://workingongrass.co.za',
+    logo: 'https://workingongrass.co.za/logo.png',
+    contactPoint: {
+      '@type': 'ContactPoint',
+      telephone: '+27-78-228-0008',
+      contactType: 'technical support',
+      areaServed: 'ZA',
+      availableLanguage: ['English', 'Afrikaans']
+    },
+    sameAs: [
+      'https://www.facebook.com/workingongrass',
+      // Add other social links here
+    ]
+  };
+
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+        />
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
         <FirebaseClientProvider>

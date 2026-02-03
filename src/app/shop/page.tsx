@@ -6,6 +6,7 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, orderBy } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 
 export default function ShopPage() {
   const firestore = useFirestore();
@@ -45,8 +46,9 @@ export default function ShopPage() {
 
   return (
     <div className="container py-12 md:py-16">
+       <Breadcrumbs items={[{ label: "Shop" }]} />
        <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Products & Tools</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline text-foreground">Products & Tools</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
           A curated selection of tools, books, and seeds, field-tested and recommended by Working on Grass.
         </p>

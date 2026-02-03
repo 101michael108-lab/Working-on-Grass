@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState } from "react";
@@ -11,6 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { ConsultationForm } from "@/components/consultation-form";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Check, ArrowRight, Wrench } from "lucide-react";
+import { Breadcrumbs } from "@/components/breadcrumbs";
 
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -24,9 +26,44 @@ export default function ServicesPage() {
     setIsModalOpen(true);
   };
 
+  const serviceJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    serviceType: 'Environmental and Agricultural Consultation',
+    provider: {
+      '@type': 'LocalBusiness',
+      name: 'Working on Grass',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Modimolle',
+        addressRegion: 'Limpopo',
+        addressCountry: 'ZA'
+      }
+    },
+    areaServed: 'Southern Africa',
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'Land Management Services',
+      itemListElement: services.map(s => ({
+        '@type': 'Offer',
+        itemOffered: {
+          '@type': 'Service',
+          name: s.title,
+          description: s.description
+        }
+      }))
+    }
+  };
+
   return (
     <>
-      <div className="container pt-12 md:pb-20">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+      />
+      <div className="container pt-8 md:pb-20">
+        <Breadcrumbs items={[{ label: "Services" }]} />
+        
         {/* Hero Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>

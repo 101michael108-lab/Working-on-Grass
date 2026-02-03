@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from 'react';
@@ -7,6 +8,7 @@ import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase
 import { doc, collection, query, where, documentId, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Breadcrumbs } from '@/components/breadcrumbs';
 
 function ProductLoadingSkeleton() {
     return (
@@ -90,6 +92,14 @@ export default function ProductPageContent({ productId }: { productId: string })
                 type="application/ld+json"
                 dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
             />
+            <div className="container pt-8">
+                <Breadcrumbs 
+                    items={[
+                        { label: "Shop", href: "/shop" },
+                        { label: product.name }
+                    ]} 
+                />
+            </div>
             <ProductPageClient 
                 product={product} 
                 relatedProducts={relatedProducts || []}
