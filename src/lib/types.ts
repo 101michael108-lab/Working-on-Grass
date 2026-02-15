@@ -107,6 +107,7 @@ export type MediaLibraryItem = {
 export type SiteSettings = {
   storeName: string;
   contactEmail: string;
+  senderEmail?: string;
   shippingFee: number;
   payfastMerchantId: string;
   payfastMerchantKey: string;

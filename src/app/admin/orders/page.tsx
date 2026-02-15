@@ -1,3 +1,4 @@
+
 "use client";
 import React, { useState, useEffect } from "react";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -63,6 +64,7 @@ export default function AdminOrdersPage() {
                     customerName: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
                     newStatus: newStatus,
                     storeName: settings?.storeName,
+                    fromEmail: settings?.senderEmail,
                 }, firestore);
             }
         }
@@ -80,6 +82,7 @@ export default function AdminOrdersPage() {
                 totalAmount: order.totalAmount,
                 items: order.items,
                 storeName: settings?.storeName,
+                fromEmail: settings?.senderEmail,
             }, firestore);
             toast({ title: "Email Queued" });
         } catch (e: any) {

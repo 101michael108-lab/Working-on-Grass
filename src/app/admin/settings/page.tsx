@@ -1,3 +1,4 @@
+
 "use client"
 
 import React from "react";
@@ -13,7 +14,7 @@ import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SiteSettings } from "@/lib/types";
-import { Mail, Send, AlertCircle } from "lucide-react";
+import { Mail, Send, Info } from "lucide-react";
 import { sendOrderConfirmationEmail } from "@/services/email-service";
 
 export default function AdminSettingsPage() {
@@ -26,6 +27,7 @@ export default function AdminSettingsPage() {
   const [formData, setFormData] = React.useState<SiteSettings>({
     storeName: "Working on Grass",
     contactEmail: "courses@alut.co.za",
+    senderEmail: "",
     shippingFee: 150,
     payfastMerchantId: "",
     payfastMerchantKey: "",
@@ -39,6 +41,7 @@ export default function AdminSettingsPage() {
       setFormData({
         storeName: settings.storeName || "Working on Grass",
         contactEmail: settings.contactEmail || "courses@alut.co.za",
+        senderEmail: settings.senderEmail || "",
         shippingFee: settings.shippingFee || 150,
         payfastMerchantId: settings.payfastMerchantId || "",
         payfastMerchantKey: settings.payfastMerchantKey || "",
@@ -62,6 +65,7 @@ export default function AdminSettingsPage() {
             totalAmount: 0,
             items: [{ name: "Test Email Service Connection", quantity: 1, price: 0 }],
             storeName: formData.storeName,
+            fromEmail: formData.senderEmail,
         }, firestore);
         
         toast({ title: "Test Email Queued", description: `Sent to ${formData.contactEmail}` });
@@ -80,8 +84,21 @@ export default function AdminSettingsPage() {
         <CardHeader><CardTitle>Global Site Settings</CardTitle></CardHeader>
         <CardContent className="space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-2"><Label>Store Name</Label><Input value={formData.storeName} onChange={(e) => setFormData(p => ({ ...p, storeName: e.target.value }))}/></div>
-                <div className="space-y-2"><Label>Notification Email</Label><Input type="email" value={formData.contactEmail} onChange={(e) => setFormData(p => ({ ...p, contactEmail: e.target.value }))}/></div>
+                <div className="space-y-2">
+                    <Label>Store Name</Label>
+                    <Input value={formData.storeName} onChange={(e) => setFormData(p => ({ ...p, storeName: e.target.value }))}/>
+                    <p className="text-[10px] text-muted-foreground italic">Used as the "From Name" in emails.</p>
+                </div>
+                <div className="space-y-2">
+                    <Label>Notification Email (Inquiries)</Label>
+                    <Input type="email" value={formData.contactEmail} onChange={(e) => setFormData(p => ({ ...p, contactEmail: e.target.value }))}/>
+                    <p className="text-[10px] text-muted-foreground italic">Where you receive contact form submissions.</p>
+                </div>
+                <div className="space-y-2">
+                    <Label>Sender Email Address</Label>
+                    <Input type="email" value={formData.senderEmail} placeholder="e.g. admin@workingongrass.co.za" onChange={(e) => setFormData(p => ({ ...p, senderEmail: e.target.value }))}/>
+                    <p className="text-[10px] text-muted-foreground italic">Optional. Leave blank to use the default from your Firebase Console.</p>
+                </div>
                 <div className="space-y-2"><Label>Shipping Fee (R)</Label><Input type="number" value={formData.shippingFee} onChange={(e) => setFormData(p => ({ ...p, shippingFee: Number(e.target.value) }))}/></div>
             </div>
             
@@ -108,7 +125,10 @@ export default function AdminSettingsPage() {
             <CardHeader><div className="flex items-center gap-2"><Mail className="h-5 w-5 text-primary" /><CardTitle>Email Extension Test</CardTitle></div></CardHeader>
             <CardContent>
                 <div className="bg-muted/30 p-4 rounded-md space-y-4 text-sm">
-                    <p>Creates a document in 'mail'. If your extension is configured, it will send to <strong>{formData.contactEmail}</strong>.</p>
+                    <div className="flex items-start gap-2 mb-2">
+                        <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                        <p>This creates a document in your 'mail' collection. If your Firebase Trigger Email extension is configured correctly, it will send a receipt to <strong>{formData.contactEmail}</strong>.</p>
+                    </div>
                     <Button variant="outline" onClick={handleSendTestEmail} disabled={isTestingEmail}><Send className="mr-2 h-4 w-4" />{isTestingEmail ? "Queuing..." : "Send Test Email"}</Button>
                 </div>
             </CardContent>
