@@ -1,4 +1,3 @@
-
 "use client"
 
 import { zodResolver } from "@hookform/resolvers/zod"
@@ -19,12 +18,13 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useFirestore, addDocumentNonBlocking } from "@/firebase"
-import { collection, serverTimestamp } from "firebase/firestore"
+import { useFirestore, addDocumentNonBlocking, useDoc, useMemoFirebase } from "@/firebase"
+import { collection, serverTimestamp, doc } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { seedCategories } from "@/lib/static-data"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import type { SeedCategory } from "@/lib/types"
+import type { SeedCategory, SiteSettings } from "@/lib/types"
+import { sendInquiryAcknowledgmentEmail, sendAdminInquiryNotification } from "@/services/email-service"
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -47,6 +47,9 @@ function SeedInquiryForm() {
   const { toast } = useToast()
   const firestore = useFirestore()
 
+  const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
+  const { data: settings } = useDoc<SiteSettings>(settingsRef);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,14 +62,35 @@ function SeedInquiryForm() {
     },
   })
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     const contactFormCollection = collection(firestore, 'contactFormEntries');
+    const serviceType = `Seed Inquiry: ${values.seedCategory}`;
     
     addDocumentNonBlocking(contactFormCollection, {
       ...values,
-      serviceInterestedIn: `Seed Inquiry: ${values.seedCategory}`,
+      serviceInterestedIn: serviceType,
       submissionDate: serverTimestamp(),
     });
+
+    // 1. Customer acknowledgment
+    sendInquiryAcknowledgmentEmail({
+        to: values.email,
+        customerName: values.name,
+        service: serviceType,
+        storeName: settings?.storeName,
+        fromEmail: settings?.senderEmail,
+    }, firestore);
+
+    // 2. Admin notification
+    sendAdminInquiryNotification({
+        to: settings?.contactEmail || 'courses@alut.co.za',
+        customerName: values.name,
+        customerEmail: values.email,
+        service: serviceType,
+        message: values.message,
+        storeName: settings?.storeName,
+        fromEmail: settings?.senderEmail,
+    }, firestore);
 
     toast({
       title: "Seed Inquiry Sent!",

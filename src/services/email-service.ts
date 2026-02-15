@@ -1,4 +1,3 @@
-
 /**
  * @fileOverview A utility for triggering automated emails via the Firebase Trigger Email extension.
  */
@@ -25,6 +24,16 @@ interface StatusUpdatePayload {
   fromEmail?: string;
 }
 
+interface InquiryPayload {
+  to: string;
+  customerName: string;
+  customerEmail?: string;
+  service: string;
+  message?: string;
+  storeName?: string;
+  fromEmail?: string;
+}
+
 /**
  * Formats the "From" field to include a display name.
  * e.g., "Working on Grass <admin@workingongrass.co.za>"
@@ -38,18 +47,9 @@ function formatFrom(name: string, email?: string): string | undefined {
  * Queues a customer order confirmation email in Firestore.
  */
 export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: Firestore) {
-  if (!payload.to) {
-    console.error("Email Service: Missing recipient email.");
-    return;
-  }
+  if (!payload.to) return;
 
-  let firestore: Firestore;
-  try {
-    firestore = db || initializeFirebase().firestore;
-  } catch (e) {
-    firestore = initializeFirebase().firestore;
-  }
-
+  const firestore = db || initializeFirebase().firestore;
   const itemsList = payload.items.map(i => `
     <tr>
       <td style="padding: 10px; border-bottom: 1px solid #eee;">${i.name} (x${i.quantity})</td>
@@ -139,6 +139,72 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
           <p><strong>Amount:</strong> R${payload.totalAmount.toFixed(2)}</p>
           <p><strong>Items:</strong></p>
           <ul>${payload.items.map(i => `<li>${i.name} (x${i.quantity})</li>`).join('')}</ul>
+        </div>
+      `
+    }
+  };
+
+  return addDoc(collection(firestore, 'mail'), emailData);
+}
+
+/**
+ * Queues a "Thank You" acknowledgment for an inquiry.
+ */
+export async function sendInquiryAcknowledgmentEmail(payload: InquiryPayload, db?: Firestore) {
+  if (!payload.to) return;
+  const firestore = db || initializeFirebase().firestore;
+  const storeName = payload.storeName || 'Working on Grass';
+  const from = formatFrom(storeName, payload.fromEmail);
+
+  const emailData: any = {
+    to: payload.to,
+    ...(from && { from }),
+    message: {
+      subject: `Inquiry Received: ${payload.service} | ${storeName}`,
+      html: `
+        <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background-color: #1a3a1a; padding: 20px; text-align: center;">
+            <h2 style="color: #ffffff; margin: 0;">${storeName}</h2>
+          </div>
+          <div style="padding: 30px;">
+            <p>Hello ${payload.customerName},</p>
+            <p>Thank you for reaching out to us regarding <strong>${payload.service}</strong>. We have received your inquiry and ecologist Frits van Oudtshoorn will review your request and get back to you shortly.</p>
+            <div style="background-color: #f8fafc; padding: 15px; border-radius: 4px; border-left: 4px solid #1a3a1a; margin: 20px 0;">
+                <p style="margin: 0; font-size: 14px; color: #64748b;"><em>Our typical response time for technical assessments and seed quotes is 1-2 business days.</em></p>
+            </div>
+            <p style="font-size: 14px; color: #64748b;">Regards,<br/>The Working on Grass Team</p>
+          </div>
+        </div>
+      `
+    }
+  };
+
+  return addDoc(collection(firestore, 'mail'), emailData);
+}
+
+/**
+ * Queues an internal notification for new inquiries.
+ */
+export async function sendAdminInquiryNotification(payload: InquiryPayload, db?: Firestore) {
+  if (!payload.to) return;
+  const firestore = db || initializeFirebase().firestore;
+  const storeName = payload.storeName || 'Working on Grass';
+  const from = formatFrom(storeName, payload.fromEmail);
+
+  const emailData: any = {
+    to: payload.to,
+    ...(from && { from }),
+    message: {
+      subject: `[NEW LEAD] ${payload.service} - ${payload.customerName}`,
+      html: `
+        <div style="font-family: sans-serif;">
+          <h2 style="color: #1a3a1a;">New Inquiry Received</h2>
+          <p><strong>Service:</strong> ${payload.service}</p>
+          <p><strong>From:</strong> ${payload.customerName} (${payload.customerEmail || 'No email provided'})</p>
+          <hr/>
+          <p><strong>Message / Requirements:</strong></p>
+          <div style="white-space: pre-wrap; background: #f1f5f9; padding: 15px; border-radius: 4px;">${payload.message || 'No additional details provided.'}</div>
+          <p style="margin-top: 20px;"><a href="${typeof window !== 'undefined' ? window.location.origin : ''}/admin/inquiries">View in Admin Dashboard</a></p>
         </div>
       `
     }
