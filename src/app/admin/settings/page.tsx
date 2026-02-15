@@ -62,7 +62,6 @@ export default function AdminSettingsPage() {
             totalAmount: 0,
             items: [{ name: "Test Email Service Connection", quantity: 1, price: 0 }],
             storeName: formData.storeName,
-            fromEmail: formData.contactEmail
         }, firestore);
         
         toast({ title: "Test Email Queued", description: `Sent to ${formData.contactEmail}` });

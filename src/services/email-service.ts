@@ -13,7 +13,6 @@ interface OrderConfirmationPayload {
   totalAmount: number;
   items: Array<{ name: string; quantity: number; price: number }>;
   storeName?: string;
-  fromEmail?: string;
 }
 
 interface StatusUpdatePayload {
@@ -22,11 +21,11 @@ interface StatusUpdatePayload {
   customerName: string;
   newStatus: string;
   storeName?: string;
-  fromEmail?: string;
 }
 
 /**
  * Queues a customer order confirmation email in Firestore.
+ * The 'from' address is intentionally omitted to use the default configured in the Firebase Extension.
  */
 export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: Firestore) {
   if (!payload.to) {
@@ -75,11 +74,6 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
     }
   };
 
-  // Only add 'from' if an email is provided, otherwise let the extension use its default.
-  if (payload.fromEmail) {
-    emailData.from = `Working on Grass <${payload.fromEmail}>`;
-  }
-
   return addDoc(collection(firestore, 'mail'), emailData);
 }
 
@@ -105,10 +99,6 @@ export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, d
     }
   };
 
-  if (payload.fromEmail) {
-    emailData.from = `Working on Grass <${payload.fromEmail}>`;
-  }
-
   return addDoc(collection(firestore, 'mail'), emailData);
 }
 
@@ -133,10 +123,6 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
       `
     }
   };
-
-  if (payload.fromEmail) {
-    emailData.from = `Working on Grass <${payload.fromEmail}>`;
-  }
 
   return addDoc(collection(firestore, 'mail'), emailData);
 }

@@ -78,7 +78,6 @@ export async function POST(req: NextRequest) {
             totalAmount: orderData.totalAmount,
             items: orderData.items,
             storeName: settings?.storeName,
-            fromEmail: settings?.contactEmail,
         }, firestore).catch(console.error);
 
         await sendAdminOrderNotification({
@@ -88,7 +87,6 @@ export async function POST(req: NextRequest) {
             totalAmount: orderData.totalAmount,
             items: orderData.items,
             storeName: settings?.storeName,
-            fromEmail: settings?.contactEmail,
         }, firestore).catch(console.error);
     }
 
