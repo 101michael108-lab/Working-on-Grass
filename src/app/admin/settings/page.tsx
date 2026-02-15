@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { Switch } from "@/components/ui/switch"
-import { useDoc, useFirestore, useMemoFirebase, initializeFirebase } from "@/firebase";
+import { useDoc, useFirestore, useMemoFirebase } from "@/firebase";
 import { doc, addDoc, collection } from "firebase/firestore";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
@@ -58,6 +58,7 @@ export default function AdminSettingsPage() {
         const mailCollection = collection(firestore, 'mail');
         await addDoc(mailCollection, {
             to: formData.contactEmail,
+            from: `Working on Grass <${formData.contactEmail}>`,
             message: {
                 subject: `Test Email | ${formData.storeName}`,
                 html: `

@@ -14,6 +14,7 @@ interface OrderConfirmationPayload {
   totalAmount: number;
   items: Array<{ name: string; quantity: number; price: number }>;
   storeName?: string;
+  fromEmail?: string;
 }
 
 interface StatusUpdatePayload {
@@ -22,6 +23,7 @@ interface StatusUpdatePayload {
   customerName: string;
   newStatus: string;
   storeName?: string;
+  fromEmail?: string;
 }
 
 /**
@@ -46,6 +48,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
 
   const mailCollection = collection(firestore, 'mail');
   const store = payload.storeName || 'Working on Grass';
+  const fromEmail = payload.fromEmail || 'courses@alut.co.za';
 
   const itemsList = payload.items.map(i => `
     <tr>
@@ -56,6 +59,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
 
   const emailData = {
     to: payload.to,
+    from: `Working on Grass <${fromEmail}>`,
     message: {
       subject: `Order Confirmation #${payload.orderId.substring(0, 8)} | ${store}`,
       html: `
@@ -117,9 +121,11 @@ export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, d
   const firestore = db || initializeFirebase().firestore;
   const mailCollection = collection(firestore, 'mail');
   const store = payload.storeName || 'Working on Grass';
+  const fromEmail = payload.fromEmail || 'courses@alut.co.za';
 
   const emailData = {
     to: payload.to,
+    from: `Working on Grass <${fromEmail}>`,
     message: {
       subject: `Order Update: #${payload.orderId.substring(0, 8)} is ${payload.newStatus} | ${store}`,
       html: `
@@ -148,9 +154,11 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
   const firestore = db || initializeFirebase().firestore;
   const mailCollection = collection(firestore, 'mail');
   const adminEmail = payload.to;
+  const fromEmail = payload.fromEmail || 'courses@alut.co.za';
 
   const emailData = {
     to: adminEmail,
+    from: `Working on Grass <${fromEmail}>`,
     message: {
       subject: `[SALES] New Order #${payload.orderId.substring(0, 8)} Paid`,
       html: `
