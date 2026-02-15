@@ -11,9 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Package, Truck, CheckCircle, XCircle } from "lucide-react";
+import { Eye, Package, Truck, CheckCircle, XCircle, Mail, Send } from "lucide-react";
 import type { Order, User, SiteSettings } from "@/lib/types";
-import { sendOrderStatusUpdateEmail } from "@/services/email-service";
+import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from "@/services/email-service";
 
 const statusOptions = ['Pending', 'Processing', 'Shipped', 'Fulfilled', 'Delivered', 'Cancelled'] as const;
 
@@ -39,6 +39,7 @@ export default function AdminOrdersPage() {
     const { toast } = useToast();
     const [orders, setOrders] = useState<(Order & { customerName?: string; userId: string })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSendingEmail, setIsSendingEmail] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<(Order & { customerName?: string }) | null>(null);
 
     // Fetch settings for email templates
@@ -110,6 +111,26 @@ export default function AdminOrdersPage() {
         }
 
         toast({ title: "Status Updated", description: `Order status set to ${newStatus}. Customer notified via email.` });
+    }
+
+    const handleResendConfirmation = async (order: Order) => {
+        if (!order.shippingInfo?.email) return;
+        setIsSendingEmail(true);
+        try {
+            await sendOrderConfirmationEmail({
+                to: order.shippingInfo.email,
+                orderId: order.id,
+                customerName: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
+                totalAmount: order.totalAmount,
+                items: order.items,
+                storeName: settings?.storeName,
+            }, firestore);
+            toast({ title: "Email Queued", description: "The confirmation email has been rewritten to the mail collection." });
+        } catch (e) {
+            toast({ variant: "destructive", title: "Failed to queue email." });
+        } finally {
+            setIsSendingEmail(false);
+        }
     }
 
     return (
@@ -203,6 +224,15 @@ export default function AdminOrdersPage() {
                                         <div className="text-sm font-bold">
                                             Total Paid: R{selectedOrder.totalAmount.toFixed(2)}
                                         </div>
+                                        <Button 
+                                            variant="outline" 
+                                            size="sm" 
+                                            className="w-full text-xs"
+                                            disabled={isSendingEmail}
+                                            onClick={() => handleResendConfirmation(selectedOrder)}
+                                        >
+                                            <Send className="mr-2 h-3 w-3" /> Resend Confirmation Email
+                                        </Button>
                                     </div>
                                 </div>
                             </div>

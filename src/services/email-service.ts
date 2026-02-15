@@ -1,8 +1,7 @@
-
-'use client';
 /**
  * @fileOverview A utility for triggering automated emails via the Firebase Trigger Email extension.
  * Instead of calling an external API directly, this service writes a document to the 'mail' collection.
+ * This file is designed to work in both client and server environments.
  */
 
 import { initializeFirebase } from '@/firebase';
@@ -29,7 +28,16 @@ interface StatusUpdatePayload {
  * Queues a customer order confirmation email in Firestore.
  */
 export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: Firestore) {
-  const firestore = db || initializeFirebase().firestore;
+  // Ensure we have a firestore instance
+  let firestore: Firestore;
+  try {
+    firestore = db || initializeFirebase().firestore;
+  } catch (e) {
+    // If initialization fails (e.g. during edge cases), try a fresh init
+    const { firestore: fs } = initializeFirebase();
+    firestore = fs;
+  }
+
   const mailCollection = collection(firestore, 'mail');
   const store = payload.storeName || 'Working on Grass';
 
