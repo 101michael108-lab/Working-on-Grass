@@ -5,10 +5,10 @@ import React, { useState, useEffect, useMemo } from "react";
 import { useFirestore } from "@/firebase";
 import { collectionGroup, query, getDocs, orderBy, collection, limit } from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { DollarSign, ShoppingCart, Users, Package, TrendingUp } from "lucide-react"
+import { DollarSign, ShoppingCart, Users, Package, TrendingUp, MessageSquare } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import type { Order, User } from "@/lib/types";
+import type { Order, User, Inquiry } from "@/lib/types";
 import {
   ChartConfig,
   ChartContainer,
@@ -123,7 +123,8 @@ export default function AdminDashboardPage() {
     totalRevenue: 0,
     orderCount: 0,
     userCount: 0,
-    lowStockCount: 0
+    lowStockCount: 0,
+    inquiryCount: 0,
   });
 
   useEffect(() => {
@@ -151,11 +152,16 @@ export default function AdminDashboardPage() {
         const productsSnapshot = await getDocs(collection(firestore, 'products'));
         const lowStock = productsSnapshot.docs.filter(d => (d.data().stock || 0) <= 5).length;
 
+        // Fetch inquiries count
+        const contactSnap = await getDocs(collection(firestore, 'contactFormEntries'));
+        const consultSnap = await getDocs(collection(firestore, 'consultationRequests'));
+
         setStats({
             totalRevenue: totalRev,
             orderCount: ordersSnapshot.size,
             userCount: usersSnapshot.size,
-            lowStockCount: lowStock
+            lowStockCount: lowStock,
+            inquiryCount: contactSnap.size + consultSnap.size
         });
 
         const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -167,7 +173,7 @@ export default function AdminDashboardPage() {
 
   const dashboardStats = [
     { title: "Total Revenue", value: `R${stats.totalRevenue.toLocaleString()}`, icon: DollarSign, change: "Since inception", color: "text-green-600" },
-    { title: "Orders", value: stats.orderCount.toString(), icon: ShoppingCart, change: "Total placed", color: "text-blue-600" },
+    { title: "New Leads", value: stats.inquiryCount.toString(), icon: MessageSquare, change: "Service inquiries", color: "text-orange-600" },
     { title: "Registered Users", value: stats.userCount.toString(), icon: Users, change: "All time", color: "text-purple-600" },
     { title: "Low Stock Items", value: stats.lowStockCount.toString(), icon: Package, change: "Needs attention", color: stats.lowStockCount > 0 ? "text-red-600" : "text-muted-foreground" },
   ]

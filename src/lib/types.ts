@@ -74,6 +74,21 @@ export type User = {
     updatedAt: any; // Firestore timestamp
 };
 
+export type Inquiry = {
+    id: string;
+    name: string;
+    email?: string;
+    contactDetail?: string;
+    phone?: string;
+    location?: string;
+    serviceInterestedIn?: string;
+    service?: string;
+    message?: string;
+    needs?: string;
+    submissionDate: any; // Firestore Timestamp
+    type: 'contact' | 'consultation';
+};
+
 export type SiteImage = {
   id: string;
   description: string;
