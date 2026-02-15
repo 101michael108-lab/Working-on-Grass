@@ -46,9 +46,11 @@ service cloud.firestore {
 
     /**
      * Checks if the authenticated user has the 'admin' role.
+     * Uses a safe field access to prevent crashes if 'role' is missing.
      */
     function isAdmin() {
-      return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+      return isSignedIn() && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin';
     }
 
     // ------------------------------------------------------------------
@@ -71,7 +73,9 @@ service cloud.firestore {
       allow get: if true;
       allow list: if true;
       allow create: if isAdmin();
-      allow update: if isAdmin() && isExistingDoc();
+      // Allow admins to update or allow automated stock reduction from the ITN route
+      allow update: if (isAdmin() && isExistingDoc()) || 
+                    (request.auth == null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock']));
       allow delete: if isAdmin() && isExistingDoc();
     }
 
@@ -88,10 +92,8 @@ service cloud.firestore {
     // ------------------------------------------------------------------
     match /mail/{mailId} {
       // Only admins can read the mail logs.
-      // We allow creation for the server-side logic (which is unauthenticated in ITN route).
-      // In a more restricted environment, we'd use custom tokens, but for this prototype,
-      // we'll allow unauthenticated creation to support webhooks.
       allow get, list: if isAdmin();
+      // Allow anyone (including ITN route) to queue an email.
       allow create: if true;
       allow update, delete: if isAdmin();
     }
@@ -160,7 +162,11 @@ service cloud.firestore {
         allow get: if isOwner(userId) || isAdmin();
         allow list: if isOwner(userId) || isAdmin();
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if (isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId) || (isAdmin() && isExistingDoc());
+        // Allow updates from owners (shipping info), admins (fulfillment), 
+        // or the unauthenticated ITN route (status/paymentInfo).
+        allow update: if (isAdmin() && isExistingDoc()) || 
+                      (isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId) ||
+                      (request.auth == null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paymentInfo']));
         allow delete: if isOwner(userId) || isAdmin();
 
         match /orderItems/{orderItemId} {
