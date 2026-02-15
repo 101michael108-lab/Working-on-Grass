@@ -1,5 +1,4 @@
-
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import { Header } from "@/components/header";
@@ -8,6 +7,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/cart-context";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { MediaProvider } from "@/context/media-context";
+
+export const viewport: Viewport = {
+  themeColor: "#1a3a1a", // Deep Forest Green matching the brand's primary identity
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za'),
