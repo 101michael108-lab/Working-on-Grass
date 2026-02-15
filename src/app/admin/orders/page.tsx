@@ -1,7 +1,7 @@
 
 "use client";
 import React, { useState, useEffect } from "react";
-import { useFirestore } from "@/firebase";
+import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
 import { collectionGroup, query, getDocs, orderBy, collection, doc } from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,7 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, Package, Truck, CheckCircle, XCircle } from "lucide-react";
-import type { Order, User } from "@/lib/types";
+import type { Order, User, SiteSettings } from "@/lib/types";
+import { sendOrderStatusUpdateEmail } from "@/services/email-service";
 
 const statusOptions = ['Pending', 'Processing', 'Shipped', 'Fulfilled', 'Delivered', 'Cancelled'] as const;
 
@@ -39,6 +40,10 @@ export default function AdminOrdersPage() {
     const [orders, setOrders] = useState<(Order & { customerName?: string; userId: string })[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedOrder, setSelectedOrder] = useState<(Order & { customerName?: string }) | null>(null);
+
+    // Fetch settings for email templates
+    const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
+    const { data: settings } = useDoc<SiteSettings>(settingsRef);
 
     const fetchAllOrders = async () => {
         if (!firestore) return;
@@ -79,15 +84,32 @@ export default function AdminOrdersPage() {
         fetchAllOrders();
     }, [firestore]);
 
-    const handleStatusChange = (orderId: string, userId: string, newStatus: string) => {
+    const handleStatusChange = async (orderId: string, userId: string, newStatus: string) => {
         const orderRef = doc(firestore, 'users', userId, 'orders', orderId);
         updateDocumentNonBlocking(orderRef, { status: newStatus });
         
-        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus as any } : o));
+        const updatedOrders = orders.map(o => o.id === orderId ? { ...o, status: newStatus as any } : o);
+        setOrders(updatedOrders);
+        
         if (selectedOrder?.id === orderId) {
             setSelectedOrder(prev => prev ? { ...prev, status: newStatus as any } : null);
         }
-        toast({ title: "Status Updated", description: `Order ${orderId.substring(0, 8)} set to ${newStatus}.` });
+
+        // Trigger notification email if it's a meaningful transition
+        if (['Shipped', 'Delivered', 'Cancelled'].includes(newStatus)) {
+            const order = updatedOrders.find(o => o.id === orderId);
+            if (order && order.shippingInfo?.email) {
+                sendOrderStatusUpdateEmail({
+                    to: order.shippingInfo.email,
+                    orderId: orderId,
+                    customerName: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
+                    newStatus: newStatus,
+                    storeName: settings?.storeName
+                }, firestore);
+            }
+        }
+
+        toast({ title: "Status Updated", description: `Order status set to ${newStatus}. Customer notified via email.` });
     }
 
     return (

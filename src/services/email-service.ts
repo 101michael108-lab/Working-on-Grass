@@ -14,53 +14,110 @@ interface OrderConfirmationPayload {
   customerName: string;
   totalAmount: number;
   items: Array<{ name: string; quantity: number; price: number }>;
+  storeName?: string;
+}
+
+interface StatusUpdatePayload {
+  to: string;
+  orderId: string;
+  customerName: string;
+  newStatus: string;
+  storeName?: string;
 }
 
 /**
  * Queues a customer order confirmation email in Firestore.
  */
 export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: Firestore) {
-  // Use provided db instance or initialize a new one (isomorphic)
   const firestore = db || initializeFirebase().firestore;
   const mailCollection = collection(firestore, 'mail');
+  const store = payload.storeName || 'Working on Grass';
 
-  const itemsList = payload.items.map(i => `<li>${i.name} (x${i.quantity}) - R${i.price.toFixed(2)}</li>`).join('');
+  const itemsList = payload.items.map(i => `
+    <tr>
+      <td style="padding: 10px; border-bottom: 1px solid #eee;">${i.name} (x${i.quantity})</td>
+      <td style="padding: 10px; border-bottom: 1px solid #eee; text-align: right;">R${i.price.toFixed(2)}</td>
+    </tr>
+  `).join('');
 
   const emailData = {
     to: payload.to,
     message: {
-      subject: `Order Confirmation #${payload.orderId.substring(0, 8)} | Working on Grass`,
+      subject: `Order Confirmation #${payload.orderId.substring(0, 8)} | ${store}`,
       html: `
-        <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; padding: 20px;">
-          <h1 style="color: #007000;">Thank you for your order!</h1>
-          <p>Hello ${payload.customerName},</p>
-          <p>Your payment has been successfully processed. We are now preparing your items for delivery.</p>
-          
-          <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <h3 style="margin-top: 0;">Order Summary:</h3>
-            <p><strong>Order ID:</strong> ${payload.orderId}</p>
-            <ul>${itemsList}</ul>
-            <p style="font-size: 18px;"><strong>Total Amount: R${payload.totalAmount.toFixed(2)}</strong></p>
+        <div style="font-family: 'PT Sans', sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden;">
+          <div style="background-color: #1a3a1a; padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-family: 'Alegreya', serif;">Thank You for Your Order</h1>
           </div>
+          <div style="padding: 30px;">
+            <p>Hello ${payload.customerName},</p>
+            <p>We've received your payment for order <strong>#${payload.orderId.substring(0, 8)}</strong>. Our team is now preparing your items for dispatch.</p>
+            
+            <div style="margin: 20px 0; border: 1px solid #eee; border-radius: 4px;">
+              <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                  <tr style="background-color: #f8fafc;">
+                    <th style="padding: 10px; text-align: left; font-size: 12px; text-transform: uppercase;">Item</th>
+                    <th style="padding: 10px; text-align: right; font-size: 12px; text-transform: uppercase;">Price</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${itemsList}
+                </tbody>
+                <tfoot>
+                  <tr>
+                    <td style="padding: 15px 10px; font-weight: bold;">Total Paid</td>
+                    <td style="padding: 15px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #c2410c;">R${payload.totalAmount.toFixed(2)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
 
-          <p>We will notify you via email as soon as your order has shipped.</p>
-          <p>If you have any questions, please contact us at <a href="mailto:courses@alut.co.za">courses@alut.co.za</a>.</p>
-          
-          <hr style="border: 0; border-top: 1px solid #eee; margin: 30px 0;" />
-          <p style="font-size: 12px; color: #999; text-align: center;">Working on Grass | Sustainable Veld Management Advisory</p>
+            <p style="font-size: 14px; color: #64748b;">We will notify you via email as soon as your parcel is with the courier.</p>
+            
+            <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee; text-align: center;">
+              <p style="margin: 0; font-weight: bold;">${store}</p>
+              <p style="margin: 5px 0; font-size: 12px; color: #94a3b8;">Sustainable & Regenerative Land Use Advisory</p>
+            </div>
+          </div>
         </div>
       `,
-      text: `Thank you for your order, ${payload.customerName}! Your payment for Order #${payload.orderId} of R${payload.totalAmount.toFixed(2)} has been received. We are processing it now.`
+      text: `Thank you for your order, ${payload.customerName}! We have received payment for Order #${payload.orderId.substring(0, 8)} totaling R${payload.totalAmount.toFixed(2)}.`
     }
   };
 
-  try {
-    await addDoc(mailCollection, emailData);
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to queue email:", error);
-    return { success: false, error };
-  }
+  return addDoc(mailCollection, emailData);
+}
+
+/**
+ * Queues an automated status update email (e.g. Shipped, Delivered).
+ */
+export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, db?: Firestore) {
+  const firestore = db || initializeFirebase().firestore;
+  const mailCollection = collection(firestore, 'mail');
+  const store = payload.storeName || 'Working on Grass';
+
+  const emailData = {
+    to: payload.to,
+    message: {
+      subject: `Order Update: #${payload.orderId.substring(0, 8)} is ${payload.newStatus} | ${store}`,
+      html: `
+        <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 30px;">
+          <h2 style="color: #1a3a1a;">Your order status has changed</h2>
+          <p>Hello ${payload.customerName},</p>
+          <p>The status of your order <strong>#${payload.orderId.substring(0, 8)}</strong> has been updated to:</p>
+          <div style="background: #f1f5f9; padding: 15px; border-radius: 4px; display: inline-block; font-weight: bold; color: #1e293b; text-transform: uppercase; letter-spacing: 1px;">
+            ${payload.newStatus}
+          </div>
+          <p style="margin-top: 20px;">If this order has been shipped, you should receive a tracking number from our courier shortly if it wasn't included in this update.</p>
+          <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;" />
+          <p style="font-size: 12px; color: #94a3b8; text-align: center;">${store} | Modimolle, Limpopo</p>
+        </div>
+      `
+    }
+  };
+
+  return addDoc(mailCollection, emailData);
 }
 
 /**
@@ -69,29 +126,26 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
 export async function sendAdminOrderNotification(payload: OrderConfirmationPayload, db?: Firestore) {
   const firestore = db || initializeFirebase().firestore;
   const mailCollection = collection(firestore, 'mail');
+  const adminEmail = payload.to;
 
   const emailData = {
-    to: 'admin@workingongrass.co.za', // Ideally pulled from global settings
+    to: adminEmail,
     message: {
-      subject: `[ADMIN] New Paid Order #${payload.orderId.substring(0, 8)}`,
+      subject: `[SALES] New Order #${payload.orderId.substring(0, 8)} Paid`,
       html: `
         <div style="font-family: sans-serif;">
-          <h2>New Paid Order Received</h2>
+          <h2 style="color: #c2410c;">New Paid Order Received</h2>
           <p><strong>Customer:</strong> ${payload.customerName}</p>
           <p><strong>Amount:</strong> R${payload.totalAmount.toFixed(2)}</p>
           <p><strong>Items:</strong></p>
           <ul>${payload.items.map(i => `<li>${i.name} (x${i.quantity})</li>`).join('')}</ul>
-          <p><a href="${process.env.NEXT_PUBLIC_SITE_URL}/admin/orders">View Order in Dashboard</a></p>
+          <p style="margin-top: 20px;">
+            <a href="${process.env.NEXT_PUBLIC_SITE_URL || ''}/admin/orders" style="background: #1a3a1a; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px;">View in Admin Dashboard</a>
+          </p>
         </div>
       `
     }
   };
 
-  try {
-    await addDoc(mailCollection, emailData);
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to queue admin email:", error);
-    return { success: false, error };
-  }
+  return addDoc(mailCollection, emailData);
 }
