@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { initializeFirebase } from '@/firebase';
@@ -97,6 +96,7 @@ export async function POST(req: NextRequest) {
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,
             items: orderData.items,
+            shippingInfo: orderData.shippingInfo,
             storeName: settings?.storeName,
             fromEmail: settings?.senderEmail,
         }, firestore).then(() => console.log("PayFast ITN: Customer confirmation email queued."))
@@ -109,6 +109,7 @@ export async function POST(req: NextRequest) {
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,
             items: orderData.items,
+            shippingInfo: orderData.shippingInfo,
             storeName: settings?.storeName,
             fromEmail: settings?.senderEmail,
         }, firestore).then(() => console.log("PayFast ITN: Admin notification email queued."))

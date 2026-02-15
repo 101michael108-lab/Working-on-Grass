@@ -11,6 +11,15 @@ interface OrderConfirmationPayload {
   customerName: string;
   totalAmount: number;
   items: Array<{ name: string; quantity: number; price: number }>;
+  shippingInfo?: {
+    email: string;
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
   storeName?: string;
   fromEmail?: string;
 }
@@ -73,6 +82,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
           <div style="padding: 30px;">
             <p>Hello ${payload.customerName},</p>
             <p>We've received your payment for order <strong>#${payload.orderId.substring(0, 8)}</strong>. Our team is now preparing your items for dispatch.</p>
+            
             <div style="margin: 20px 0; border: 1px solid #eee; border-radius: 4px;">
               <table style="width: 100%; border-collapse: collapse;">
                 <thead><tr style="background-color: #f8fafc;"><th style="padding: 10px; text-align: left;">Item</th><th style="padding: 10px; text-align: right;">Price</th></tr></thead>
@@ -80,7 +90,18 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
                 <tfoot><tr><td style="padding: 15px 10px; font-weight: bold;">Total Paid</td><td style="padding: 15px 10px; text-align: right; font-weight: bold; color: #c2410c;">R${payload.totalAmount.toFixed(2)}</td></tr></tfoot>
               </table>
             </div>
-            <p style="font-size: 14px; color: #64748b;">We will notify you via email as soon as your parcel is with the courier.</p>
+
+            ${payload.shippingInfo ? `
+            <div style="margin-top: 20px; padding: 15px; background-color: #f9fafb; border-radius: 4px;">
+                <h4 style="margin: 0 0 10px 0; font-size: 14px; text-transform: uppercase; color: #6b7280;">Shipping To:</h4>
+                <p style="margin: 0; font-weight: bold;">${payload.shippingInfo.firstName} ${payload.shippingInfo.lastName}</p>
+                <p style="margin: 0;">${payload.shippingInfo.address}</p>
+                <p style="margin: 0;">${payload.shippingInfo.city}, ${payload.shippingInfo.postalCode}</p>
+                <p style="margin: 0;">${payload.shippingInfo.country}</p>
+            </div>
+            ` : ''}
+
+            <p style="margin-top: 30px; font-size: 14px; color: #64748b;">We will notify you via email as soon as your parcel is with the courier.</p>
           </div>
         </div>
       `,
@@ -126,19 +147,65 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
+
+  const itemsList = payload.items.map(i => `
+    <tr>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${i.name}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${i.quantity}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R${i.price.toFixed(2)}</td>
+    </tr>
+  `).join('');
   
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
     message: {
-      subject: `[SALES] New Order #${payload.orderId.substring(0, 8)} Paid`,
+      subject: `[SALES] New Order #${payload.orderId.substring(0, 8)} - ${payload.customerName}`,
       html: `
-        <div style="font-family: sans-serif;">
-          <h2 style="color: #c2410c;">New Paid Order Received</h2>
-          <p><strong>Customer:</strong> ${payload.customerName}</p>
-          <p><strong>Amount:</strong> R${payload.totalAmount.toFixed(2)}</p>
-          <p><strong>Items:</strong></p>
-          <ul>${payload.items.map(i => `<li>${i.name} (x${i.quantity})</li>`).join('')}</ul>
+        <div style="font-family: sans-serif; line-height: 1.5; color: #111; max-width: 700px; margin: auto; border: 2px solid #1a3a1a; padding: 40px;">
+          <div style="border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="color: #1a3a1a; margin: 0; font-size: 24px;">New Paid Order Received</h1>
+            <p style="color: #666; margin: 5px 0 0 0;">ID: #${payload.orderId}</p>
+          </div>
+
+          <div style="display: flex; gap: 40px; margin-bottom: 30px;">
+            <div style="flex: 1;">
+                <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: 1px;">Customer Details</h3>
+                <p style="margin: 0; font-weight: bold;">${payload.customerName}</p>
+                <p style="margin: 0; color: #007bff;">${payload.shippingInfo?.email || 'No email'}</p>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: 1px;">Shipping Address</h3>
+                ${payload.shippingInfo ? `
+                    <p style="margin: 0;">${payload.shippingInfo.address}</p>
+                    <p style="margin: 0;">${payload.shippingInfo.city}, ${payload.shippingInfo.postalCode}</p>
+                    <p style="margin: 0;">${payload.shippingInfo.country}</p>
+                ` : '<p>No shipping info provided.</p>'}
+            </div>
+          </div>
+
+          <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: 1px;">Ordered Items</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <thead>
+                <tr style="background-color: #f4f4f4;">
+                    <th style="padding: 10px; text-align: left; font-size: 13px;">Item Description</th>
+                    <th style="padding: 10px; text-align: center; font-size: 13px;">Qty</th>
+                    <th style="padding: 10px; text-align: right; font-size: 13px;">Price</th>
+                </tr>
+            </thead>
+            <tbody>${itemsList}</tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2" style="padding: 20px 10px 10px 10px; text-align: right; font-weight: bold; font-size: 18px;">Total Paid:</td>
+                    <td style="padding: 20px 10px 10px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #c2410c;">R${payload.totalAmount.toFixed(2)}</td>
+                </tr>
+            </tfoot>
+          </table>
+
+          <div style="border-top: 1px dashed #ccc; padding-top: 20px; font-size: 12px; color: #888;">
+            <p>This email serves as an official order notification for <strong>${storeName}</strong>. 
+            Payment has been successfully processed via PayFast. Please fulfill this order as soon as possible.</p>
+          </div>
         </div>
       `
     }

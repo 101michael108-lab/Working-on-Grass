@@ -1,4 +1,3 @@
-
 "use client";
 import React, { useState, useEffect } from "react";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
@@ -112,6 +111,7 @@ export default function AdminOrdersPage() {
                 customerName: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
                 totalAmount: order.totalAmount,
                 items: order.items,
+                shippingInfo: order.shippingInfo,
                 storeName: settings?.storeName,
                 fromEmail: settings?.senderEmail,
             }, firestore);

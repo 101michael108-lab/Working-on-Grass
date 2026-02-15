@@ -1,4 +1,3 @@
-
 "use client"
 
 import React from "react";
@@ -64,6 +63,15 @@ export default function AdminSettingsPage() {
             orderId: "TEST-12345",
             totalAmount: 0,
             items: [{ name: "Test Email Service Connection", quantity: 1, price: 0 }],
+            shippingInfo: {
+                email: formData.contactEmail,
+                firstName: "Test",
+                lastName: "User",
+                address: "123 Veld Avenue",
+                city: "Modimolle",
+                postalCode: "0510",
+                country: "South Africa",
+            },
             storeName: formData.storeName,
             fromEmail: formData.senderEmail,
         }, firestore);
