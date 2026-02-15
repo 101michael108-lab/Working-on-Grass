@@ -24,6 +24,7 @@ import { useUser, useFirestore, addDocumentNonBlocking, useAuth, setDocumentNonB
 import { collection, serverTimestamp, doc } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
+import type { SiteSettings } from "@/lib/types";
 
 const formSchema = z.object({
   email: z.string().email(),
@@ -46,10 +47,14 @@ export default function CheckoutPage() {
   const [payfastConfig, setPayfastConfig] = useState<Record<string, string> | null>(null);
   const payfastFormRef = useRef<HTMLFormElement>(null);
 
-  // Fetch real shipping fee from settings
+  // Fetch settings from Firestore
   const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
-  const { data: settings } = useDoc(settingsRef);
+  const { data: settings } = useDoc<SiteSettings>(settingsRef);
+  
   const shippingFee = settings?.shippingFee ?? 150;
+  const payfastUrl = settings?.isLiveMode 
+    ? "https://www.payfast.co.za/eng/process" 
+    : "https://sandbox.payfast.co.za/eng/process";
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -78,7 +83,7 @@ export default function CheckoutPage() {
             lastName: user.displayName?.split(' ')[1] || form.getValues().lastName || "",
         });
     }
-  }, [user]);
+  }, [user, form]);
 
   useEffect(() => {
     if (payfastConfig && payfastFormRef.current) {
@@ -144,7 +149,7 @@ export default function CheckoutPage() {
         email_address: values.email,
         m_payment_id: docRef.id,
         amount: totalAmount.toFixed(2),
-        item_name: `Working on Grass - Order #${docRef.id.substring(0, 8)}`,
+        item_name: `${settings?.storeName || 'Working on Grass'} - Order #${docRef.id.substring(0, 8)}`,
         custom_str1: effectiveUser.uid,
       };
 
@@ -170,8 +175,8 @@ export default function CheckoutPage() {
                     <CardDescription>You are being redirected to PayFast securely.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">Please wait...</p>
-                    <form ref={payfastFormRef} action={process.env.NEXT_PUBLIC_PAYFAST_PROCESS_URL || "https://sandbox.payfast.co.za/eng/process"} method="post">
+                    <p className="text-muted-foreground mb-4">Please wait...</p>
+                    <form ref={payfastFormRef} action={payfastUrl} method="post">
                         {Object.entries(payfastConfig).map(([key, value]) => (
                            <input key={key} type="hidden" name={key} value={value as string} />
                         ))}

@@ -154,7 +154,8 @@
         "contactEmail": { "type": "string", "format": "email" },
         "shippingFee": { "type": "number" },
         "payfastMerchantId": { "type": "string" },
-        "payfastMerchantKey": { "type": "string" }
+        "payfastMerchantKey": { "type": "string" },
+        "isLiveMode": { "type": "boolean" }
       }
     },
     "Mail": {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Logo } from "@/components/logo";
@@ -53,8 +54,8 @@ export function Footer() {
                 <li><Link href="/services" className="hover:text-foreground">Services</Link></li>
                 <li><Link href="/shop" className="hover:text-foreground">Shop</Link></li>
                 <li><Link href="/seeds" className="hover:text-foreground">Seeds</Link></li>
-                <li><Link href="/resources" className="hover:text-foreground">Resources</Link></li>
-                <li><Link href="/contact" className="hover:text-foreground">Contact Us</Link></li>
+                <li><Link href="/privacy" className="hover:text-foreground">Privacy Policy</Link></li>
+                <li><Link href="/terms" className="hover:text-foreground">Terms & Conditions</Link></li>
             </ul>
           </div>
         </div>

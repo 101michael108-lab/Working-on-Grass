@@ -88,3 +88,12 @@ export type MediaLibraryItem = {
     description?: string;
     uploadedAt: any; // Firestore Timestamp
 };
+
+export type SiteSettings = {
+  storeName: string;
+  contactEmail: string;
+  shippingFee: number;
+  payfastMerchantId: string;
+  payfastMerchantKey: string;
+  isLiveMode: boolean;
+};
