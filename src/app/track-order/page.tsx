@@ -10,21 +10,9 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Package, MapPin, Calendar, CheckCircle2, Truck, Clock, AlertTriangle } from "lucide-react";
+import { Search, Package, MapPin, CheckCircle2, Truck, Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { Breadcrumbs } from "@/components/breadcrumbs";
-
-const getStatusVariant = (status: Order['status']): "secondary" | "default" | "success" | "destructive" | "outline" => {
-    switch (status) {
-        case 'Pending': return 'secondary';
-        case 'Processing':
-        case 'Shipped': return 'default';
-        case 'Fulfilled':
-        case 'Delivered': return 'success';
-        case 'Cancelled': return 'destructive';
-        default: return 'outline';
-    }
-}
 
 const getStatusIcon = (status: Order['status']) => {
     switch (status) {
@@ -44,6 +32,7 @@ export default function TrackOrderPage() {
     const [order, setOrder] = useState<Order | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
 
     const handleTrack = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -54,12 +43,10 @@ export default function TrackOrderPage() {
         setOrder(null);
 
         try {
-            // Find order by its document ID and shipping email for verification
-            // Note: Collection Group queries are efficient for subcollections across users
             const ordersQuery = query(
                 collectionGroup(firestore, 'orders'), 
                 where('shippingInfo.email', '==', email.trim().toLowerCase()),
-                limit(10) // Limit results for security/performance
+                limit(10)
             );
             
             const snapshot = await getDocs(ordersQuery);
@@ -78,6 +65,13 @@ export default function TrackOrderPage() {
         }
     }
 
+    const copyOrderId = () => {
+        if (!order) return;
+        navigator.clipboard.writeText(order.id);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    }
+
     return (
         <div className="container py-12 md:py-20">
             <Breadcrumbs items={[{ label: "Track Order" }]} />
@@ -86,7 +80,7 @@ export default function TrackOrderPage() {
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">Track Your Order</h1>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Enter your Order ID and the email address used during checkout to view your current status and details.
+                        Enter your Order ID and the email address used during checkout to view your current status.
                     </p>
                 </div>
 
@@ -155,9 +149,14 @@ export default function TrackOrderPage() {
                                     </CardTitle>
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-4">
-                                    <div className="flex justify-between py-2 border-b">
+                                    <div className="flex justify-between items-center py-2 border-b">
                                         <span className="text-muted-foreground">Order ID</span>
-                                        <span className="font-mono text-xs">{order.id}</span>
+                                        <div className="flex items-center gap-2">
+                                            <span className="font-mono text-xs">{order.id}</span>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyOrderId}>
+                                                {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
+                                            </Button>
+                                        </div>
                                     </div>
                                     <div className="flex justify-between py-2 border-b">
                                         <span className="text-muted-foreground">Placed On</span>
@@ -186,10 +185,6 @@ export default function TrackOrderPage() {
                                         <p className="text-muted-foreground">{order.shippingInfo.address}</p>
                                         <p className="text-muted-foreground">{order.shippingInfo.city}, {order.shippingInfo.postalCode}</p>
                                         <p className="text-muted-foreground">{order.shippingInfo.country}</p>
-                                        <div className="mt-4 pt-4 border-t border-dashed border-primary/20">
-                                            <p className="text-xs font-bold uppercase text-primary">Recipient Email</p>
-                                            <p className="text-sm font-medium">{order.shippingInfo.email}</p>
-                                        </div>
                                     </div>
                                 </CardContent>
                             </Card>
