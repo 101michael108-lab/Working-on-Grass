@@ -9,8 +9,18 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Trash2, Mail, Phone, MapPin, Calendar, MessageSquare } from "lucide-react";
+import { Eye, Trash2, Mail, Phone, MapPin, MessageSquare } from "lucide-react";
 import type { Inquiry } from "@/lib/types";
 
 export default function AdminInquiriesPage() {
@@ -19,13 +29,13 @@ export default function AdminInquiriesPage() {
     const [inquiries, setInquiries] = useState<Inquiry[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+    const [inquiryToDelete, setInquiryToDelete] = useState<{ id: string; type: 'contact' | 'consultation' } | null>(null);
 
     const fetchAllInquiries = async () => {
         if (!firestore) return;
         setIsLoading(true);
         
         try {
-            // Fetch from both collections
             const contactSnap = await getDocs(query(collection(firestore, 'contactFormEntries'), orderBy('submissionDate', 'desc')));
             const consultSnap = await getDocs(query(collection(firestore, 'consultationRequests'), orderBy('submissionDate', 'desc')));
 
@@ -34,9 +44,7 @@ export default function AdminInquiriesPage() {
                 ...consultSnap.docs.map(d => ({ ...d.data(), id: d.id, type: 'consultation' as const } as Inquiry))
             ];
 
-            // Sort by date
             allInquiries.sort((a, b) => b.submissionDate?.toMillis() - a.submissionDate?.toMillis());
-
             setInquiries(allInquiries);
         } catch (error) {
             console.error(error);
@@ -49,9 +57,10 @@ export default function AdminInquiriesPage() {
         fetchAllInquiries();
     }, [firestore]);
 
-    const handleDelete = async (id: string, type: 'contact' | 'consultation') => {
-        if (!confirm("Are you sure you want to delete this lead?")) return;
+    const confirmDelete = async () => {
+        if (!inquiryToDelete) return;
         
+        const { id, type } = inquiryToDelete;
         const col = type === 'contact' ? 'contactFormEntries' : 'consultationRequests';
         try {
             await deleteDoc(doc(firestore, col, id));
@@ -59,6 +68,8 @@ export default function AdminInquiriesPage() {
             toast({ title: "Inquiry Deleted" });
         } catch (e) {
             toast({ variant: "destructive", title: "Delete Failed" });
+        } finally {
+            setInquiryToDelete(null);
         }
     }
 
@@ -108,7 +119,12 @@ export default function AdminInquiriesPage() {
                                                 <Button variant="ghost" size="icon" onClick={() => setSelectedInquiry(inquiry)}>
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(inquiry.id, inquiry.type)}>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="text-destructive hover:bg-destructive/10" 
+                                                    onClick={() => setInquiryToDelete({ id: inquiry.id, type: inquiry.type })}
+                                                >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
                                             </div>
@@ -179,6 +195,23 @@ export default function AdminInquiriesPage() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={!!inquiryToDelete} onOpenChange={(open) => !open && setInquiryToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this inquiry?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This action cannot be undone. This will permanently remove the lead from your database.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete Permanently
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

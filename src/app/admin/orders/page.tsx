@@ -2,16 +2,26 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { collectionGroup, query, getDocs, orderBy, collection, doc } from "firebase/firestore";
+import { collectionGroup, query, getDocs, orderBy, collection, doc, deleteDoc } from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Truck, CheckCircle, Send } from "lucide-react";
+import { Eye, Trash2, Send } from "lucide-react";
 import type { Order, User, SiteSettings } from "@/lib/types";
 import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from "@/services/email-service";
 
@@ -24,6 +34,7 @@ export default function AdminOrdersPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isSendingEmail, setIsSendingEmail] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<(Order & { customerName?: string }) | null>(null);
+    const [orderToDelete, setOrderToDelete] = useState<{ id: string; userId: string } | null>(null);
 
     const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
     const { data: settings } = useDoc<SiteSettings>(settingsRef);
@@ -37,14 +48,19 @@ export default function AdminOrdersPage() {
             usersSnapshot.forEach(doc => { userMap.set(doc.id, (doc.data() as User).displayName); });
 
             const ordersSnapshot = await getDocs(query(collectionGroup(firestore, 'orders'), orderBy('orderDate', 'desc')));
-            const allOrders = ordersSnapshot.docs.map(doc => ({
-                ...doc.data() as Omit<Order, 'id'>,
-                id: doc.id,
-                customerName: userMap.get((doc.data() as Order).userId) || 'Guest',
-                userId: (doc.data() as Order).userId,
-            }));
+            const allOrders = ordersSnapshot.docs.map(doc => {
+                const data = doc.data() as Order;
+                return {
+                    ...data,
+                    id: doc.id,
+                    customerName: userMap.get(data.userId) || 'Guest',
+                    userId: data.userId,
+                };
+            });
             setOrders(allOrders);
-        } catch (error) {} finally { setIsLoading(false); }
+        } catch (error) {
+            console.error("Error fetching orders:", error);
+        } finally { setIsLoading(false); }
     };
 
     useEffect(() => { fetchAllOrders(); }, [firestore]);
@@ -69,6 +85,21 @@ export default function AdminOrdersPage() {
             }
         }
         toast({ title: "Status Updated" });
+    }
+
+    const confirmDeleteOrder = async () => {
+        if (!orderToDelete) return;
+        const { id, userId } = orderToDelete;
+        const orderRef = doc(firestore, 'users', userId, 'orders', id);
+        try {
+            await deleteDoc(orderRef);
+            setOrders(prev => prev.filter(o => o.id !== id));
+            toast({ title: "Order Deleted" });
+        } catch (e) {
+            toast({ variant: "destructive", title: "Delete Failed" });
+        } finally {
+            setOrderToDelete(null);
+        }
     }
 
     const handleResendConfirmation = async (order: Order) => {
@@ -97,7 +128,7 @@ export default function AdminOrdersPage() {
                 <CardContent>
                     {isLoading ? <p>Loading...</p> : (
                         <Table>
-                            <TableHeader><TableRow><TableHead>Order ID</TableHead><TableHead>Customer</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Total</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Order ID</TableHead><TableHead>Customer</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Total</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {orders.map(order => (
                                     <TableRow key={order.id}>
@@ -105,7 +136,6 @@ export default function AdminOrdersPage() {
                                         <TableCell>{order.customerName}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
-                                                <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}><Eye className="h-4 w-4" /></Button>
                                                 <Select defaultValue={order.status} onValueChange={(val) => handleStatusChange(order.id, order.userId, val)}>
                                                     <SelectTrigger className="h-8 w-[130px] text-xs"><SelectValue /></SelectTrigger>
                                                     <SelectContent>{statusOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
@@ -113,6 +143,19 @@ export default function AdminOrdersPage() {
                                             </div>
                                         </TableCell>
                                         <TableCell className="text-right font-bold">R{order.totalAmount.toFixed(2)}</TableCell>
+                                        <TableCell className="text-right">
+                                            <div className="flex justify-end gap-2">
+                                                <Button variant="ghost" size="icon" onClick={() => setSelectedOrder(order)}><Eye className="h-4 w-4" /></Button>
+                                                <Button 
+                                                    variant="ghost" 
+                                                    size="icon" 
+                                                    className="text-destructive hover:bg-destructive/10" 
+                                                    onClick={() => setOrderToDelete({ id: order.id, userId: order.userId })}
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </Button>
+                                            </div>
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -151,6 +194,23 @@ export default function AdminOrdersPage() {
                     )}
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={!!orderToDelete} onOpenChange={(open) => !open && setOrderToDelete(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Delete this order?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            This will permanently remove the order record from your database. This action cannot be undone.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={confirmDeleteOrder} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            Delete Order Record
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
