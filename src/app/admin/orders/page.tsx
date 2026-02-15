@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Package, Truck, CheckCircle, XCircle, Mail, Send } from "lucide-react";
+import { Eye, Package, Truck, CheckCircle, XCircle, Mail, Send, AlertTriangle } from "lucide-react";
 import type { Order, User, SiteSettings } from "@/lib/types";
 import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from "@/services/email-service";
 
@@ -114,8 +114,13 @@ export default function AdminOrdersPage() {
     }
 
     const handleResendConfirmation = async (order: Order) => {
-        if (!order.shippingInfo?.email) return;
+        if (!order.shippingInfo?.email) {
+            toast({ variant: "destructive", title: "No customer email found." });
+            return;
+        }
         setIsSendingEmail(true);
+        console.log("Admin: Manually re-triggering confirmation email for", order.id);
+        
         try {
             await sendOrderConfirmationEmail({
                 to: order.shippingInfo.email,
@@ -125,9 +130,10 @@ export default function AdminOrdersPage() {
                 items: order.items,
                 storeName: settings?.storeName,
             }, firestore);
-            toast({ title: "Email Queued", description: "The confirmation email has been rewritten to the mail collection." });
-        } catch (e) {
-            toast({ variant: "destructive", title: "Failed to queue email." });
+            toast({ title: "Email Queued", description: "The confirmation email has been written to the 'mail' collection." });
+        } catch (e: any) {
+            console.error("Admin: Manual email failed", e);
+            toast({ variant: "destructive", title: "Failed to queue email.", description: e.message });
         } finally {
             setIsSendingEmail(false);
         }
@@ -224,15 +230,21 @@ export default function AdminOrdersPage() {
                                         <div className="text-sm font-bold">
                                             Total Paid: R{selectedOrder.totalAmount.toFixed(2)}
                                         </div>
-                                        <Button 
-                                            variant="outline" 
-                                            size="sm" 
-                                            className="w-full text-xs"
-                                            disabled={isSendingEmail}
-                                            onClick={() => handleResendConfirmation(selectedOrder)}
-                                        >
-                                            <Send className="mr-2 h-3 w-3" /> Resend Confirmation Email
-                                        </Button>
+                                        
+                                        <div className="pt-2">
+                                            <Button 
+                                                variant="outline" 
+                                                size="sm" 
+                                                className="w-full text-xs"
+                                                disabled={isSendingEmail}
+                                                onClick={() => handleResendConfirmation(selectedOrder)}
+                                            >
+                                                <Send className="mr-2 h-3 w-3" /> Resend Confirmation Email
+                                            </Button>
+                                            <p className="text-[10px] text-muted-foreground mt-1 italic text-center">
+                                                Use this to test your Trigger Email extension.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

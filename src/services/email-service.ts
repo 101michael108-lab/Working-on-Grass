@@ -28,12 +28,18 @@ interface StatusUpdatePayload {
  * Queues a customer order confirmation email in Firestore.
  */
 export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: Firestore) {
+  console.log("Email Service: Preparing order confirmation email for", payload.to);
+  
+  if (!payload.to) {
+    console.error("Email Service: Missing recipient email ('to' field).");
+    return;
+  }
+
   // Ensure we have a firestore instance
   let firestore: Firestore;
   try {
     firestore = db || initializeFirebase().firestore;
   } catch (e) {
-    // If initialization fails (e.g. during edge cases), try a fresh init
     const { firestore: fs } = initializeFirebase();
     firestore = fs;
   }
@@ -94,7 +100,14 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
     }
   };
 
-  return addDoc(mailCollection, emailData);
+  try {
+    const docRef = await addDoc(mailCollection, emailData);
+    console.log("Email Service: Success! Document written to 'mail' collection with ID:", docRef.id);
+    return docRef;
+  } catch (err) {
+    console.error("Email Service: Failed to write to 'mail' collection:", err);
+    throw err;
+  }
 }
 
 /**
