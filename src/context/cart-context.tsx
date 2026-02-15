@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
@@ -43,20 +44,45 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   }, [cartItems]);
 
   const addToCart = (product: Product, quantity: number) => {
+    const stockLimit = product.stock ?? 999;
+    
     setCartItems(prevItems => {
       const existingItem = prevItems.find(item => item.product.id === product.id);
+      const currentQty = existingItem ? existingItem.quantity : 0;
+      const newQty = currentQty + quantity;
+
+      if (newQty > stockLimit) {
+        toast({
+          title: "Stock limit reached",
+          description: `Only ${stockLimit} units available. We've adjusted your cart to the maximum available stock.`,
+          variant: "destructive"
+        });
+        
+        if (existingItem) {
+            return prevItems.map(item =>
+                item.product.id === product.id ? { ...item, quantity: stockLimit } : item
+            );
+        }
+        return [...prevItems, { product, quantity: stockLimit }];
+      }
+
       if (existingItem) {
+        toast({
+          title: "Cart updated",
+          description: `Added ${quantity} more of ${product.name}.`,
+        });
         return prevItems.map(item =>
           item.product.id === product.id
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: newQty }
             : item
         );
       }
+
+      toast({
+        title: "Item added to cart",
+        description: `${quantity} x ${product.name}`,
+      });
       return [...prevItems, { product, quantity }];
-    });
-    toast({
-      title: "Item added to cart",
-      description: `${quantity} x ${product.name}`,
     });
   };
 
@@ -69,8 +95,22 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const updateQuantity = (productId: string, quantity: number) => {
+    const item = cartItems.find(i => i.product.id === productId);
+    const stockLimit = item?.product.stock ?? 999;
+
     if (quantity <= 0) {
       removeFromCart(productId);
+    } else if (quantity > stockLimit) {
+        toast({
+            title: "Insufficient stock",
+            description: `Only ${stockLimit} units of ${item?.product.name} are available.`,
+            variant: "destructive"
+        });
+        setCartItems(prevItems =>
+            prevItems.map(item =>
+              item.product.id === productId ? { ...item, quantity: stockLimit } : item
+            )
+        );
     } else {
       setCartItems(prevItems =>
         prevItems.map(item =>

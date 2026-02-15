@@ -1,15 +1,16 @@
 
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, ShieldCheck, Truck, Tag, AlertTriangle } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
 import Link from 'next/link';
+import { ShareButtons } from '@/components/share-buttons';
 
 const renderFormattedText = (text: string) => {
   if (!text) return null;
@@ -31,10 +32,17 @@ const renderFormattedText = (text: string) => {
 export default function StandardLayout({ product, relatedProducts, isLoadingRelated }: { product: Product, relatedProducts: Product[], isLoadingRelated: boolean }) {
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
+  const [shareUrl, setShareUrl] = useState('');
+
+  useEffect(() => {
+    setShareUrl(window.location.href);
+  }, []);
 
   const handleQuantityChange = (amount: number) => {
     setQuantity(prev => Math.max(1, prev + amount));
   };
+
+  const isOutOfStock = (product.stock ?? 0) <= 0;
 
   return (
     <div className="bg-background">
@@ -48,13 +56,20 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
             {/* Product Info */}
             <div className="lg:col-span-5 space-y-8">
                 <div className="space-y-4 border-b-2 border-border pb-6">
-                    <Link 
-                      href={`/shop?category=${encodeURIComponent(product.category)}`}
-                      className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest hover:text-primary/80 transition-colors"
-                    >
-                        <Tag className="h-3 w-3" />
-                        {product.category}
-                    </Link>
+                    <div className="flex items-center justify-between">
+                        <Link 
+                          href={`/shop?category=${encodeURIComponent(product.category)}`}
+                          className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest hover:text-primary/80 transition-colors"
+                        >
+                            <Tag className="h-3 w-3" />
+                            {product.category}
+                        </Link>
+                        {isOutOfStock && (
+                            <span className="flex items-center gap-1 text-xs font-bold text-destructive uppercase tracking-tighter">
+                                <AlertTriangle className="h-3 w-3" /> Out of Stock
+                            </span>
+                        )}
+                    </div>
                     <h1 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
                         {product.name}
                     </h1>
@@ -83,12 +98,13 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                 {/* Functional Action Area */}
                 <div className="bg-secondary/30 border-2 border-border p-8 rounded-md space-y-6 shadow-sm">
                     <div className="flex flex-col sm:flex-row items-center gap-4">
-                        <div className="flex items-center border-2 border-border rounded bg-background h-12">
+                        <div className={`flex items-center border-2 border-border rounded bg-background h-12 ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
                             <Button 
                                 variant="ghost" 
                                 size="icon" 
                                 className="h-full w-12 rounded-none border-r" 
                                 onClick={() => handleQuantityChange(-1)}
+                                disabled={isOutOfStock}
                             >
                                 <Minus className="h-4 w-4" />
                             </Button>
@@ -96,6 +112,7 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                                 type="number" 
                                 className="w-16 text-center border-0 shadow-none focus-visible:ring-0 text-lg font-bold bg-transparent" 
                                 value={quantity} 
+                                readOnly={isOutOfStock}
                                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} 
                             />
                             <Button 
@@ -103,6 +120,7 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                                 size="icon" 
                                 className="h-full w-12 rounded-none border-l" 
                                 onClick={() => handleQuantityChange(1)}
+                                disabled={isOutOfStock}
                             >
                                 <Plus className="h-4 w-4" />
                             </Button>
@@ -110,9 +128,10 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                         <Button 
                             size="lg" 
                             className="flex-grow w-full sm:w-auto h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-lg font-bold shadow-md" 
+                            disabled={isOutOfStock}
                             onClick={() => addToCart(product, quantity)}
                         >
-                            <ShoppingCart className="mr-2 h-5 w-5" /> Add to Cart
+                            <ShoppingCart className="mr-2 h-5 w-5" /> {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                         </Button>
                     </div>
 
@@ -126,6 +145,10 @@ export default function StandardLayout({ product, relatedProducts, isLoadingRela
                             <span>Field Tested</span>
                         </div>
                     </div>
+                </div>
+
+                <div className="pt-4">
+                    <ShareButtons url={shareUrl} title={product.name} />
                 </div>
             </div>
         </div>
