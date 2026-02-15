@@ -8,12 +8,11 @@ import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, doc, orderBy } from "firebase/firestore";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import type { SiteImage, MediaLibraryItem } from "@/lib/types";
-import { PlusCircle, ImagePlus, CheckCircle, Pencil } from "lucide-react";
+import { PlusCircle, ImagePlus, CheckCircle, Pencil, ImageIcon } from "lucide-react";
 import { MediaLibraryForm } from "@/components/admin/media-library-form";
 import { setDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 
 const PREDEFINED_SPOTS: Omit<SiteImage, 'imageUrl' | 'imageHint'>[] = [
   { id: 'hero', description: 'The main hero image on the homepage.' },
@@ -39,14 +38,15 @@ export default function AdminMediaPage() {
   const libraryQuery = useMemoFirebase(() => query(collection(firestore, 'mediaLibrary'), orderBy('uploadedAt', 'desc')), [firestore]);
   const { data: library, isLoading: isLoadingLibrary } = useCollection<Omit<MediaLibraryItem, 'id'>>(libraryQuery);
 
-  const spots: SiteImage[] = useMemo(() => {
+  const spots: (SiteImage & { isAssigned: boolean })[] = useMemo(() => {
     return PREDEFINED_SPOTS.map(predefinedSpot => {
       const doc = spotDocs?.find(d => d.id === predefinedSpot.id);
       return {
         id: predefinedSpot.id,
         description: doc?.description || predefinedSpot.description,
-        imageUrl: doc?.imageUrl || `https://placehold.co/400x400/e2e8f0/64748b?text=${predefinedSpot.id}`,
+        imageUrl: doc?.imageUrl || '',
         imageHint: doc?.imageHint || '',
+        isAssigned: !!doc?.imageUrl,
       };
     });
   }, [spotDocs]);
@@ -71,7 +71,7 @@ export default function AdminMediaPage() {
     const updatedSpotData = {
       imageUrl: libraryItem.imageUrl,
       description: libraryItem.description || libraryItem.name,
-      imageHint: '', // Or find a way to manage this
+      imageHint: '', 
     };
 
     setDocumentNonBlocking(spotRef, updatedSpotData, { merge: true });
@@ -80,31 +80,38 @@ export default function AdminMediaPage() {
     setAssigningToSpot(null);
   };
 
-  const isLoading = isLoadingSpots || isLoadingLibrary;
-
   return (
     <div className="space-y-8">
       {/* Section 1: Image Spots */}
       <Card>
         <CardHeader>
-          <CardTitle>Image Spots</CardTitle>
-          <CardDescription>These are the fixed image locations on your website. Assign images to them from your library.</CardDescription>
+          <CardTitle>Site Image Slots</CardTitle>
+          <CardDescription>These are the specific locations on your site where images are displayed. Assign images from your library below.</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoadingSpots ? <p>Loading spots...</p> : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {spots.map(spot => (
-                <Card key={spot.id}>
-                  <CardHeader className="p-3">
-                    <p className="font-mono text-xs text-muted-foreground">{spot.id}</p>
-                    <p className="text-xs text-muted-foreground truncate">{spot.description}</p>
+                <Card key={spot.id} className={!spot.isAssigned ? "border-dashed" : ""}>
+                  <CardHeader className="p-3 text-center">
+                    <p className="font-bold text-xs uppercase tracking-widest text-primary">{spot.id}</p>
+                    <p className="text-[10px] text-muted-foreground truncate">{spot.description}</p>
                   </CardHeader>
                   <CardContent className="p-3 pt-0">
-                    <Image src={spot.imageUrl} alt={spot.description} width={200} height={200} className="rounded-md object-cover aspect-square w-full bg-secondary"/>
+                    <div className="relative aspect-square w-full rounded-md overflow-hidden bg-muted flex items-center justify-center border">
+                        {spot.isAssigned ? (
+                            <Image src={spot.imageUrl} alt={spot.description} fill className="object-cover"/>
+                        ) : (
+                            <div className="flex flex-col items-center gap-2 opacity-20">
+                                <ImageIcon className="h-12 w-12" />
+                                <span className="text-[10px] font-bold uppercase tracking-tighter">Empty Slot</span>
+                            </div>
+                        )}
+                    </div>
                   </CardContent>
                   <CardFooter className="p-3">
-                    <Button className="w-full" variant="outline" onClick={() => handleOpenAssignDialog(spot)}>
-                      Assign from Library
+                    <Button className="w-full" variant={spot.isAssigned ? "outline" : "default"} onClick={() => handleOpenAssignDialog(spot)}>
+                      {spot.isAssigned ? "Change Image" : "Assign Image"}
                     </Button>
                   </CardFooter>
                 </Card>
@@ -119,10 +126,10 @@ export default function AdminMediaPage() {
         <CardHeader className="flex-row items-center justify-between">
           <div>
             <CardTitle>Media Library</CardTitle>
-            <CardDescription>Your collection of uploaded images. Upload new assets and manage existing ones here.</CardDescription>
+            <CardDescription>All uploaded images. Use these to fill the slots above or for product descriptions.</CardDescription>
           </div>
           <Button onClick={() => handleOpenUploadDialog()}>
-            <ImagePlus className="mr-2"/>
+            <ImagePlus className="mr-2 h-4 w-4"/>
             Upload to Library
           </Button>
         </CardHeader>
@@ -138,7 +145,9 @@ export default function AdminMediaPage() {
                         <CheckCircle className="h-3 w-3 mr-1"/> Assigned
                       </Badge>
                     )}
-                    <Image src={item.imageUrl} alt={item.name} width={200} height={200} className="rounded-t-md object-cover aspect-square w-full bg-secondary"/>
+                    <div className="aspect-square relative w-full bg-muted border-b overflow-hidden">
+                        <Image src={item.imageUrl} alt={item.name} fill className="object-cover"/>
+                    </div>
                      <div className="p-2 text-xs">
                         <p className="font-medium truncate">{item.name}</p>
                      </div>
@@ -156,7 +165,7 @@ export default function AdminMediaPage() {
              <div className="text-center py-12 border-dashed border-2 rounded-md">
                 <h3 className="text-lg font-semibold">Your Media Library is Empty</h3>
                 <p className="text-muted-foreground mt-1">Start by uploading your first image.</p>
-                <Button className="mt-4" onClick={() => handleOpenUploadDialog()}><PlusCircle className="mr-2"/>Upload Image</Button>
+                <Button className="mt-4" onClick={() => handleOpenUploadDialog()}><PlusCircle className="mr-2 h-4 w-4"/>Upload Image</Button>
              </div>
            )}
         </CardContent>
@@ -185,13 +194,18 @@ export default function AdminMediaPage() {
           </DialogHeader>
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 max-h-[60vh] overflow-y-auto p-1">
              {library?.map(item => (
-                <button key={item.id} className="group relative border rounded-md overflow-hidden" onClick={() => handleAssignImage(item)}>
-                  <Image src={item.imageUrl} alt={item.name} width={200} height={200} className="object-cover aspect-square w-full"/>
+                <button key={item.id} className="group relative border rounded-md overflow-hidden aspect-square" onClick={() => handleAssignImage(item)}>
+                  <Image src={item.imageUrl} alt={item.name} fill className="object-cover w-full"/>
                   <div className="absolute inset-0 bg-black/70 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <p className="text-white text-sm text-center">Assign</p>
+                      <p className="text-white text-sm text-center font-bold">Assign to Slot</p>
                   </div>
                 </button>
              ))}
+             {(!library || library.length === 0) && (
+                 <div className="col-span-full py-12 text-center bg-muted rounded">
+                     <p className="text-muted-foreground">No images in library. Upload one first.</p>
+                 </div>
+             )}
           </div>
         </DialogContent>
       </Dialog>

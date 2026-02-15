@@ -1,28 +1,2 @@
 
-{
-  "hero": {
-    "url": "https://picsum.photos/seed/veld1/1920/1080",
-    "hint": "south african veld",
-    "description": "Vast green fields of South African veld under a clear blue sky"
-  },
-  "about-frits": {
-    "url": "https://picsum.photos/seed/frits/600/600",
-    "hint": "ecologist outdoors",
-    "description": "Frits van Oudtshoorn in the field identifying grasses"
-  },
-  "grass-app-promo": {
-    "url": "https://picsum.photos/seed/app/400/800",
-    "hint": "mobile phone mockup",
-    "description": "Preview of the GrassPro mobile application"
-  },
-  "default-product": {
-    "url": "https://picsum.photos/seed/product/600/600",
-    "hint": "agriculture tool",
-    "description": "Technical field measurement equipment"
-  },
-  "default-book": {
-    "url": "https://picsum.photos/seed/book/600/800",
-    "hint": "hardcover book",
-    "description": "Guide to Grasses of Southern Africa"
-  }
-}
+{}
