@@ -1,4 +1,3 @@
-
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 import { initializeFirebase } from '@/firebase';
@@ -6,24 +5,17 @@ import { doc, updateDoc, getDoc, increment } from 'firebase/firestore';
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/services/email-service';
 import type { SiteSettings } from '@/lib/types';
 
-/**
- * PayFast Instant Transaction Notification (ITN) Handler
- */
 export async function POST(req: NextRequest) {
-  console.log("PayFast ITN: Received background notification request.");
-  
   try {
     const body = await req.formData();
     const { firestore } = initializeFirebase();
     
-    // 1. Fetch site settings for dynamic email logic
     const settingsSnap = await getDoc(doc(firestore, 'settings', 'config'));
     const settings = settingsSnap.exists() ? settingsSnap.data() as SiteSettings : null;
     
     let pfData: Record<string, string> = {};
     let checkString = '';
 
-    // Convert formData to object and build check string
     for (const [key, value] of body.entries()) {
         pfData[key] = value.toString();
         if (key !== 'signature') {
@@ -32,7 +24,7 @@ export async function POST(req: NextRequest) {
     }
     
     checkString = checkString.slice(0, -1);
-    const passphrase = process.env.PAYFAST_PASSPHRASE || 'jt7NOE43FZPn'; 
+    const passphrase = process.env.PAYFAST_PASSPHRASE;
     if (passphrase) {
         checkString += `&passphrase=${passphrase}`;
     }
@@ -40,18 +32,11 @@ export async function POST(req: NextRequest) {
     const calculatedSignature = crypto.createHash('md5').update(checkString).digest('hex');
     const receivedSignature = pfData.signature;
 
-    console.log(`PayFast ITN: Order ${pfData.m_payment_id} validation. Status: ${pfData.payment_status}`);
-    
-    if (calculatedSignature !== receivedSignature) {
-        console.warn("PayFast ITN: Signatures do not match. Check your PayFast Passphrase environment variable.");
-    }
-
     const orderId = pfData.m_payment_id;
     const userId = pfData.custom_str1;
     const paymentStatus = pfData.payment_status;
 
     if (!userId || !orderId) {
-       console.error("PayFast ITN: Missing critical custom data (userId or orderId).");
        return new NextResponse('Missing custom data', { status: 400 });
     }
 
@@ -59,7 +44,6 @@ export async function POST(req: NextRequest) {
     const orderSnap = await getDoc(orderRef);
 
     if (!orderSnap.exists()) {
-        console.error(`PayFast ITN: Order ${orderId} not found in Firestore.`);
         return new NextResponse('Order not found', { status: 404 });
     }
 
@@ -67,8 +51,6 @@ export async function POST(req: NextRequest) {
     const isSuccess = paymentStatus === 'COMPLETE';
     const newStatus = isSuccess ? 'Processing' : 'Cancelled';
 
-    // 2. Update Order Status
-    // wrapping in try/catch to prevent blocking the email if permission rules are still strict
     try {
         await updateDoc(orderRef, {
             status: newStatus,
@@ -77,27 +59,18 @@ export async function POST(req: NextRequest) {
                 itn_validated_at: new Date().toISOString(),
             },
         });
-        console.log(`PayFast ITN: Order status updated to ${newStatus}`);
     } catch (e: any) {
-        console.error("PayFast ITN: Failed to update order status document:", e.message);
+        console.error("PayFast ITN Error:", e.message);
     }
 
-    // 3. Post-payment logic (Inventory & Emails)
     if (isSuccess) {
-        // A. Inventory Management
         for (const item of (orderData.items || [])) {
             try {
                 const productRef = doc(firestore, 'products', item.productId);
-                await updateDoc(productRef, {
-                    stock: increment(-item.quantity)
-                });
-            } catch (e: any) {
-                console.error(`PayFast ITN: Failed to decrement stock for ${item.productId}:`, e.message);
-            }
+                await updateDoc(productRef, { stock: increment(-item.quantity) });
+            } catch (e: any) {}
         }
 
-        // B. Trigger Customer Email
-        console.log(`PayFast ITN: Queuing confirmation email for ${orderData.shippingInfo.email}`);
         await sendOrderConfirmationEmail({
             to: orderData.shippingInfo.email,
             orderId: orderId,
@@ -105,9 +78,9 @@ export async function POST(req: NextRequest) {
             totalAmount: orderData.totalAmount,
             items: orderData.items,
             storeName: settings?.storeName,
-        }, firestore).catch(e => console.error("PayFast ITN: Customer email queuing failed", e));
+            fromEmail: settings?.contactEmail,
+        }, firestore).catch(console.error);
 
-        // C. Trigger Admin Notification
         await sendAdminOrderNotification({
             to: settings?.contactEmail || 'courses@alut.co.za',
             orderId: orderId,
@@ -115,13 +88,13 @@ export async function POST(req: NextRequest) {
             totalAmount: orderData.totalAmount,
             items: orderData.items,
             storeName: settings?.storeName,
-        }, firestore).catch(e => console.error("PayFast ITN: Admin notification queuing failed", e));
+            fromEmail: settings?.contactEmail,
+        }, firestore).catch(console.error);
     }
 
     return new NextResponse('OK', { status: 200 });
 
   } catch (error: any) {
-    console.error("PayFast ITN: CRITICAL ERROR:", error.message || error);
     return new NextResponse('Internal Server Error', { status: 500 });
   }
 }
