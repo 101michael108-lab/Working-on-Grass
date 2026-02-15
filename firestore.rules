@@ -160,15 +160,15 @@ service cloud.firestore {
         allow get: if isOwner(userId) || isAdmin();
         allow list: if isOwner(userId) || isAdmin();
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId;
-        allow delete: if isOwner(userId) && isExistingDoc();
+        allow update: if (isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId) || (isAdmin() && isExistingDoc());
+        allow delete: if isOwner(userId) || isAdmin();
 
         match /orderItems/{orderItemId} {
           allow get: if isOwner(userId) || isAdmin();
           allow list: if isOwner(userId) || isAdmin();
-          allow create: if isOwner(userId);
-          allow update: if isOwner(userId) && isExistingDoc();
-          allow delete: if isOwner(userId) && isExistingDoc();
+          allow create: if isOwner(userId) || isAdmin();
+          allow update: if (isOwner(userId) || isAdmin()) && isExistingDoc();
+          allow delete: if isOwner(userId) || isAdmin();
         }
       }
     }
