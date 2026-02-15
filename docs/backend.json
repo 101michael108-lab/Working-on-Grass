@@ -188,6 +188,29 @@
         "submissionDate": { "type": "string", "format": "date-time" }
       }
     },
+    "SiteImage": {
+      "title": "Site Image",
+      "type": "object",
+      "description": "An image assigned to a specific spot on the site.",
+      "properties": {
+        "id": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "description": { "type": "string" },
+        "imageHint": { "type": "string" }
+      }
+    },
+    "MediaLibraryItem": {
+      "title": "Media Library Item",
+      "type": "object",
+      "description": "An image uploaded to the general media library.",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "imageUrl": { "type": "string", "format": "uri" },
+        "description": { "type": "string" },
+        "uploadedAt": { "type": "string", "format": "date-time" }
+      }
+    },
     "Order": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Order",
@@ -300,6 +323,24 @@
           },
           "description": "Global singleton configuration for the site.",
           "params": []
+        }
+      },
+      {
+        "path": "/siteImages/{imageId}",
+        "definition": {
+          "entityName": "SiteImage",
+          "schema": { "$ref": "#/backend/entities/SiteImage" },
+          "description": "Assigned site images.",
+          "params": [{ "name": "imageId", "description": "The ID of the image spot (e.g. hero)" }]
+        }
+      },
+      {
+        "path": "/mediaLibrary/{itemId}",
+        "definition": {
+          "entityName": "MediaLibraryItem",
+          "schema": { "$ref": "#/backend/entities/MediaLibraryItem" },
+          "description": "Collection of all media library items.",
+          "params": [{ "name": "itemId", "description": "The unique ID of the media item" }]
         }
       },
       {

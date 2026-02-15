@@ -51,6 +51,18 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // Site Media & Images
+    // ------------------------------------------------------------------
+    match /siteImages/{imageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /mediaLibrary/{imageId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ------------------------------------------------------------------
     // Settings (/settings)
     // ------------------------------------------------------------------
     match /settings/config {
