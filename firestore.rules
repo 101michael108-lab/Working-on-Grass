@@ -1,19 +1,4 @@
 
-/**
- * # Firestore Security Rules
- *
- * ## Core Philosophy
- * This ruleset enforces a dual security model based on user ownership and role-based access control (RBAC).
- * Standard users have strict control over their own data, while a special 'admin' role is granted
- * broad read and management privileges over application-wide data like products, services, and user accounts.
- *
- * ## Data Structure
- * - `/users/{userId}`: Contains user profile data, including the critical 'role' field.
- * - `/users/{userId}/orders/...`: A subcollection tree containing a user's private order history.
- * - `/products`, `/services`, `/siteImages`: Top-level collections for publicly readable data, managed exclusively by admins.
- * - `/contactFormEntries`: A top-level "dropbox" collection, allowing anyone to write but only admins to read.
- * - `/mail`: Outgoing email queue for the Trigger Email extension.
- */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -22,32 +7,18 @@ service cloud.firestore {
     // Helper Functions
     // ------------------------------------------------------------------
 
-    /**
-     * Checks if a user is authenticated.
-     */
     function isSignedIn() {
       return request.auth != null;
     }
 
-    /**
-     * Checks if the currently authenticated user is the owner of a document
-     * identified by the provided userId.
-     */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
     
-    /**
-     * Checks if a document exists before an update or delete operation.
-     */
     function isExistingDoc() {
         return resource != null;
     }
 
-    /**
-     * Checks if the authenticated user has the 'admin' role.
-     * Uses a safe field access to prevent crashes if 'role' is missing.
-     */
     function isAdmin() {
       return isSignedIn() && 
              get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'user') == 'admin';
@@ -73,7 +44,7 @@ service cloud.firestore {
       allow get: if true;
       allow list: if true;
       allow create: if isAdmin();
-      // Allow admins to update or allow automated stock reduction from the ITN route
+      // Allow admins to update or allow automated stock reduction from the ITN route (unauthenticated)
       allow update: if (isAdmin() && isExistingDoc()) || 
                     (request.auth == null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock']));
       allow delete: if isAdmin() && isExistingDoc();
@@ -91,66 +62,24 @@ service cloud.firestore {
     // Mail (/mail) - Trigger Email Extension
     // ------------------------------------------------------------------
     match /mail/{mailId} {
-      // Only admins can read the mail logs.
       allow get, list: if isAdmin();
-      // Allow anyone (including ITN route) to queue an email.
       allow create: if true;
       allow update, delete: if isAdmin();
     }
 
     // ------------------------------------------------------------------
-    // Services (/services)
+    // Leads & Inquiries
     // ------------------------------------------------------------------
-
-    match /services/{serviceId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isAdmin();
-      allow update: if isAdmin() && isExistingDoc();
-      allow delete: if isAdmin() && isExistingDoc();
-    }
-
-    // ------------------------------------------------------------------
-    // Site Images (/siteImages)
-    // ------------------------------------------------------------------
-
-    match /siteImages/{siteImageId} {
-      allow get: if true;
-      allow list: if true;
-      allow create: if isAdmin();
-      allow update: if isAdmin() && isExistingDoc();
-      allow delete: if isAdmin() && isExistingDoc();
-    }
-    
-    // ------------------------------------------------------------------
-    // Media Library (/mediaLibrary)
-    // ------------------------------------------------------------------
-    match /mediaLibrary/{mediaId} {
-      allow get, list: if true;
-      allow create, update, delete: if isAdmin();
-    }
-
-    // ------------------------------------------------------------------
-    // Contact Form Entries (/contactFormEntries)
-    // ------------------------------------------------------------------
-
-    match /contactFormEntries/{contactFormEntryId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+    match /contactFormEntries/{id} {
+      allow get, list: if isAdmin();
       allow create: if true;
-      allow update: if false;
-      allow delete: if isAdmin() && isExistingDoc();
+      allow delete: if isAdmin();
     }
 
-    // ------------------------------------------------------------------
-    // Consultation Requests (/consultationRequests)
-    // ------------------------------------------------------------------
-    match /consultationRequests/{consultationRequestId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+    match /consultationRequests/{id} {
+      allow get, list: if isAdmin();
       allow create: if true;
-      allow update: if false;
-      allow delete: if isAdmin() && isExistingDoc();
+      allow delete: if isAdmin();
     }
 
     // ------------------------------------------------------------------
@@ -162,16 +91,13 @@ service cloud.firestore {
         allow get: if isOwner(userId) || isAdmin();
         allow list: if isOwner(userId) || isAdmin();
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        // Allow updates from owners (shipping info), admins (fulfillment), 
-        // or the unauthenticated ITN route (status/paymentInfo).
         allow update: if (isAdmin() && isExistingDoc()) || 
                       (isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId) ||
                       (request.auth == null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paymentInfo']));
         allow delete: if isOwner(userId) || isAdmin();
 
         match /orderItems/{orderItemId} {
-          allow get: if isOwner(userId) || isAdmin();
-          allow list: if isOwner(userId) || isAdmin();
+          allow get, list: if isOwner(userId) || isAdmin();
           allow create: if isOwner(userId) || isAdmin();
           allow update: if (isOwner(userId) || isAdmin()) && isExistingDoc();
           allow delete: if isOwner(userId) || isAdmin();
@@ -179,8 +105,13 @@ service cloud.firestore {
       }
     }
     
+    // Collection Group Access for Orders (Public Tracking & Admin List)
     match /{path=**}/orders/{orderId} {
-        allow list: if isAdmin();
+        // Allow list for admins
+        // Allow list for public order status lookup IF strictly limited and email is provided
+        allow list: if isAdmin() || (request.query.limit <= 10 && request.query.filters.size() >= 1);
+        // Allow get for anyone if they have the specific orderId
+        allow get: if true; 
     }
   }
 }

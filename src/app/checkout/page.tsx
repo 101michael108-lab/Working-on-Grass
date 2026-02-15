@@ -14,26 +14,32 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, addDocumentNonBlocking, useAuth, setDocumentNonBlocking, useDoc, useMemoFirebase } from "@/firebase";
-import { collection, serverTimestamp, doc } from "firebase/firestore";
+import { collection, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
-import type { SiteSettings } from "@/lib/types";
+import type { SiteSettings, Product } from "@/lib/types";
+import { AlertCircle, ShieldCheck } from "lucide-react";
 
 const formSchema = z.object({
-  email: z.string().email(),
+  email: z.string().email("Please enter a valid email address"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   address: z.string().min(5, "Address is required"),
   city: z.string().min(2, "City is required"),
   postalCode: z.string().min(4, "Postal code is required"),
   country: z.string().min(2, "Country is required"),
+  agreeToTerms: z.boolean().refine((val) => val === true, {
+    message: "You must agree to the terms and conditions",
+  }),
 });
 
 export default function CheckoutPage() {
@@ -71,16 +77,17 @@ export default function CheckoutPage() {
       city: "",
       postalCode: "",
       country: "South Africa",
+      agreeToTerms: false,
     },
   });
   
   useEffect(() => {
-    if (user) {
+    if (user && !form.getValues().email) {
         form.reset({
             ...form.getValues(),
-            email: user.email || form.getValues().email,
-            firstName: user.displayName?.split(' ')[0] || form.getValues().firstName,
-            lastName: user.displayName?.split(' ')[1] || form.getValues().lastName || "",
+            email: user.email || "",
+            firstName: user.displayName?.split(' ')[0] || "",
+            lastName: user.displayName?.split(' ')[1] || "",
         });
     }
   }, [user, form]);
@@ -94,8 +101,31 @@ export default function CheckoutPage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsProcessing(true);
+
+    // 1. Final Inventory Check
+    try {
+        for (const item of cartItems) {
+            const prodSnap = await getDoc(doc(firestore, 'products', item.product.id));
+            if (prodSnap.exists()) {
+                const currentStock = prodSnap.data().stock || 0;
+                if (currentStock < item.quantity) {
+                    toast({
+                        variant: "destructive",
+                        title: "Stock mismatch",
+                        description: `Sorry, ${item.product.name} just sold out or has insufficient stock. Please update your cart.`
+                    });
+                    setIsProcessing(false);
+                    return;
+                }
+            }
+        }
+    } catch (e) {
+        console.error("Stock check failed", e);
+    }
+
     let effectiveUser = user;
     
+    // 2. Handle Guest Auth
     if (!effectiveUser) {
         try {
             const userCredential = await signInAnonymously(auth);
@@ -117,6 +147,7 @@ export default function CheckoutPage() {
         }
     }
 
+    // 3. Create Order
     const totalAmount = subtotal + shippingFee;
     const ordersCollection = collection(firestore, 'users', effectiveUser.uid, 'orders');
 
@@ -125,7 +156,15 @@ export default function CheckoutPage() {
       orderDate: serverTimestamp(),
       totalAmount: totalAmount,
       status: 'Pending',
-      shippingInfo: values,
+      shippingInfo: {
+          email: values.email,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          address: values.address,
+          city: values.city,
+          postalCode: values.postalCode,
+          country: values.country,
+      },
       items: cartItems.map(item => ({
         productId: item.product.id,
         name: item.product.name,
@@ -139,8 +178,8 @@ export default function CheckoutPage() {
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       
       const payfastData = {
-        merchant_id: settings?.payfastMerchantId || process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_ID || "10000100",
-        merchant_key: settings?.payfastMerchantKey || process.env.NEXT_PUBLIC_PAYFAST_MERCHANT_KEY || "46f0cd694581a",
+        merchant_id: settings?.payfastMerchantId || "10000100",
+        merchant_key: settings?.payfastMerchantKey || "46f0cd694581a",
         return_url: new URL(`/checkout/success?orderId=${docRef.id}`, origin).href,
         cancel_url: new URL('/cart', origin).href,
         notify_url: new URL('/api/payfast-itn', origin).href,
@@ -171,11 +210,14 @@ export default function CheckoutPage() {
         <div className="container flex min-h-[80vh] items-center justify-center py-12 text-center">
             <Card className="w-full max-w-lg">
                 <CardHeader>
-                    <CardTitle>Proceeding to Payment</CardTitle>
+                    <CardTitle className="font-headline text-3xl">Proceeding to Payment</CardTitle>
                     <CardDescription>You are being redirected to PayFast securely.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground mb-4">Please wait...</p>
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                        <p className="text-muted-foreground">Please wait while we connect to the payment gateway...</p>
+                    </div>
                     <form ref={payfastFormRef} action={payfastUrl} method="post">
                         {Object.entries(payfastConfig).map(([key, value]) => (
                            <input key={key} type="hidden" name={key} value={value as string} />
@@ -189,79 +231,121 @@ export default function CheckoutPage() {
 
   return (
     <div className="container py-12 md:py-20">
-      <h1 className="text-3xl md:text-4xl font-bold mb-8 text-center">Checkout</h1>
-      <div className="grid lg:grid-cols-2 gap-12">
-        <div>
-          <h2 className="text-2xl font-semibold mb-6">Shipping Information</h2>
+      <h1 className="text-4xl md:text-5xl font-bold font-headline mb-8 text-center">Checkout</h1>
+      <div className="grid lg:grid-cols-12 gap-12">
+        <div className="lg:col-span-7">
+          <h2 className="text-2xl font-bold font-headline mb-6 flex items-center gap-2">
+              <ShieldCheck className="h-6 w-6 text-primary" /> Secure Shipping Information
+          </h2>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField name="email" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input placeholder="you@example.com" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <div className="grid grid-cols-2 gap-4">
                 <FormField name="firstName" control={form.control} render={({ field }) => (
-                  <FormItem><FormLabel>First Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>First Name</FormLabel><FormControl><Input placeholder="First Name" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                 <FormField name="lastName" control={form.control} render={({ field }) => (
-                  <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input placeholder="Last Name" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
               <FormField name="address" control={form.control} render={({ field }) => (
-                  <FormItem><FormLabel>Address</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input placeholder="123 Veld Way" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <FormField name="city" control={form.control} render={({ field }) => (
-                  <FormItem><FormLabel>City</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>City</FormLabel><FormControl><Input placeholder="Modimolle" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField name="postalCode" control={form.control} render={({ field }) => (
-                  <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
+                  <FormItem><FormLabel>Postal Code</FormLabel><FormControl><Input placeholder="0510" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
                  <FormField name="country" control={form.control} render={({ field }) => (
                   <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
-              <Button type="submit" size="lg" className="w-full mt-6 bg-accent text-accent-foreground" disabled={isProcessing}>
-                {isProcessing ? 'Processing...' : 'Proceed to Payment'}
+
+              <div className="bg-muted/30 p-6 rounded-lg border-2 border-dashed space-y-4">
+                  <FormField
+                    control={form.control}
+                    name="agreeToTerms"
+                    render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                            <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                            <FormLabel>
+                            I agree to the <Link href="/terms" target="_blank" className="text-primary underline">Terms & Conditions</Link> and <Link href="/privacy" target="_blank" className="text-primary underline">Privacy Policy</Link>.
+                            </FormLabel>
+                            <FormMessage />
+                        </div>
+                        </FormItem>
+                    )}
+                  />
+              </div>
+
+              <Button type="submit" size="lg" className="w-full mt-6 bg-accent text-accent-foreground hover:bg-accent/90 font-bold h-12" disabled={isProcessing}>
+                {isProcessing ? 'Processing Order...' : 'Proceed to Secure Payment'}
               </Button>
+              
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mt-4">
+                  <ShieldCheck className="h-4 w-4" /> Secure checkout powered by PayFast
+              </div>
             </form>
           </Form>
         </div>
-        <div>
-          <Card>
-            <CardHeader><CardTitle>Your Order</CardTitle></CardHeader>
-            <CardContent>
+
+        <div className="lg:col-span-5">
+          <Card className="sticky top-24 border-2">
+            <CardHeader className="bg-muted/30 border-b-2">
+                <CardTitle className="font-headline">Order Summary</CardTitle>
+            </CardHeader>
+            <CardContent className="pt-6">
               <div className="space-y-4">
                 {cartItems.map(({ product, quantity }) => (
                   <div key={product.id} className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="relative">
-                        <Image src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/64/64`} alt={product.name} width={64} height={64} className="rounded-md object-contain bg-secondary/50"/>
-                        <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-muted text-sm">{quantity}</span>
+                        <Image src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/64/64`} alt={product.name} width={64} height={64} className="rounded-md object-contain bg-secondary/50 border shadow-sm"/>
+                        <span className="absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold shadow-md">{quantity}</span>
                       </div>
-                      <div className="max-w-[150px]">
-                        <h3 className="font-semibold text-sm truncate">{product.name}</h3>
-                        <p className="text-sm text-muted-foreground">R{product.price.toFixed(2)}</p>
+                      <div className="max-w-[180px]">
+                        <h3 className="font-bold text-sm leading-tight">{product.name}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">R{product.price.toFixed(2)} each</p>
                       </div>
                     </div>
-                    <p className="font-semibold text-sm">R{(product.price * quantity).toFixed(2)}</p>
+                    <p className="font-bold text-sm">R{(product.price * quantity).toFixed(2)}</p>
                   </div>
                 ))}
               </div>
-              <div className="mt-6 pt-6 border-t space-y-2">
-                 <div className="flex justify-between text-muted-foreground">
+              <div className="mt-6 pt-6 border-t-2 space-y-3">
+                 <div className="flex justify-between text-muted-foreground text-sm">
                   <span>Subtotal</span>
                   <span>R{subtotal.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between text-muted-foreground">
-                  <span>Shipping</span>
+                <div className="flex justify-between text-muted-foreground text-sm">
+                  <span>Flat Rate Shipping</span>
                   <span>R{shippingFee.toFixed(2)}</span>
                 </div>
-                <div className="flex justify-between font-bold text-lg">
-                  <span>Total</span>
-                  <span>R{(subtotal + shippingFee).toFixed(2)}</span>
+                <div className="flex justify-between font-bold text-xl pt-2 border-t border-dashed">
+                  <div className="flex flex-col">
+                      <span>Total</span>
+                      <span className="text-[10px] font-normal text-muted-foreground uppercase tracking-widest">Including VAT</span>
+                  </div>
+                  <span className="text-accent">R{(subtotal + shippingFee).toFixed(2)}</span>
                 </div>
               </div>
             </CardContent>
+            {isProcessing && (
+                <div className="p-4 bg-amber-50 border-t border-amber-100 flex items-start gap-2 text-xs text-amber-800">
+                    <AlertCircle className="h-4 w-4 shrink-0" />
+                    <p>Processing your details. Please do not refresh the page.</p>
+                </div>
+            )}
           </Card>
         </div>
       </div>
