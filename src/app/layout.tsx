@@ -1,3 +1,4 @@
+
 import type { Metadata, Viewport } from "next";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -7,28 +8,42 @@ import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/cart-context";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { MediaProvider } from "@/context/media-context";
+import { initializeFirebase } from "@/firebase";
+import { doc, getDoc } from "firebase/firestore";
 
 export const viewport: Viewport = {
   themeColor: "#1a3a1a", // Deep Forest Green matching the brand's primary identity
 };
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za'),
-  title: {
-    default: "Working on Grass | Veld & Pasture Management Southern Africa",
-    template: "%s | Working on Grass"
-  },
-  description: "Professional environmental and agricultural services for sustainable and regenerative land use in Southern Africa. Led by ecologist Frits van Oudtshoorn.",
-  keywords: ["veld management", "pasture assessment", "grass identification", "Southern Africa", "disc pasture meter", "regenerative agriculture", "Frits van Oudtshoorn"],
-  alternates: {
-    canonical: '/',
-  },
-  icons: {
-    icon: "/favicon.ico",
-    shortcut: "/favicon.ico",
-    apple: "/favicon.ico",
-  },
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const { firestore } = initializeFirebase();
+  let faviconUrl = "/favicon.ico";
+
+  try {
+    const faviconSnap = await getDoc(doc(firestore, 'siteImages', 'favicon'));
+    if (faviconSnap.exists()) {
+      faviconUrl = faviconSnap.data().imageUrl;
+    }
+  } catch (error) {
+    console.warn("Layout: Failed to fetch dynamic favicon, using fallback.", error);
+  }
+
+  return {
+    metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za'),
+    title: {
+      default: "Working on Grass | Veld & Pasture Management Southern Africa",
+      template: "%s | Working on Grass"
+    },
+    description: "Professional environmental and agricultural services for sustainable and regenerative land use in Southern Africa. Led by ecologist Frits van Oudtshoorn.",
+    keywords: ["veld management", "pasture assessment", "grass identification", "Southern Africa", "disc pasture meter", "regenerative agriculture", "Frits van Oudtshoorn"],
+    alternates: {
+      canonical: '/',
+    },
+    icons: {
+      icon: faviconUrl,
+    },
+  };
+}
 
 export default function RootLayout({
   children,

@@ -15,6 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
 const PREDEFINED_SPOTS: Omit<SiteImage, 'imageUrl' | 'imageHint'>[] = [
+  { id: 'favicon', description: 'The browser tab icon. Upload a square image (PNG or ICO).' },
   { id: 'hero', description: 'The main hero image on the homepage.' },
   { id: 'about-frits', description: 'The portrait of Frits van Oudtshoorn on the about and services pages.' },
   { id: 'grass-app-promo', description: 'The mobile phone mockup for the grass app promo section.' },
