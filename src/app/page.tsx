@@ -251,14 +251,14 @@ export default function Home() {
                             </div>
                         )}
                         
-                        {/* Sidebar Grid for other curated products - Now Scrollable */}
+                        {/* Sidebar Grid for other curated products */}
                         <div className="lg:col-span-1 flex flex-col h-full">
                             <div className="bg-secondary/20 p-4 border-l-4 border-accent mb-4 shrink-0">
-                                <h4 className="font-headline font-bold text-xl leading-tight">Recommended by Frits</h4>
-                                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em] font-bold">Essential Field Materials</p>
+                                <h4 className="font-headline font-bold text-xl leading-tight">Essential Resources</h4>
+                                <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-[0.2em] font-bold">Field-Tested Materials</p>
                             </div>
                             
-                            <ScrollArea className="flex-grow pr-4 h-[500px] lg:h-auto">
+                            <ScrollArea className="flex-grow pr-4 h-auto lg:h-[600px]">
                                 <div className="space-y-6">
                                     {otherProducts?.map((product) => (
                                         <ProductCard key={product.id} product={product} />
