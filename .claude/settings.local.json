@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find 'C:/Users/Michael/Desktop/Projects/Working on Grass' -maxdepth 3 -type f \\\\\\(-name *.config.* -o -name .env* -o -name *server* -o -name app.js -o -name index.js -o -name main.py -o -name manage.py -o -name firebase.json \\\\\\))",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(npm install:*)",
+      "Bash(xargs sed:*)"
+    ]
+  }
+}
