@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import { useSearchParams } from 'next/navigation';
+import { cn } from '@/lib/utils';
 
 export default function ShopClient({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
@@ -68,7 +69,7 @@ export default function ShopClient({ products }: { products: Product[] }) {
   
   return (
     <div className="grid lg:grid-cols-4 gap-8 xl:gap-12">
-      <aside className="lg:col-span-1">
+      <aside className="hidden lg:block lg:col-span-1">
           <div className="sticky top-24">
             <ShopSidebar
                 categories={allCategories}
@@ -82,11 +83,30 @@ export default function ShopClient({ products }: { products: Product[] }) {
       </aside>
 
       <main className="lg:col-span-3">
+        {/* Mobile category chips — visible only below lg breakpoint */}
+        {allCategories.length > 0 && (
+          <div className="flex gap-2 flex-wrap mb-4 lg:hidden">
+            {allCategories.map(cat => (
+              <button
+                key={cat}
+                onClick={() => handleCategoryChange(cat)}
+                className={cn(
+                  "text-sm px-3 py-1.5 rounded-full border font-medium transition-colors",
+                  selectedCategories.includes(cat)
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground"
+                )}
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="mb-8 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
             type="text"
-            placeholder="Search products..."
+            placeholder="Search by name or type..."
             className="w-full pl-10"
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}

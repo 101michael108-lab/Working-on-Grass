@@ -139,7 +139,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
                         alt={`${productName} - image ${index + 1}`}
                         fill
                         sizes="90vw"
-                        className="object-contain p-6 md:p-12"
+                        className="object-contain"
                     />
                   </div>
                 </CarouselItem>

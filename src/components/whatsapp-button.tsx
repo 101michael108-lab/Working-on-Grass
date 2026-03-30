@@ -3,14 +3,19 @@
 import { usePathname } from "next/navigation";
 
 const WHATSAPP_NUMBER = "27782280008";
-const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}`;
+// Generic team message for order/product enquiries
+const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%2C%20I%20have%20a%20question%20about%20Working%20on%20Grass.`;
+
+// Pages that already have prominent inline WhatsApp CTAs — no need to double up
+const PAGES_WITH_INLINE_CTA = ["/", "/about", "/consulting"];
 
 export function WhatsAppButton() {
   const pathname = usePathname();
 
-  // Hide on admin pages and checkout to avoid disrupting those flows
   const hidden =
-    pathname?.startsWith("/admin") || pathname?.startsWith("/checkout");
+    pathname?.startsWith("/admin") ||
+    pathname?.startsWith("/checkout") ||
+    PAGES_WITH_INLINE_CTA.includes(pathname ?? "");
 
   if (hidden) return null;
 
@@ -19,11 +24,10 @@ export function WhatsAppButton() {
       href={WHATSAPP_URL}
       target="_blank"
       rel="noopener noreferrer"
-      aria-label="Chat with Frits on WhatsApp"
+      aria-label="Chat with us on WhatsApp"
       className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-[#25D366]/50"
       style={{ backgroundColor: "#25D366" }}
     >
-      {/* WhatsApp SVG icon */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
