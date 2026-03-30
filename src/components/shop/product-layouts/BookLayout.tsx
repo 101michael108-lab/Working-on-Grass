@@ -14,6 +14,18 @@ import { ShareButtons } from '@/components/share-buttons';
 
 const WA_NUMBER = "27782280008";
 
+// Pull just the first plain-text paragraph for the header — bullets go in features below
+function getHeaderDescription(text: string): string {
+  if (!text) return '';
+  const firstPlain = text
+    .split('\n')
+    .find(l => {
+      const t = l.trim();
+      return t.length > 0 && !t.startsWith('•') && !t.startsWith('-') && !t.startsWith('*');
+    });
+  return firstPlain || '';
+}
+
 const renderFormattedText = (text: string) => {
   if (!text) return null;
   return text.split('\n').map((line, i) => {
@@ -27,7 +39,7 @@ const renderFormattedText = (text: string) => {
         </div>
       );
     }
-    return line ? <p key={i} className="mb-4 text-foreground/80 leading-relaxed">{line}</p> : <div key={i} className="h-4" />;
+    return line ? <p key={i} className="mb-4 text-foreground/80 leading-relaxed">{line}</p> : <div key={i} className="h-2" />;
   });
 };
 
@@ -35,6 +47,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
   const [shareUrl, setShareUrl] = useState('');
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     setShareUrl(window.location.href);
@@ -44,151 +57,171 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
     setQuantity(prev => Math.max(1, prev + amount));
   };
 
+  const handleAddToCart = () => {
+    addToCart(product, quantity);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  };
+
   const isOutOfStock = (product.stock ?? 0) <= 0;
   const waOrderUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(`Hi, I have a question about ordering the ${product.name}.`)}`;
+  const headerDescription = getHeaderDescription(product.description);
 
   return (
-    <div className="bg-background">
-      {/* 1. Publication Header */}
+    <div className="bg-background overflow-x-hidden">
+
+      {/* ── Header ────────────────────────────────────────────────── */}
       <section className="bg-surface border-b border-border">
-        <div className="container py-12 md:py-20 grid lg:grid-cols-12 gap-12 items-start">
+        <div className="container py-10 md:py-16">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+
+            {/* Image — full width on mobile, left col on desktop */}
             <div className="lg:col-span-5">
-                <ProductImageGallery images={product.images || []} productName={product.name} />
+              <ProductImageGallery images={product.images || []} productName={product.name} />
             </div>
-            <div className="lg:col-span-7 space-y-8">
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                            <Link
-                              href={`/shop?category=${encodeURIComponent(product.category)}`}
-                              className="text-xs font-bold uppercase tracking-widest text-primary/70 hover:text-primary transition-colors"
-                            >
-                              {product.category}
-                            </Link>
-                        </div>
-                        {isOutOfStock && (
-                            <span className="flex items-center gap-1 text-xs font-bold text-destructive uppercase tracking-widest">
-                                <AlertTriangle className="h-3 w-3" /> Out of Stock
-                            </span>
-                        )}
-                    </div>
-                    <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline leading-tight">{product.name}</h1>
-                    <div className="text-lg md:text-xl text-muted-foreground leading-relaxed font-body">
-                        {renderFormattedText(product.description)}
-                    </div>
-                </div>
 
-                <div className="bg-background border-2 border-border p-6 rounded-lg max-w-md shadow-sm">
-                    <div className="flex items-baseline gap-2 mb-5">
-                        <span className="text-4xl font-bold font-headline text-accent">R{product.price.toFixed(2)}</span>
-                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Incl. VAT</span>
-                    </div>
+            {/* Content */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Breadcrumb + stock */}
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <Link
+                  href={`/shop?category=${encodeURIComponent(product.category)}`}
+                  className="text-xs font-bold uppercase tracking-widest text-primary/70 hover:text-primary transition-colors"
+                >
+                  {product.category}
+                </Link>
+                {isOutOfStock && (
+                  <span className="flex items-center gap-1 text-xs font-bold text-destructive uppercase tracking-widest">
+                    <AlertTriangle className="h-3 w-3" /> Out of Stock
+                  </span>
+                )}
+              </div>
 
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-4">
-                            <div className={`flex items-center border-2 border-border rounded h-12 bg-white ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
-                                <Button variant="ghost" size="icon" className="h-full w-12" onClick={() => handleQuantityChange(-1)} disabled={isOutOfStock}>
-                                    <Minus className="h-4 w-4" />
-                                </Button>
-                                <Input
-                                    type="number"
-                                    className="w-16 text-center border-0 shadow-none focus-visible:ring-0 text-lg font-bold bg-transparent"
-                                    value={quantity}
-                                    readOnly={isOutOfStock}
-                                    onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                                />
-                                <Button variant="ghost" size="icon" className="h-full w-12" onClick={() => handleQuantityChange(1)} disabled={isOutOfStock}>
-                                    <Plus className="h-4 w-4" />
-                                </Button>
-                            </div>
-                            <Button
-                                size="lg"
-                                className="flex-grow h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-base font-bold shadow-md"
-                                disabled={isOutOfStock}
-                                onClick={() => addToCart(product, quantity)}
-                            >
-                                <ShoppingCart className="mr-2 h-5 w-5" /> {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
-                            </Button>
-                        </div>
-                        {/* WhatsApp escape for order questions */}
-                        <div className="pt-1 text-center">
-                            <a
-                                href={waOrderUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                <MessageCircle className="h-3.5 w-3.5" />
-                                Questions about this product? <span className="underline underline-offset-2">WhatsApp the team</span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+              {/* Title */}
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-headline leading-tight">
+                {product.name}
+              </h1>
 
-                <div className="pt-2">
-                    <ShareButtons url={shareUrl} title={product.name} />
+              {/* Short intro — first plain-text paragraph only */}
+              {headerDescription && (
+                <p className="text-lg text-muted-foreground font-body leading-relaxed">
+                  {headerDescription}
+                </p>
+              )}
+
+              {/* Purchase box */}
+              <div className="bg-background border-2 border-border rounded-lg p-5 max-w-md shadow-sm">
+                <div className="flex items-baseline gap-2 mb-4">
+                  <span className="text-4xl font-bold font-headline text-accent">R{product.price.toFixed(2)}</span>
+                  <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Incl. VAT</span>
                 </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className={`flex items-center border-2 border-border rounded h-11 bg-white shrink-0 ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <Button variant="ghost" size="icon" className="h-full w-10" onClick={() => handleQuantityChange(-1)} disabled={isOutOfStock}>
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <Input
+                        type="number"
+                        className="w-12 text-center border-0 shadow-none focus-visible:ring-0 text-base font-bold bg-transparent"
+                        value={quantity}
+                        readOnly={isOutOfStock}
+                        onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                      />
+                      <Button variant="ghost" size="icon" className="h-full w-10" onClick={() => handleQuantityChange(1)} disabled={isOutOfStock}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <Button
+                      size="lg"
+                      className="flex-grow h-11 bg-primary text-primary-foreground hover:bg-primary/90 font-bold"
+                      disabled={isOutOfStock}
+                      onClick={handleAddToCart}
+                    >
+                      <ShoppingCart className="mr-2 h-4 w-4" />
+                      {added ? 'Added ✓' : isOutOfStock ? 'Sold Out' : 'Add to Cart'}
+                    </Button>
+                  </div>
+                  <div className="pt-1 text-center">
+                    <a
+                      href={waOrderUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <MessageCircle className="h-3.5 w-3.5" />
+                      Questions? <span className="underline underline-offset-2">WhatsApp the team</span>
+                    </a>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <ShareButtons url={shareUrl} title={product.name} />
+              </div>
             </div>
+          </div>
         </div>
       </section>
 
-      {/* 2. Publication Details & Audience */}
-      <section className="py-16 md:py-24">
-        <div className="container grid lg:grid-cols-12 gap-16">
-            <div className="lg:col-span-7 space-y-16">
-                {product.features && product.features.length > 0 && (
-                    <div className="space-y-8">
-                        <div className="flex items-center gap-3 border-b-2 border-primary/10 pb-4">
-                            <BookOpen className="h-6 w-6 text-primary" />
-                            <h2 className="text-3xl font-bold font-headline">Key Features</h2>
-                        </div>
-                        <ul className="grid sm:grid-cols-1 gap-4">
-                            {product.features.map((feature, index) => (
-                                <li key={index} className="flex items-start gap-3 bg-surface p-4 rounded border-l-4 border-primary">
-                                    <Check className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
-                                    <span className="text-foreground/80 font-body font-medium">{feature}</span>
-                                </li>
-                            ))}
-                        </ul>
-                    </div>
-                )}
-            </div>
-
-            {/* Who It's For Sidebar */}
-            <div className="lg:col-span-5 space-y-8">
-                {product.targetAudience && (
-                    <div className="space-y-8">
-                        <div className="flex items-center gap-3 border-b-2 border-accent/10 pb-4">
-                            <Users className="h-6 w-6 text-accent" />
-                            <h2 className="text-3xl font-bold font-headline">Who It's For</h2>
-                        </div>
-                        <div className="bg-accent/5 border-2 border-accent/10 p-6 rounded-lg">
-                            <div className="text-lg text-muted-foreground font-body">
-                                {renderFormattedText(product.targetAudience)}
-                            </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
-      </section>
-
-      {/* GrassPro Cross-sell */}
-      <section className="py-12 bg-surface border-t border-border">
+      {/* ── Features + Audience ───────────────────────────────────── */}
+      <section className="py-14 md:py-20">
         <div className="container">
-          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-6 bg-background rounded-lg border-2 border-primary/20 p-6 shadow-sm">
-            <div className="bg-primary/10 p-4 rounded-full shrink-0">
-              <Smartphone className="h-8 w-8 text-primary" />
+          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
+            <div className="lg:col-span-7 space-y-8">
+              {product.features && product.features.length > 0 && (
+                <>
+                  <div className="flex items-center gap-3 border-b border-primary/10 pb-4">
+                    <BookOpen className="h-5 w-5 text-primary shrink-0" />
+                    <h2 className="text-2xl font-bold font-headline">What's Inside</h2>
+                  </div>
+                  <ul className="space-y-3">
+                    {product.features.map((feature, index) => (
+                      <li key={index} className="flex items-start gap-3 bg-surface p-4 rounded border-l-4 border-primary">
+                        <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                        <span className="text-foreground/80 font-body">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+            </div>
+
+            <div className="lg:col-span-5">
+              {product.targetAudience && (
+                <div className="space-y-5">
+                  <div className="flex items-center gap-3 border-b border-accent/10 pb-4">
+                    <Users className="h-5 w-5 text-accent shrink-0" />
+                    <h2 className="text-2xl font-bold font-headline">Who It's For</h2>
+                  </div>
+                  <div className="bg-accent/5 border border-accent/15 p-6 rounded-lg">
+                    <div className="text-base text-muted-foreground font-body">
+                      {renderFormattedText(product.targetAudience)}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── GrassPro Cross-sell ───────────────────────────────────── */}
+      <section className="py-10 bg-surface border-t border-border">
+        <div className="container">
+          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-5 bg-background rounded-lg border-2 border-primary/20 p-5 shadow-sm">
+            <div className="bg-primary/10 p-3 rounded-full shrink-0">
+              <Smartphone className="h-7 w-7 text-primary" />
             </div>
             <div className="text-center sm:text-left">
-              <p className="text-xs font-bold uppercase tracking-widest text-accent mb-1">Companion App</p>
-              <h3 className="font-headline font-bold text-xl">Take it further with GrassPro</h3>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-1">Companion App</p>
+              <h3 className="font-headline font-bold text-lg">Take it further with GrassPro</h3>
               <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
-                The GrassPro app covers the same 320 species with 1,400+ diagnostic images, GPS filtering, and Smart Search — built to use alongside this book in the field. Free to download.
+                The GrassPro app covers the same 320 species with 1,400+ diagnostic images, GPS filtering, and Smart Search — built to use alongside this book. Free to download.
               </p>
             </div>
             <Link href="/grassPro" className="shrink-0">
-              <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-bold px-5 py-2.5 rounded-md hover:bg-primary/90 transition-colors whitespace-nowrap">
+              <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-bold px-4 py-2.5 rounded-md hover:bg-primary/90 transition-colors whitespace-nowrap">
                 Learn More <ArrowRight className="h-4 w-4" />
               </div>
             </Link>
@@ -197,6 +230,28 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
       </section>
 
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
+
+      {/* ── Sticky mobile CTA ─────────────────────────────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-background border-t-2 border-border shadow-xl">
+        <div className="container py-3 flex items-center gap-4">
+          <div className="shrink-0">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold leading-none mb-0.5">Price</p>
+            <p className="text-xl font-bold text-accent font-headline leading-none">R{product.price.toFixed(2)}</p>
+          </div>
+          <Button
+            size="lg"
+            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-bold h-11"
+            disabled={isOutOfStock}
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            {added ? 'Added to Cart ✓' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Spacer so sticky bar doesn't overlap content on mobile */}
+      <div className="h-20 lg:hidden" />
 
     </div>
   );

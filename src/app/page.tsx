@@ -42,7 +42,7 @@ export default function Home() {
 
   const trustPillars = [
     { icon: Award,    text: "30+ years of hands-on field experience" },
-    { icon: BookOpen, text: "Author — Guide to Grasses of Southern Africa (3rd ed.)" },
+    { icon: BookOpen, text: "Author · Guide to Grasses of Southern Africa" },
     { icon: Leaf,     text: "MSc Nature Conservation · Ecological Restoration" },
     { icon: Globe,    text: "Registered Barenbrug SA Seed Agent" },
   ];
@@ -77,20 +77,20 @@ export default function Home() {
         </div>
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl py-32 sm:py-48 lg:py-56 text-center sm:text-left">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white font-headline">
+          <div className="max-w-3xl py-20 sm:py-32 lg:py-40 text-center sm:text-left">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white font-headline drop-shadow-md">
               {t("hero.headline")}
             </h1>
-            <p className="mt-4 max-w-2xl text-lg md:text-xl text-primary-foreground/90 font-body mx-auto sm:mx-0">
+            <p className="mt-4 max-w-2xl text-lg md:text-xl text-white/85 font-body mx-auto sm:mx-0 drop-shadow">
               {t("hero.subheadline")}
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-4">
-              <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto">
+            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
+              <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto shadow-lg border-b-4 border-black/20">
                 <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation." target="_blank" rel="noopener noreferrer">
                   {WA_ICON} WhatsApp Frits
                 </a>
               </Button>
-              <Button asChild size="lg" variant="secondary" className="w-full sm:w-auto">
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-white/60 text-white bg-white/10 hover:bg-white/20 hover:text-white hover:border-white/80 backdrop-blur-sm">
                 <Link href="/shop">Explore the Shop</Link>
               </Button>
             </div>
@@ -122,7 +122,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {isLoading
               ? Array.from({ length: 3 }).map((_, i) => (
                   <Skeleton key={i} className="h-[380px] rounded-lg" />
@@ -159,7 +159,7 @@ export default function Home() {
                 <Skeleton className="w-[450px] h-[450px] rounded-lg" />
               )}
             </div>
-            <div className="text-center sm:text-left">
+            <div className="text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">
                 Meet Frits van Oudtshoorn
               </h2>
@@ -168,7 +168,7 @@ export default function Home() {
                   "My goal is to bridge the gap between science and the farmer — sustainable land management builds resilient, profitable agricultural businesses for generations to come."
                 </blockquote>
               </div>
-              <p className="mt-5 max-w-[600px] text-muted-foreground md:text-lg/relaxed mx-auto sm:mx-0 font-body">
+              <p className="mt-5 max-w-[600px] text-muted-foreground md:text-lg/relaxed font-body">
                 Frits holds an MSc in Nature Conservation (Ecological Restoration) and has spent 30 years conducting veld assessments, rehabilitation projects, and grazing capacity studies across Southern Africa. He is the author of <em>Guide to Grasses of Southern Africa</em> (now in its 3rd edition) and a registered Barenbrug seed agent.
               </p>
               <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90 border-b-4 border-black/20">
@@ -189,22 +189,22 @@ export default function Home() {
               <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto sm:mx-0 font-body">
                 Identify grasses of Southern Africa in the field — 1,400+ diagnostic images, GPS-based filtering, offline capable. Free to download with a full upgrade available.
               </p>
-              <ul className="mt-6 space-y-4 text-muted-foreground text-left max-w-md mx-auto sm:mx-0">
+              <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-muted-foreground text-left max-w-md sm:max-w-none mx-auto sm:mx-0">
                 <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md"><Camera className="h-5 w-5 text-primary flex-shrink-0" /></div>
-                  <span className="font-body"><strong>1,400+ diagnostic images</strong> covering 320 grass species of Southern Africa.</span>
+                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><Camera className="h-5 w-5 text-primary" /></div>
+                  <span className="font-body text-sm md:text-base"><strong>1,400+ diagnostic images</strong> — 320 grass species of Southern Africa.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md"><Globe className="h-5 w-5 text-primary flex-shrink-0" /></div>
-                  <span className="font-body"><strong>GPS-based location filtering</strong> and interactive distribution maps per species.</span>
+                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><Globe className="h-5 w-5 text-primary" /></div>
+                  <span className="font-body text-sm md:text-base"><strong>GPS-based filtering</strong> and interactive distribution maps per species.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md"><BookOpen className="h-5 w-5 text-primary flex-shrink-0" /></div>
-                  <span className="font-body"><strong>Companion to the book</strong> — pairs directly with <em>Guide to Grasses of Southern Africa</em>.</span>
+                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><CheckCircle2 className="h-5 w-5 text-primary" /></div>
+                  <span className="font-body text-sm md:text-base"><strong>Works fully offline</strong> — no signal needed. Sightings logging included.</span>
                 </li>
                 <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md"><CheckCircle2 className="h-5 w-5 text-primary flex-shrink-0" /></div>
-                  <span className="font-body"><strong>Works offline</strong> — no signal needed in the field. Sightings logging included.</span>
+                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><BookOpen className="h-5 w-5 text-primary" /></div>
+                  <span className="font-body text-sm md:text-base"><strong>Pairs with the book</strong> — built as a companion to <em>Guide to Grasses of Southern Africa</em>.</span>
                 </li>
               </ul>
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
@@ -250,9 +250,9 @@ export default function Home() {
       <section className="w-full py-16 md:py-24 bg-surface border-t">
         <div className="container px-4 md:px-6">
           <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter font-headline">How can Frits help you?</h2>
+            <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter font-headline">How can we help you?</h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Boots-on-the-ground expertise or the right tools for the job — find what you need below.
+              Expert field consulting or the right tools for the job — find what you need below.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -313,7 +313,7 @@ export default function Home() {
       <section className="w-full py-16 md:py-20 bg-background border-t-2">
         <div className="container text-center">
           <h2 className="text-3xl font-bold font-headline">Need expert guidance on your land or veld?</h2>
-          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Send Frits a quick WhatsApp — he'll respond personally.</p>
+          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Get in touch — our team will make sure you reach the right person.</p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto border-b-4 border-black/20">
               <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%20need%20expert%20guidance%20on%20my%20land." target="_blank" rel="noopener noreferrer">
