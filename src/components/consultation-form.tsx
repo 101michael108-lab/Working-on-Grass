@@ -77,7 +77,7 @@ export function ConsultationForm({ service, onSuccess }: ConsultationFormProps) 
 
     // 2. Admin notification
     sendAdminInquiryNotification({
-        to: settings?.contactEmail || 'courses@alut.co.za',
+        to: settings?.contactEmail || 'admin@workingongrass.co.za',
         customerName: values.name,
         customerEmail: values.contactDetail,
         service: serviceType,

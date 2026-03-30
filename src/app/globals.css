@@ -5,26 +5,27 @@
 @layer base {
   :root {
     /* Earthy, grounded palette */
-    --background: 40 30% 94%;
-    --foreground: 40 10% 15%;
-    --card: 40 30% 98%;
-    --card-foreground: 40 10% 15%;
-    --popover: 40 30% 98%;
-    --popover-foreground: 40 10% 15%;
-    --primary: 120 25% 25%; /* Deep Forest Green */
+    --background: 40 30% 96%;       /* Warm cream — page background */
+    --surface: 40 22% 90%;          /* Warm grey-beige — alternating sections */
+    --foreground: 40 10% 13%;
+    --card: 40 30% 99%;
+    --card-foreground: 40 10% 13%;
+    --popover: 40 30% 99%;
+    --popover-foreground: 40 10% 13%;
+    --primary: 120 28% 23%;         /* Deep Forest Green */
     --primary-foreground: 40 25% 95%;
     --secondary: 40 20% 88%;
     --secondary-foreground: 40 10% 20%;
     --muted: 40 15% 85%;
-    --muted-foreground: 40 10% 40%;
-    --accent: 25 40% 40%; /* Terracotta / Clay */
+    --muted-foreground: 40 10% 42%;
+    --accent: 25 42% 38%;           /* Terracotta — links, active states, highlights */
     --accent-foreground: 40 25% 98%;
     --destructive: 0 60% 40%;
     --destructive-foreground: 0 0% 98%;
-    --border: 40 15% 80%;
-    --input: 40 15% 80%;
+    --border: 40 15% 82%;
+    --input: 40 15% 82%;
     --ring: 120 25% 30%;
-    --radius: 0.375rem; /* Sturdier, less rounded corners */
+    --radius: 0.375rem;
     --sidebar-background: 40 30% 95%;
     --sidebar-foreground: 40 10% 15%;
     --sidebar-primary: 120 25% 25%;
@@ -45,5 +46,9 @@
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-headline font-bold;
+  }
+  /* Prose inline links — accent colour, no underline until hover */
+  .prose a {
+    @apply text-accent underline underline-offset-2 hover:text-accent/80 transition-colors;
   }
 }

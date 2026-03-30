@@ -24,7 +24,9 @@ export default function ShopClient({ products }: { products: Product[] }) {
   }, [categoryParam]);
 
   const allCategories = useMemo(() => {
-    const order = ["Measurement & Tools", "Books & Field Guides", "Online Courses", "Seeds & Pasture Products"];
+    // Only physical products are sold in the shop.
+    // Seed enquiries go to /seeds, courses are handled by ALUT separately.
+    const order = ["Measurement & Tools", "Books & Field Guides"];
     const productCategories = [...new Set(products.map(p => p.category))];
     return order.filter(cat => productCategories.includes(cat));
   }, [products]);

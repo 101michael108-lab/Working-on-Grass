@@ -90,7 +90,7 @@ function ContactForm() {
 
     // 2. Send admin notification
     sendAdminInquiryNotification({
-        to: settings?.contactEmail || 'courses@alut.co.za',
+        to: settings?.contactEmail || 'admin@workingongrass.co.za',
         customerName: values.name,
         customerEmail: values.email,
         service: values.serviceInterestedIn,
@@ -100,8 +100,8 @@ function ContactForm() {
     }, firestore);
 
     toast({
-      title: "Inquiry Sent!",
-      description: "Thank you for your interest. We will get back to you shortly.",
+      title: "Message sent",
+      description: "Frits will be in touch soon — usually within 1 business day.",
     })
     form.reset()
   }
@@ -117,7 +117,7 @@ function ContactForm() {
                 <FormItem>
                   <FormLabel>Full Name</FormLabel>
                   <FormControl>
-                    <Input placeholder="John Doe" {...field} />
+                    <Input placeholder="Your full name" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -203,7 +203,7 @@ function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg">Send Inquiry</Button>
+        <Button type="submit" size="lg">Send Message</Button>
       </form>
     </Form>
   )
@@ -213,16 +213,16 @@ export default function ContactPage() {
   return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Contact Working on Grass</h1>
-        <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Get expert advice or request a personalized assessment for your land.
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Get in Touch</h1>
+        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
+          Ask a question, request an assessment, or just describe what's going on with your land — Frits will respond personally.
         </p>
       </div>
 
       <div className="grid md:grid-cols-5 gap-12">
         <div className="md:col-span-3">
-          <h2 className="text-2xl font-bold mb-6">Send us a Message</h2>
-           <Suspense fallback={<div>Loading...</div>}>
+          <h2 className="text-2xl font-bold mb-6">Send a Message</h2>
+           <Suspense fallback={<div className="text-muted-foreground text-sm">Loading form...</div>}>
             <ContactForm />
            </Suspense>
         </div>
@@ -245,14 +245,22 @@ export default function ContactPage() {
                         <Phone className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
                         <div>
                             <p className="font-semibold">Phone / WhatsApp</p>
-                            <p className="text-muted-foreground">Frits van Oudtshoorn: +27 78 228 0008</p>
+                            <a
+                              href="https://wa.me/27782280008"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary font-medium hover:underline"
+                            >
+                              +27 78 228 0008
+                            </a>
+                            <p className="text-xs text-muted-foreground mt-0.5">Frits van Oudtshoorn — tap to chat</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">
                         <Mail className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
                         <div>
                             <p className="font-semibold">Email</p>
-                            <p className="text-muted-foreground">courses@alut.co.za</p>
+                            <p className="text-muted-foreground">admin@workingongrass.co.za</p>
                         </div>
                     </div>
                 </CardContent>

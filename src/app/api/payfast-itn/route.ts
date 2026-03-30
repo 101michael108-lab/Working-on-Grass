@@ -104,7 +104,7 @@ export async function POST(req: NextRequest) {
 
         // 4. Send Admin Notification
         await sendAdminOrderNotification({
-            to: settings?.contactEmail || 'courses@alut.co.za',
+            to: settings?.contactEmail || 'admin@workingongrass.co.za',
             orderId: orderId,
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,

@@ -146,8 +146,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                         <MapPin className="h-6 w-6 text-primary" />
                         <h2 className="text-3xl font-bold font-headline">Field Application & Use</h2>
                     </div>
-                    <div className="bg-background border-2 border-border p-8 rounded-lg relative overflow-hidden shadow-sm">
-                        <div className="absolute top-0 right-0 p-2 bg-accent text-white text-[10px] font-bold uppercase tracking-widest">Operator Note</div>
+                    <div className="bg-background border-2 border-border p-8 rounded-lg shadow-sm">
                         <div className="text-lg text-muted-foreground font-body">
                             {renderFormattedText(product.fieldUse)}
                         </div>

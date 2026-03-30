@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Bird, Sprout, Wheat } from "lucide-react"
+import { Bird, Sprout, Wheat, MessageCircle } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -38,6 +38,8 @@ const formSchema = z.object({
   seedCategory: z.string({
     required_error: "Please select a seed category.",
   }),
+  farmSize: z.string().optional(),
+  primaryUse: z.string().optional(),
   message: z.string().min(10, {
     message: "Please describe your needs (e.g., hectarage, specific seed type).",
   }),
@@ -58,6 +60,8 @@ function SeedInquiryForm() {
       phone: "",
       location: "",
       seedCategory: undefined,
+      farmSize: "",
+      primaryUse: undefined,
       message: "",
     },
   })
@@ -83,7 +87,7 @@ function SeedInquiryForm() {
 
     // 2. Admin notification
     sendAdminInquiryNotification({
-        to: settings?.contactEmail || 'courses@alut.co.za',
+        to: settings?.contactEmail || 'admin@workingongrass.co.za',
         customerName: values.name,
         customerEmail: values.email,
         service: serviceType,
@@ -141,18 +145,53 @@ function SeedInquiryForm() {
             </FormItem>
           )}
         />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <FormField control={form.control} name="farmSize" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Area to be planted <span className="text-muted-foreground">(ha, Optional)</span></FormLabel>
+              <FormControl><Input placeholder="e.g. 50 ha" {...field} /></FormControl>
+              <FormMessage />
+            </FormItem>
+          )} />
+          <FormField control={form.control} name="primaryUse" render={({ field }) => (
+            <FormItem>
+              <FormLabel>Primary Use <span className="text-muted-foreground">(Optional)</span></FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger><SelectValue placeholder="Select primary use..." /></SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  <SelectItem value="Grazing / Pasture">Grazing / Pasture</SelectItem>
+                  <SelectItem value="Cover Crop">Cover Crop</SelectItem>
+                  <SelectItem value="Veld Restoration">Veld Restoration</SelectItem>
+                  <SelectItem value="Turf / Lawn">Turf / Lawn</SelectItem>
+                  <SelectItem value="Ornamental / Indigenous">Ornamental / Indigenous</SelectItem>
+                  <SelectItem value="Other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )} />
+        </div>
         <FormField
           control={form.control}
           name="message"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Your Requirements</FormLabel>
-              <FormControl><Textarea placeholder="Please tell us about your needs, e.g., hectares to be planted, specific seed mixtures, or soil type." {...field} rows={6} /></FormControl>
+              <FormControl><Textarea placeholder="Describe your situation — soil type, rainfall area, current veld condition, or any specific seed mixtures you have in mind." {...field} rows={5} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg">Request a Quote</Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button type="submit" size="lg">Request a Quote</Button>
+          <Button type="button" size="lg" variant="outline" className="border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white" asChild>
+            <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20enquire%20about%20custom%20seed%20mixes." target="_blank" rel="noopener noreferrer">
+              <MessageCircle className="mr-2 h-4 w-4" /> Prefer to WhatsApp Frits
+            </a>
+          </Button>
+        </div>
       </form>
     </Form>
   )
@@ -168,10 +207,14 @@ export default function SeedsPage() {
   return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Custom Seed Orders</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Grass Seed Enquiries</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          We provide high-quality seeds tailored to your specific environmental conditions and agricultural goals. All seed sales are handled via custom quote to ensure you get the best mixture for your needs.
+          Frits van Oudtshoorn is a registered <strong>Barenbrug SA seed agent</strong>. All seed mixes are custom-formulated per farm, soil type, and intended use — not sold off-the-shelf. Submit an enquiry below and Frits will come back to you with a recommendation.
         </p>
+        <div className="mt-6 inline-flex items-center gap-2 bg-secondary border border-primary/10 rounded-full px-5 py-2 text-sm text-muted-foreground">
+          <Sprout className="h-4 w-4 text-primary" />
+          <span>Summer &amp; winter pastures · Legumes · Cover crops · Turf · Indigenous grasses</span>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-5 gap-12">

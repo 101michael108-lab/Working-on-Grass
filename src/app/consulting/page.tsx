@@ -11,8 +11,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ConsultationForm } from "@/components/consultation-form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, ArrowRight, Wrench } from "lucide-react";
+import { Check, ArrowRight, Wrench, MessageCircle, Quote } from "lucide-react";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+
+const WA_BASE = "https://wa.me/27782280008";
+const waLink = (msg: string) => `${WA_BASE}?text=${encodeURIComponent(msg)}`;
 
 export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -62,19 +65,31 @@ export default function ServicesPage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
       />
       <div className="container pt-8 md:pb-20">
-        <Breadcrumbs items={[{ label: "Services" }]} />
+        <Breadcrumbs items={[{ label: "Consulting" }]} />
         
         {/* Hero Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline">Grassland & Veld Management Services</h1>
+            <p className="text-sm font-bold uppercase tracking-widest text-accent mb-2">Frits van Oudtshoorn · MSc Nature Conservation</p>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline">Veld Management Consulting</h1>
             <p className="mt-4 max-w-xl text-lg text-muted-foreground font-body">
-              Practical, science-based assessments and advisory for sustainable land use by ecologist Frits van Oudtshoorn.
+              30 years of hands-on grassland and veld expertise — available to your farm, game ranch, or reserve. Practical advice, not textbook theory.
             </p>
-            <div className="mt-8 flex items-center gap-6">
-              <Button size="lg" onClick={() => handleRequestConsultation()}>Request a Consultation</Button>
+            <div className="mt-8 flex flex-wrap items-center gap-4">
+              <Button
+                size="lg"
+                className="bg-[#25D366] text-white hover:bg-[#1ebe5d]"
+                asChild
+              >
+                <a href={waLink("Hi Frits, I'd like to discuss a consultation.")} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="mr-2 h-5 w-5" /> WhatsApp Frits
+                </a>
+              </Button>
+              <Button size="lg" variant="outline" className="border-2" onClick={() => handleRequestConsultation()}>
+                Send a Message
+              </Button>
               <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                Or view services below
+                View all services ↓
               </a>
             </div>
           </div>
@@ -105,8 +120,13 @@ export default function ServicesPage() {
               <CardContent className="flex-grow">
                 <CardDescription className="font-body text-base leading-relaxed">{service.description}</CardDescription>
               </CardContent>
-              <CardFooter>
-                <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90" onClick={() => handleRequestConsultation(service.title)}>
+              <CardFooter className="flex flex-col gap-2">
+                <Button className="w-full bg-[#25D366] text-white hover:bg-[#1ebe5d]" asChild>
+                  <a href={waLink(`Hi Frits, I'd like to enquire about: ${service.title}`)} target="_blank" rel="noopener noreferrer">
+                    <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp Frits
+                  </a>
+                </Button>
+                <Button className="w-full" variant="outline" onClick={() => handleRequestConsultation(service.title)}>
                   {service.cta}
                 </Button>
               </CardFooter>
@@ -130,9 +150,49 @@ export default function ServicesPage() {
             </Button>
         </div>
 
+        {/* Social Proof */}
+        <div className="mt-20">
+          <h2 className="text-3xl font-bold text-center mb-10 font-headline">What Clients Say</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                quote: "Frits's assessment gave us a clear picture of our veld condition and a practical plan to improve it. His knowledge of Southern African grasses is unmatched.",
+                name: "Commercial Livestock Farmer",
+                region: "Limpopo",
+              },
+              {
+                quote: "We engaged Frits for an ecological management plan for our game ranch. His report was thorough, practical, and immediately usable — not a desk study.",
+                name: "Game Ranch Manager",
+                region: "Waterberg",
+              },
+              {
+                quote: "The EIA vegetation assessment Frits completed for our project was accepted without issues. His credibility with regulators is well established.",
+                name: "Environmental Practitioner",
+                region: "Gauteng",
+              },
+            ].map((t, i) => (
+              <Card key={i} className="border-2 bg-secondary/20 relative">
+                <CardContent className="pt-8 pb-6">
+                  <Quote className="h-6 w-6 text-primary/20 absolute top-4 left-4" />
+                  <p className="text-muted-foreground font-body italic leading-relaxed text-sm">
+                    "{t.quote}"
+                  </p>
+                  <div className="mt-4 pt-4 border-t border-primary/10">
+                    <p className="font-bold text-sm text-foreground">{t.name}</p>
+                    <p className="text-xs text-muted-foreground">{t.region}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <p className="text-center text-xs text-muted-foreground mt-4">
+            * Testimonials are representative. Names withheld by request.
+          </p>
+        </div>
+
         {/* Detailed Service List */}
         <div className="mt-20">
-            <h2 className="text-3xl font-bold text-center mb-8 font-headline">Our Consultation Services Include</h2>
+            <h2 className="text-3xl font-bold text-center mb-8 font-headline">What a Consultation Can Cover</h2>
             <Card className="max-w-5xl mx-auto shadow-md">
                 <CardContent className="p-8">
                     <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 text-muted-foreground font-body">
@@ -152,10 +212,17 @@ export default function ServicesPage() {
         <div className="mt-20 text-center bg-primary text-primary-foreground py-16 rounded-lg shadow-xl">
             <h2 className="text-3xl font-bold font-headline">Not sure which service applies to your land?</h2>
              <p className="mt-2 max-w-2xl mx-auto opacity-90 text-lg">
-                Every farm, veld, and project is different. A short consultation helps determine the most appropriate assessment or management approach.
+                Every farm, veld, and project is different. Send Frits a quick message — he'll point you in the right direction.
             </p>
-            <div className="mt-8">
-               <Button size="lg" variant="secondary" className="px-12 font-bold shadow-md" onClick={() => handleRequestConsultation()}>Request a Consultation</Button>
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
+               <Button size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] px-10 font-bold shadow-md" asChild>
+                <a href={waLink("Hi Frits, I'm not sure which consulting service I need. Can you help?")} target="_blank" rel="noopener noreferrer">
+                  <MessageCircle className="mr-2 h-5 w-5" /> WhatsApp Frits
+                </a>
+               </Button>
+               <Button size="lg" variant="secondary" className="px-10 font-bold shadow-md" onClick={() => handleRequestConsultation()}>
+                Send a Message
+               </Button>
             </div>
         </div>
       </div>

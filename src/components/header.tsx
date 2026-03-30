@@ -27,12 +27,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { doc, getDoc } from "firebase/firestore";
+import { useLanguage } from "@/context/language-context";
 
 const navLinks = [
   { href: "/about", label: "About" },
-  { href: "/services", label: "Services" },
+  { href: "/consulting", label: "Consulting" },
   { href: "/shop", label: "Shop" },
   { href: "/seeds", label: "Seeds" },
+  { href: "/grassPro", label: "GrassPro" },
   { href: "/resources", label: "Resources" },
   { href: "/contact", label: "Contact" },
 ];
@@ -45,6 +47,7 @@ export function Header() {
   const auth = useAuth();
   const firestore = useFirestore();
   const [isAdmin, setIsAdmin] = React.useState(false);
+  const { language, setLanguage } = useLanguage();
 
   // Hide header on admin pages
   const isAdminPage = pathname?.startsWith('/admin');
@@ -183,6 +186,16 @@ export function Header() {
 
         {/* Right Group */}
         <div className="flex items-center space-x-2">
+          {/* Language Toggle */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-xs font-bold tracking-widest px-2 h-8"
+            onClick={() => setLanguage(language === "en" ? "af" : "en")}
+            title={language === "en" ? "Switch to Afrikaans" : "Skakel na Engels"}
+          >
+            {language === "en" ? "AF" : "EN"}
+          </Button>
           {/* Cart Icon */}
           <Button variant="ghost" size="icon" asChild>
             <Link href="/cart">
@@ -230,13 +243,7 @@ export function Header() {
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : (
-             <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link href="/login">
-                Login
-              </Link>
-            </Button>
-          )}
+          ) : null}
         </div>
       </div>
     </header>

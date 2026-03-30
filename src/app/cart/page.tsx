@@ -7,7 +7,7 @@ import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Minus, Plus, Trash2, ShoppingCart as ShoppingCartIcon } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingCart as ShoppingCartIcon, ShieldCheck, Lock } from "lucide-react";
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
@@ -99,11 +99,22 @@ export default function CartPage() {
               </CardContent>
               <CardFooter className="flex-col gap-2">
                 <Button size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" asChild>
-                  <Link href="/checkout">Proceed to Checkout</Link>
+                  <Link href="/checkout">
+                    <Lock className="mr-2 h-4 w-4" /> Proceed to Checkout
+                  </Link>
                 </Button>
                 <Button variant="outline" className="w-full" asChild>
                     <Link href="/shop">Continue Shopping</Link>
                 </Button>
+                <div className="w-full pt-3 border-t mt-1 flex flex-col items-center gap-1.5">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ShieldCheck className="h-4 w-4 text-primary" />
+                    <span className="font-medium">Secured by PayFast</span>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground text-center">
+                    South Africa's leading payment gateway · 256-bit SSL encryption
+                  </p>
+                </div>
               </CardFooter>
             </Card>
           </div>

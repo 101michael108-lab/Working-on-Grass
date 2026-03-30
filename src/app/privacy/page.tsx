@@ -40,7 +40,7 @@ export default function PrivacyPolicyPage() {
         <section className="space-y-4">
           <h2 className="text-2xl font-bold text-foreground">5. Contact Us</h2>
           <p>
-            If you have any questions about this Privacy Policy, please contact us at courses@alut.co.za.
+            If you have any questions about this Privacy Policy, please contact us at admin@workingongrass.co.za.
           </p>
         </section>
       </div>

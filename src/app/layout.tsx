@@ -8,6 +8,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { CartProvider } from "@/context/cart-context";
 import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { MediaProvider } from "@/context/media-context";
+import { WhatsAppButton } from "@/components/whatsapp-button";
+import { LanguageProvider } from "@/context/language-context";
 import { initializeFirebase } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 
@@ -52,22 +54,74 @@ export default function RootLayout({
 }>) {
   const organizationJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Organization',
+    '@type': 'LocalBusiness',
+    '@id': 'https://workingongrass.co.za',
     name: 'Working on Grass',
-    alternateName: 'Africa Land-Use Training',
     url: 'https://workingongrass.co.za',
     logo: 'https://workingongrass.co.za/logo.png',
+    description: 'Veld management consulting, grass seed, books, field instruments, and the GrassPro grass identification app — by grassland ecologist Frits van Oudtshoorn.',
+    telephone: '+27782280008',
+    email: 'admin@workingongrass.co.za',
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: 'Modimolle',
+      addressLocality: 'Modimolle',
+      addressRegion: 'Limpopo',
+      postalCode: '0510',
+      addressCountry: 'ZA',
+    },
+    geo: {
+      '@type': 'GeoCoordinates',
+      latitude: -24.7,
+      longitude: 28.4,
+    },
+    areaServed: {
+      '@type': 'GeoCircle',
+      name: 'Southern Africa',
+    },
+    priceRange: 'R-RRR',
+    openingHours: 'Mo-Fr 08:00-17:00',
     contactPoint: {
       '@type': 'ContactPoint',
-      telephone: '+27-78-228-0008',
-      contactType: 'technical support',
+      telephone: '+27782280008',
+      contactType: 'customer service',
       areaServed: 'ZA',
-      availableLanguage: ['English', 'Afrikaans']
+      availableLanguage: ['English', 'Afrikaans'],
     },
     sameAs: [
       'https://www.facebook.com/workingongrass',
-      // Add other social links here
-    ]
+    ],
+    founder: {
+      '@type': 'Person',
+      '@id': 'https://workingongrass.co.za/#frits',
+      name: 'Frits van Oudtshoorn',
+      jobTitle: 'Grassland Ecologist & Veld Management Consultant',
+      description: 'South Africa\'s foremost practical grass and veld expert. MSc Nature Conservation (Ecological Restoration). Author of Guide to Grasses of Southern Africa and Veld Management: Principles and Practices.',
+      telephone: '+27782280008',
+      email: 'admin@workingongrass.co.za',
+      address: {
+        '@type': 'PostalAddress',
+        addressLocality: 'Modimolle',
+        addressRegion: 'Limpopo',
+        addressCountry: 'ZA',
+      },
+      alumniOf: {
+        '@type': 'CollegeOrUniversity',
+        name: 'University (MSc Nature Conservation — Ecological Restoration)',
+      },
+      knowsAbout: [
+        'Veld management',
+        'Grass identification',
+        'Ecological restoration',
+        'Grazing capacity assessment',
+        'Mine rehabilitation',
+        'Southern African grasslands',
+      ],
+      sameAs: [
+        'https://apps.apple.com/za/app/grasspro/id1586118050',
+        'https://play.google.com/store/apps/details?id=za.co.highbranching.grasspro',
+      ],
+    },
   };
 
   return (
@@ -83,6 +137,7 @@ export default function RootLayout({
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
         <FirebaseClientProvider>
+          <LanguageProvider>
           <MediaProvider>
             <CartProvider>
               <div className="flex min-h-screen flex-col">
@@ -90,9 +145,11 @@ export default function RootLayout({
                 <main className="flex-1">{children}</main>
                 <Footer />
               </div>
+              <WhatsAppButton />
               <Toaster />
             </CartProvider>
           </MediaProvider>
+          </LanguageProvider>
         </FirebaseClientProvider>
       </body>
     </html>

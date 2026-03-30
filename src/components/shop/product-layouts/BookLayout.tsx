@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, Check, BookOpen, Users, AlertTriangle } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Check, BookOpen, Users, AlertTriangle, Smartphone } from 'lucide-react';
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
@@ -80,7 +80,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                 <div className="bg-background border-2 border-border p-8 rounded-lg max-w-md shadow-sm">
                     <div className="flex items-baseline gap-2 mb-6">
                         <span className="text-4xl font-bold font-headline text-accent">R{product.price.toFixed(2)}</span>
-                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Hardcover Edition</span>
+                        <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Incl. VAT</span>
                     </div>
                     
                     <div className="space-y-4">
@@ -168,6 +168,29 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
         </div>
       </section>
       
+      {/* GrassPro Cross-sell */}
+      <section className="py-12 bg-primary/5 border-t-2">
+        <div className="container">
+          <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-6 bg-background rounded-lg border-2 border-primary/20 p-6 shadow-sm">
+            <div className="bg-primary/10 p-4 rounded-full shrink-0">
+              <Smartphone className="h-8 w-8 text-primary" />
+            </div>
+            <div className="text-center sm:text-left">
+              <p className="text-xs font-bold uppercase tracking-widest text-accent mb-1">Companion App</p>
+              <h3 className="font-headline font-bold text-xl">Take it further with GrassPro</h3>
+              <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
+                The GrassPro app covers the same 320 species with 1,400+ diagnostic images, GPS filtering, and Smart Search — built to use alongside this book in the field. Free to download.
+              </p>
+            </div>
+            <Link href="/grassPro" className="shrink-0">
+              <div className="inline-flex items-center gap-2 bg-primary text-primary-foreground text-sm font-bold px-5 py-2.5 rounded-md hover:bg-primary/90 transition-colors whitespace-nowrap">
+                Learn More <ArrowRight className="h-4 w-4" />
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
 
     </div>

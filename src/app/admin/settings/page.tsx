@@ -25,7 +25,7 @@ export default function AdminSettingsPage() {
 
   const [formData, setFormData] = React.useState<SiteSettings>({
     storeName: "Working on Grass",
-    contactEmail: "courses@alut.co.za",
+    contactEmail: "admin@workingongrass.co.za",
     senderEmail: "",
     shippingFee: 150,
     payfastMerchantId: "",
@@ -39,7 +39,7 @@ export default function AdminSettingsPage() {
     if (settings) {
       setFormData({
         storeName: settings.storeName || "Working on Grass",
-        contactEmail: settings.contactEmail || "courses@alut.co.za",
+        contactEmail: settings.contactEmail || "admin@workingongrass.co.za",
         senderEmail: settings.senderEmail || "",
         shippingFee: settings.shippingFee || 150,
         payfastMerchantId: settings.payfastMerchantId || "",
