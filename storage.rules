@@ -10,6 +10,12 @@ service firebase.storage {
       allow write: if request.auth != null;
     }
 
+    // Media library images are publicly readable, writes by authenticated users
+    match /mediaLibrary/{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
     // User-specific files can only be read/written by the owning user.
     match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
