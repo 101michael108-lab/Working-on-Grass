@@ -47,7 +47,6 @@ export function Header() {
   const auth = useAuth();
   const firestore = useFirestore();
   const [isAdmin, setIsAdmin] = React.useState(false);
-  const { language, setLanguage } = useLanguage();
 
   // Hide header on admin pages
   const isAdminPage = pathname?.startsWith('/admin');
@@ -186,18 +185,6 @@ export function Header() {
 
         {/* Right Group */}
         <div className="flex items-center space-x-2">
-          {/* Language Toggle */}
-          <Button
-            variant="ghost"
-            size="sm"
-            className="text-xs px-2 h-8 gap-0"
-            onClick={() => setLanguage(language === "en" ? "af" : "en")}
-            title={language === "en" ? "Switch to Afrikaans" : "Skakel na Engels"}
-          >
-            <span className={language === "en" ? "font-bold text-foreground" : "text-muted-foreground/40"}>EN</span>
-            <span className="mx-1 text-muted-foreground/30">|</span>
-            <span className={language === "af" ? "font-bold text-foreground" : "text-muted-foreground/40"}>AF</span>
-          </Button>
           {/* Cart Icon */}
           <Button variant="ghost" size="icon" asChild>
             <Link href="/cart">
