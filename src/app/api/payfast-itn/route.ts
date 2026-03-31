@@ -93,6 +93,7 @@ export async function POST(req: NextRequest) {
         await sendOrderConfirmationEmail({
             to: orderData.shippingInfo.email,
             orderId: orderId,
+            orderDate: new Date(),
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,
             items: orderData.items,
@@ -106,6 +107,7 @@ export async function POST(req: NextRequest) {
         await sendAdminOrderNotification({
             to: settings?.contactEmail || 'admin@workingongrass.co.za',
             orderId: orderId,
+            orderDate: new Date(),
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,
             items: orderData.items,
