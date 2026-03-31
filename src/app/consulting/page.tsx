@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Check, ArrowRight, Wrench, Quote } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { useLanguage } from "@/context/language-context";
 
 const WA_BASE = "https://wa.me/27782280008";
 const waLink = (msg: string) => `${WA_BASE}?text=${encodeURIComponent(msg)}`;
@@ -22,6 +23,7 @@ export default function ServicesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedService, setSelectedService] = useState<string | undefined>(undefined);
 
+  const { t } = useLanguage();
   const { getImage } = useMedia();
   const heroImage = getImage('about-frits');
 
@@ -72,9 +74,9 @@ export default function ServicesPage() {
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>
             <p className="text-sm font-bold uppercase tracking-widest text-accent mb-2">Frits van Oudtshoorn · MSc Nature Conservation</p>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline">Veld Management Consulting</h1>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline">{t("consulting.headline")}</h1>
             <p className="mt-4 max-w-xl text-lg text-muted-foreground font-body">
-              30 years of hands-on grassland and veld expertise, available to your farm, game ranch, or reserve. Practical advice, not textbook theory.
+              {t("consulting.subheadline")}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Button

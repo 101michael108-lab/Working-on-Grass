@@ -138,19 +138,19 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                 </div>
 
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2">
                     <div className={`flex items-center border-2 border-border rounded bg-background h-11 shrink-0 ${isOutOfStock ? 'opacity-50 pointer-events-none' : ''}`}>
-                      <Button variant="ghost" size="icon" className="h-full w-10" onClick={() => handleQuantityChange(-1)} disabled={isOutOfStock}>
+                      <Button variant="ghost" size="icon" className="h-full w-8 sm:w-10" onClick={() => handleQuantityChange(-1)} disabled={isOutOfStock}>
                         <Minus className="h-4 w-4" />
                       </Button>
                       <Input
                         type="number"
-                        className="w-12 text-center border-0 shadow-none focus-visible:ring-0 text-base font-bold bg-transparent"
+                        className="w-9 sm:w-12 text-center border-0 shadow-none focus-visible:ring-0 text-base font-bold bg-transparent"
                         value={quantity}
                         readOnly={isOutOfStock}
                         onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                       />
-                      <Button variant="ghost" size="icon" className="h-full w-10" onClick={() => handleQuantityChange(1)} disabled={isOutOfStock}>
+                      <Button variant="ghost" size="icon" className="h-full w-8 sm:w-10" onClick={() => handleQuantityChange(1)} disabled={isOutOfStock}>
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>

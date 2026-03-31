@@ -23,6 +23,7 @@ import { useFirestore, addDocumentNonBlocking, useDoc, useMemoFirebase } from "@
 import { collection, serverTimestamp, doc } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { seedCategories } from "@/lib/static-data"
+import { useLanguage } from "@/context/language-context"
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import type { SeedCategory, SiteSettings } from "@/lib/types"
 import { sendInquiryAcknowledgmentEmail, sendAdminInquiryNotification } from "@/services/email-service"
@@ -205,12 +206,14 @@ const categoryIcons: { [key: string]: React.ElementType } = {
 };
 
 export default function SeedsPage() {
+  const { t } = useLanguage();
+
   return (
     <div className="container py-12 md:py-20">
       <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Grass Seed Enquiries</h1>
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{t("seeds.headline")}</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Frits van Oudtshoorn is a registered <strong>Barenbrug SA seed agent</strong>. All seed mixes are custom-formulated per farm, soil type, and intended use. Not sold off-the-shelf. Submit an enquiry below and Frits will come back to you with a recommendation.
+          {t("seeds.subheadline")} Submit an enquiry below and Frits will come back to you with a recommendation.
         </p>
         <div className="mt-6 inline-flex items-center gap-2 bg-secondary border border-primary/10 rounded-full px-5 py-2 text-sm text-muted-foreground">
           <Sprout className="h-4 w-4 text-primary" />

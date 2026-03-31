@@ -190,11 +190,13 @@ export function Header() {
           <Button
             variant="ghost"
             size="sm"
-            className="text-xs font-bold tracking-widest px-2 h-8"
+            className="text-xs px-2 h-8 gap-0"
             onClick={() => setLanguage(language === "en" ? "af" : "en")}
             title={language === "en" ? "Switch to Afrikaans" : "Skakel na Engels"}
           >
-            {language === "en" ? "AF" : "EN"}
+            <span className={language === "en" ? "font-bold text-foreground" : "text-muted-foreground/40"}>EN</span>
+            <span className="mx-1 text-muted-foreground/30">|</span>
+            <span className={language === "af" ? "font-bold text-foreground" : "text-muted-foreground/40"}>AF</span>
           </Button>
           {/* Cart Icon */}
           <Button variant="ghost" size="icon" asChild>
