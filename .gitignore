@@ -29,3 +29,6 @@ yarn-error.log*
 
 # vercel
 .vercel
+
+# Claude MCP config (may contain local paths)
+.mcp.json
