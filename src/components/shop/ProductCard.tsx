@@ -27,7 +27,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const teaser = getDescriptionTeaser(product.description);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border-2 border-border bg-card hover:border-primary/40 hover:shadow-md transition-all duration-200 h-full">
+    <div className="group relative flex flex-col overflow-hidden rounded-lg border-2 border-border bg-card hover:border-primary/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 h-full">
 
       {isOutOfStock && (
         <Badge variant="destructive" className="absolute top-3 right-3 z-10 font-bold shadow">

@@ -34,10 +34,10 @@ export async function POST(req: NextRequest) {
     const calculatedSignature = crypto.createHash('md5').update(checkString).digest('hex');
     const receivedSignature = pfData.signature;
 
-    // In local dev without passphrase, signature check might fail. In production, ensure they match.
+    // Reject requests with invalid signatures in production.
     if (process.env.NODE_ENV === 'production' && calculatedSignature !== receivedSignature) {
-        console.warn("PayFast ITN: Signature mismatch.");
-        // return new NextResponse('Invalid signature', { status: 400 }); 
+        console.warn("PayFast ITN: Signature mismatch.", { calculated: calculatedSignature, received: receivedSignature });
+        return new NextResponse('Invalid signature', { status: 400 });
     }
 
     const orderId = pfData.m_payment_id;

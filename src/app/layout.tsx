@@ -41,6 +41,14 @@ export async function generateMetadata(): Promise<Metadata> {
     alternates: {
       canonical: '/',
     },
+    openGraph: {
+      siteName: 'Working on Grass',
+      locale: 'en_ZA',
+      type: 'website',
+    },
+    twitter: {
+      card: 'summary_large_image',
+    },
     icons: {
       icon: faviconUrl,
     },
@@ -135,14 +143,14 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
       </head>
-      <body className={cn("min-h-screen bg-background font-body antialiased overflow-x-hidden")}>
+      <body className={cn("min-h-screen bg-background font-body antialiased")}>
         <FirebaseClientProvider>
           <LanguageProvider>
           <MediaProvider>
             <CartProvider>
-              <div className="flex min-h-screen flex-col overflow-x-hidden">
+              <div className="flex min-h-screen flex-col">
                 <Header />
-                <main className="flex-1">{children}</main>
+                <main className="flex-1 overflow-x-hidden">{children}</main>
                 <Footer />
               </div>
               <WhatsAppButton />

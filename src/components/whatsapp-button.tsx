@@ -7,7 +7,7 @@ const WHATSAPP_NUMBER = "27782280008";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%2C%20I%20have%20a%20question%20about%20Working%20on%20Grass.`;
 
 // Pages that already have prominent inline WhatsApp CTAs — no need to double up
-const PAGES_WITH_INLINE_CTA = ["/", "/about", "/consulting"];
+const PAGES_WITH_INLINE_CTA = ["/", "/about", "/consulting", "/seeds", "/contact"];
 
 export function WhatsAppButton() {
   const pathname = usePathname();
@@ -25,8 +25,7 @@ export function WhatsAppButton() {
       target="_blank"
       rel="noopener noreferrer"
       aria-label="Chat with us on WhatsApp"
-      className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-110 focus:outline-none focus:ring-4 focus:ring-[#25D366]/50"
-      style={{ backgroundColor: "#25D366" }}
+      className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp shadow-lg transition-transform hover:scale-110 hover:bg-whatsapp-hover focus:outline-none focus:ring-4 focus:ring-whatsapp/50"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

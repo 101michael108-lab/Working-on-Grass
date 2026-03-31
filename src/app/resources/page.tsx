@@ -156,7 +156,7 @@ export default function ResourcesPage() {
           {resources.map((resource, index) => (
             <Card
               key={index}
-              className="flex flex-col border-2 hover:border-primary/40 transition-colors"
+              className="flex flex-col border-2 hover:border-primary/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
             >
               <CardHeader>
                 <div className="flex items-start justify-between gap-3">
@@ -222,7 +222,7 @@ export default function ResourcesPage() {
             <Button
               asChild
               size="lg"
-              className="bg-[#25D366] text-white hover:bg-[#1ebe5d]"
+              className="bg-whatsapp hover:bg-whatsapp-hover text-white"
             >
               <a
                 href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20discuss%20a%20veld%20assessment."

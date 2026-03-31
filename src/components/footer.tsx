@@ -37,21 +37,21 @@ export function Footer() {
                 <Phone className="h-4 w-4 mt-0.5 text-accent" />
                 <div>
                     <span className="block font-semibold">Office Support</span>
-                    <span className="text-muted-foreground">+27 71 866 1331</span>
+                    <a href="tel:+27718661331" className="text-muted-foreground hover:text-primary transition-colors">+27 71 866 1331</a>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <Phone className="h-4 w-4 mt-0.5 text-accent" />
                 <div>
                     <span className="block font-semibold">Frits van Oudtshoorn</span>
-                    <span className="text-muted-foreground">+27 78 228 0008</span>
+                    <a href="tel:+27782280008" className="text-muted-foreground hover:text-primary transition-colors">+27 78 228 0008</a>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <Mail className="h-4 w-4 mt-0.5 text-accent" />
                 <div>
                     <span className="block font-semibold">Email</span>
-                    <span className="text-muted-foreground">admin@workingongrass.co.za</span>
+                    <a href="mailto:admin@workingongrass.co.za" className="text-muted-foreground hover:text-primary transition-colors">admin@workingongrass.co.za</a>
                 </div>
               </li>
             </ul>

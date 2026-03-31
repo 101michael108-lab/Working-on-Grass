@@ -2,8 +2,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Custom Seed Mixtures",
-  description: "Request a quote for custom grass and legume seed mixtures for pasture development and land rehabilitation projects tailored to your soil type.",
+  title: "Grass Seed Enquiries",
+  description: "Request a custom grass seed mix from Barenbrug SA agent Frits van Oudtshoorn. Seed mixes formulated per farm, soil type, and intended use across Southern Africa.",
+  alternates: { canonical: '/seeds' },
 };
 
 export default function SeedsLayout({ children }: { children: React.ReactNode }) {
