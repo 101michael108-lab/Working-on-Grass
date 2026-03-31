@@ -9,7 +9,14 @@
       "Bash(for f:*)",
       "Bash(do echo:*)",
       "Read(//c/Users/Michael/Desktop/Projects/Working on Grass/.claude/worktrees/distracted-wozniak/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npm run:*)",
+      "Bash(npx next:*)",
+      "Bash(firebase apphosting:backends:list)",
+      "Bash(firebase apphosting:backends:list --project studio-7014438029-85e68)",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(firebase --version)"
     ]
   }
 }
