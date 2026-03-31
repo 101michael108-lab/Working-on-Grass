@@ -135,12 +135,12 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
       </head>
-      <body className={cn("min-h-screen bg-background font-body antialiased")}>
+      <body className={cn("min-h-screen bg-background font-body antialiased overflow-x-hidden")}>
         <FirebaseClientProvider>
           <LanguageProvider>
           <MediaProvider>
             <CartProvider>
-              <div className="flex min-h-screen flex-col">
+              <div className="flex min-h-screen flex-col overflow-x-hidden">
                 <Header />
                 <main className="flex-1">{children}</main>
                 <Footer />
