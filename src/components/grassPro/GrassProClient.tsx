@@ -11,8 +11,8 @@ import {
   Search,
   Wifi,
   Camera,
-  MessageCircle,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -30,13 +30,13 @@ const features = [
     icon: Camera,
     title: "1,400+ diagnostic images",
     description:
-      "High-resolution images covering 320 grass species found across Southern Africa — roots, stems, leaves, seed heads.",
+      "High-resolution images covering 320 grass species found across Southern Africa: roots, stems, leaves, seed heads.",
   },
   {
     icon: Search,
     title: "Smart Search",
     description:
-      "Filter by multiple attributes simultaneously — growth form, leaf texture, habitat, and more — to narrow down an identification quickly.",
+      "Filter by multiple attributes simultaneously: growth form, leaf texture, habitat, and more, to narrow down an identification quickly.",
   },
   {
     icon: MapPin,
@@ -54,7 +54,7 @@ const features = [
     icon: Wifi,
     title: "Fully offline capable",
     description:
-      "All species data and images are stored on your device. No signal needed — works anywhere in the field.",
+      "All species data and images are stored on your device. No signal needed, works anywhere in the field.",
   },
   {
     icon: CheckCircle2,
@@ -85,7 +85,7 @@ export function GrassProClient() {
                 by Frits van Oudtshoorn
               </p>
               <p className="mt-5 text-xl text-primary-foreground/90 font-body max-w-xl mx-auto lg:mx-0">
-                Identify grasses of Southern Africa in the field — 320 species,
+                Identify grasses of Southern Africa in the field. 320 species,
                 1,400+ images, GPS filtering, Smart Search, and full offline
                 capability.
               </p>
@@ -169,7 +169,7 @@ export function GrassProClient() {
               What GrassPro Does
             </h2>
             <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              Built specifically for Southern African grasses — not a generic
+              Built specifically for Southern African grasses, not a generic
               plant app adapted for the region.
             </p>
           </div>
@@ -210,13 +210,13 @@ export function GrassProClient() {
                 <strong className="text-foreground">
                   Guide to Grasses of Southern Africa
                 </strong>{" "}
-                (3rd edition) — the same 320 species, in your hands and on your
+                (3rd edition), covering the same 320 species in your hands and on your
                 phone. The book gives you the full identification keys and
                 ecological detail; the app gives you the images and GPS tools in
                 the field.
               </p>
               <p className="mt-3 text-muted-foreground font-body">
-                Many users keep both — the book on the bakkie seat, the app on
+                Many users keep both: the book on the bakkie seat, the app on
                 their phone.
               </p>
               <Button asChild size="lg" className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90 border-b-4 border-black/20">
@@ -288,7 +288,7 @@ export function GrassProClient() {
               className="bg-[#25D366] text-white hover:bg-[#1ebe5d] border-b-4 border-black/20"
             >
               <a href={WHATSAPP} target="_blank" rel="noopener noreferrer">
-                <MessageCircle className="mr-2 h-5 w-5" /> WhatsApp Frits
+                <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-2">

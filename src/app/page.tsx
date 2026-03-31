@@ -11,7 +11,6 @@ import {
   Award,
   Camera,
   CheckCircle2,
-  MessageCircle,
   ShoppingBag,
 } from "lucide-react";
 
@@ -26,12 +25,7 @@ import type { Product } from "@/lib/types";
 import ProductCard from "@/components/shop/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-
-const WA_ICON = (
-  <svg className="mr-2 h-5 w-5 flex-shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-  </svg>
-);
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 export default function Home() {
   const { getImage } = useMedia();
@@ -87,7 +81,7 @@ export default function Home() {
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
               <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto shadow-lg border-b-4 border-black/20">
                 <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation." target="_blank" rel="noopener noreferrer">
-                  {WA_ICON} WhatsApp Frits
+                  <WhatsAppIcon className="mr-2 h-5 w-5 shrink-0" /> WhatsApp Frits
                 </a>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-white/60 text-white bg-white/10 hover:bg-white/20 hover:text-white hover:border-white/80 backdrop-blur-sm">
@@ -187,12 +181,12 @@ export default function Home() {
               <Badge className="bg-primary text-white uppercase tracking-widest px-3 mb-2">Free Download</Badge>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">GrassPro App</h2>
               <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto sm:mx-0 font-body">
-                Identify grasses of Southern Africa in the field — 1,400+ diagnostic images, GPS-based filtering, offline capable. Free to download with a full upgrade available.
+                Identify grasses of Southern Africa in the field. Over 1,400 diagnostic images, GPS-based filtering, offline capable. Free to download with a full upgrade available.
               </p>
               <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-muted-foreground text-left max-w-md sm:max-w-none mx-auto sm:mx-0">
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><Camera className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>1,400+ diagnostic images</strong> — 320 grass species of Southern Africa.</span>
+                  <span className="font-body text-sm md:text-base"><strong>1,400+ diagnostic images</strong> covering 320 grass species of Southern Africa.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><Globe className="h-5 w-5 text-primary" /></div>
@@ -200,11 +194,11 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><CheckCircle2 className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>Works fully offline</strong> — no signal needed. Sightings logging included.</span>
+                  <span className="font-body text-sm md:text-base"><strong>Works fully offline</strong>, no signal needed. Sightings logging included.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><BookOpen className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>Pairs with the book</strong> — built as a companion to <em>Guide to Grasses of Southern Africa</em>.</span>
+                  <span className="font-body text-sm md:text-base"><strong>Pairs with the book</strong>, built as a companion to <em>Guide to Grasses of Southern Africa</em>.</span>
                 </li>
               </ul>
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
@@ -222,7 +216,7 @@ export default function Home() {
                 </Button>
               </div>
               <p className="mt-3 text-sm text-muted-foreground text-center sm:text-left">
-                Free — 50 grasses included. Full upgrade: ~R199.99 once-off.
+                Free to download · 50 grasses included · Full upgrade ~R199.99 once-off.
               </p>
             </div>
             <div className="flex justify-center">
@@ -252,7 +246,7 @@ export default function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter font-headline">How can we help you?</h2>
             <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Expert field consulting or the right tools for the job — find what you need below.
+              Expert field consulting or the right tools for the job. Find what you need below.
             </p>
           </div>
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
@@ -266,13 +260,13 @@ export default function Home() {
                 <div>
                   <h3 className="text-2xl font-bold font-headline">Need a consultation?</h3>
                   <p className="mt-2 text-muted-foreground leading-relaxed">
-                    Frits works directly with farmers, game ranchers, and land managers. Veld assessments, grazing capacity studies, rehabilitation plans, and mine re-vegetation — all tailored to your specific land.
+                    Frits works directly with farmers, game ranchers, and land managers. Veld assessments, grazing capacity studies, rehabilitation plans, and mine re-vegetation, all tailored to your specific land.
                   </p>
                 </div>
                 <div className="mt-auto pt-2 flex flex-col sm:flex-row gap-3">
                   <Button asChild className="bg-[#25D366] text-white hover:bg-[#1ebe5d]">
                     <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation." target="_blank" rel="noopener noreferrer">
-                      <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp Frits
+                      <WhatsAppIcon className="mr-2 h-4 w-4" /> WhatsApp Frits
                     </a>
                   </Button>
                   <Button asChild variant="outline" className="border-primary/30 hover:border-primary">
@@ -291,7 +285,7 @@ export default function Home() {
                 <div>
                   <h3 className="text-2xl font-bold font-headline">Looking for books or tools?</h3>
                   <p className="mt-2 text-muted-foreground leading-relaxed">
-                    The <em>Guide to Grasses</em>, Disc Pasture Meters, seed mixes, and the GrassPro app — every resource Frits uses and recommends, available to order directly.
+                    The <em>Guide to Grasses</em>, Disc Pasture Meters, seed mixes, and the GrassPro app. Every resource Frits uses and recommends, available to order directly.
                   </p>
                 </div>
                 <div className="mt-auto pt-2 flex flex-col sm:flex-row gap-3">
@@ -313,11 +307,11 @@ export default function Home() {
       <section className="w-full py-16 md:py-20 bg-background border-t-2">
         <div className="container text-center">
           <h2 className="text-3xl font-bold font-headline">Need expert guidance on your land or veld?</h2>
-          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Get in touch — our team will make sure you reach the right person.</p>
+          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Get in touch and our team will make sure you reach the right person.</p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto border-b-4 border-black/20">
               <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%20need%20expert%20guidance%20on%20my%20land." target="_blank" rel="noopener noreferrer">
-                {WA_ICON} WhatsApp Frits
+                <WhatsAppIcon className="mr-2 h-5 w-5 shrink-0" /> WhatsApp Frits
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-2 border-primary/20 hover:border-primary">

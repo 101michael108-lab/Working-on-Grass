@@ -3,7 +3,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Facebook, Twitter, MessageCircle, Share2 } from 'lucide-react';
+import { Facebook, Twitter, Share2 } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 
 interface ShareButtonsProps {
   url: string;
@@ -14,7 +15,7 @@ export function ShareButtons({ url, title }: ShareButtonsProps) {
   const shareLinks = [
     {
       name: 'WhatsApp',
-      icon: MessageCircle,
+      icon: WhatsAppIcon,
       href: `https://wa.me/?text=${encodeURIComponent(title + ' ' + url)}`,
       color: 'hover:text-green-600',
     },

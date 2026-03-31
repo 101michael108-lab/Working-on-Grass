@@ -5,7 +5,8 @@ import { useState, useEffect } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, Check, BookOpen, Users, AlertTriangle, Smartphone, ArrowRight, MessageCircle } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, Check, BookOpen, Users, AlertTriangle, Smartphone, ArrowRight } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import type { Product } from '@/lib/types';
 import RelatedProducts from '../RelatedProducts';
 import { ProductImageGallery } from '../ProductImageGallery';
@@ -149,7 +150,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                       rel="noopener noreferrer"
                       className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                     >
-                      <MessageCircle className="h-3.5 w-3.5" />
+                      <WhatsAppIcon className="h-3.5 w-3.5" />
                       Questions? <span className="underline underline-offset-2">WhatsApp the team</span>
                     </a>
                   </div>
@@ -217,7 +218,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
               <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-1">Companion App</p>
               <h3 className="font-headline font-bold text-lg">Take it further with GrassPro</h3>
               <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
-                The GrassPro app covers the same 320 species with 1,400+ diagnostic images, GPS filtering, and Smart Search — built to use alongside this book. Free to download.
+                The GrassPro app covers the same 320 species with 1,400+ diagnostic images, GPS filtering, and Smart Search, built to use alongside this book. Free to download.
               </p>
             </div>
             <Link href="/grassPro" className="shrink-0">

@@ -7,9 +7,9 @@ import {
   Map,
   List,
   BookOpen,
-  MessageCircle,
   ArrowRight,
 } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -42,7 +42,7 @@ type ResourceItem = {
 
 const resources: ResourceItem[] = [
   {
-    title: "Disc Pasture Meter (DPM) — Equations & Methodology",
+    title: "Disc Pasture Meter (DPM): Equations & Methodology",
     description:
       "The calibration equations and step-by-step methodology for using the Disc Pasture Meter to estimate grass biomass (kg DM/ha) across different veld types and regions of Southern Africa. Essential reading before first use.",
     icon: Calculator,
@@ -54,7 +54,7 @@ const resources: ResourceItem[] = [
     fileType: "PDF",
   },
   {
-    title: "Common Grasses Checklist — Southern Africa",
+    title: "Common Grasses Checklist: Southern Africa",
     description:
       "A printable checklist of the most commonly encountered grasses across Southern African veld types, with columns for recording presence, abundance, and condition. Useful for rapid field assessments.",
     icon: List,
@@ -66,7 +66,7 @@ const resources: ResourceItem[] = [
     fileType: "PDF",
   },
   {
-    title: "Scientific Name Reference List — Southern African Grasses",
+    title: "Scientific Name Reference List: Southern African Grasses",
     description:
       "Full cross-reference of common and scientific names for the 320 grass species covered in Guide to Grasses of Southern Africa (3rd ed.). Useful for reports, EIAs, and herbarium work.",
     icon: FileText,
@@ -78,7 +78,7 @@ const resources: ResourceItem[] = [
     fileType: "PDF",
   },
   {
-    title: "Vegetation Bioregion Maps — Southern Africa",
+    title: "Vegetation Bioregion Maps: Southern Africa",
     description:
       "Maps showing the major grassland and savanna bioregions of Southern Africa, based on the recognised biome classification system. Useful for contextualising species distribution and veld type assessments.",
     icon: Map,
@@ -90,7 +90,7 @@ const resources: ResourceItem[] = [
     fileType: "PDF",
   },
   {
-    title: "Veld Condition Assessment — Field Score Sheet",
+    title: "Veld Condition Assessment: Field Score Sheet",
     description:
       "A practical field score sheet for recording veld condition using the standard plant species composition method. Includes scoring criteria, species categories, and interpretation guidelines.",
     icon: FileText,
@@ -102,9 +102,9 @@ const resources: ResourceItem[] = [
     fileType: "PDF",
   },
   {
-    title: "GrassPro — Quick Start Guide",
+    title: "GrassPro Quick Start Guide",
     description:
-      "A brief illustrated guide to getting started with the GrassPro app — how to use Smart Search, interpret distribution maps, and log sightings. Ideal for first-time users.",
+      "A brief illustrated guide to getting started with the GrassPro app: how to use Smart Search, interpret distribution maps, and log sightings. Ideal for first-time users.",
     icon: BookOpen,
     badge: "Free Download",
     badgeColor: "bg-primary text-white",
@@ -146,8 +146,7 @@ export default function ResourcesPage() {
             Veld & Grassland Resources
           </h1>
           <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground font-body">
-            Practical guides, checklists, equations, and maps for field use —
-            freely available from Frits van Oudtshoorn and Working on Grass.
+            Practical guides, checklists, equations, and maps for field use, freely available from Frits van Oudtshoorn and Working on Grass.
             More resources are added regularly.
           </p>
         </div>
@@ -203,9 +202,9 @@ export default function ResourcesPage() {
           <FileText className="h-8 w-8 text-primary mx-auto mb-3" />
           <h3 className="font-bold font-headline text-xl">More PDFs Coming</h3>
           <p className="text-muted-foreground mt-2 max-w-xl mx-auto text-sm">
-            Additional resources — including specific DPM equations per region,
+            Additional resources including specific DPM equations per region,
             grass composition survey templates, and bioregion-specific
-            checklists — will be added here as they are prepared.
+            checklists will be added here as they are prepared.
           </p>
         </div>
 
@@ -217,7 +216,7 @@ export default function ResourcesPage() {
           <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
             These resources are a starting point. A professional on-site
             assessment gives you specific recommendations for your farm, reserve,
-            or project — not generic advice.
+            or project. No generic advice.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
             <Button
@@ -230,7 +229,7 @@ export default function ResourcesPage() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <MessageCircle className="mr-2 h-5 w-5" /> WhatsApp Frits
+                <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-2">

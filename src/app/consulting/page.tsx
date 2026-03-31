@@ -11,7 +11,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { ConsultationForm } from "@/components/consultation-form";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Check, ArrowRight, Wrench, MessageCircle, Quote } from "lucide-react";
+import { Check, ArrowRight, Wrench, Quote } from "lucide-react";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 
 const WA_BASE = "https://wa.me/27782280008";
@@ -73,7 +74,7 @@ export default function ServicesPage() {
             <p className="text-sm font-bold uppercase tracking-widest text-accent mb-2">Frits van Oudtshoorn · MSc Nature Conservation</p>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline">Veld Management Consulting</h1>
             <p className="mt-4 max-w-xl text-lg text-muted-foreground font-body">
-              30 years of hands-on grassland and veld expertise — available to your farm, game ranch, or reserve. Practical advice, not textbook theory.
+              30 years of hands-on grassland and veld expertise, available to your farm, game ranch, or reserve. Practical advice, not textbook theory.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Button
@@ -82,7 +83,7 @@ export default function ServicesPage() {
                 asChild
               >
                 <a href={waLink("Hi Frits, I'd like to discuss a consultation.")} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="mr-2 h-5 w-5" /> WhatsApp Frits
+                  <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
                 </a>
               </Button>
               <Button size="lg" variant="outline" className="border-2" onClick={() => handleRequestConsultation()}>
@@ -123,7 +124,7 @@ export default function ServicesPage() {
               <CardFooter className="flex flex-col gap-2">
                 <Button className="w-full bg-[#25D366] text-white hover:bg-[#1ebe5d]" asChild>
                   <a href={waLink(`Hi Frits, I'd like to enquire about: ${service.title}`)} target="_blank" rel="noopener noreferrer">
-                    <MessageCircle className="mr-2 h-4 w-4" /> WhatsApp Frits
+                    <WhatsAppIcon className="mr-2 h-4 w-4" /> WhatsApp Frits
                   </a>
                 </Button>
                 <Button className="w-full" variant="outline" onClick={() => handleRequestConsultation(service.title)}>
@@ -161,7 +162,7 @@ export default function ServicesPage() {
                 region: "Limpopo",
               },
               {
-                quote: "We engaged Frits for an ecological management plan for our game ranch. His report was thorough, practical, and immediately usable — not a desk study.",
+                quote: "We engaged Frits for an ecological management plan for our game ranch. His report was thorough, practical, and immediately usable. Not a desk study.",
                 name: "Game Ranch Manager",
                 region: "Waterberg",
               },
@@ -212,12 +213,12 @@ export default function ServicesPage() {
         <div className="mt-20 text-center bg-primary text-primary-foreground py-16 rounded-lg shadow-xl">
             <h2 className="text-3xl font-bold font-headline">Not sure which service applies to your land?</h2>
              <p className="mt-2 max-w-2xl mx-auto opacity-90 text-lg">
-                Every farm, veld, and project is different. Send Frits a quick message — he'll point you in the right direction.
+                Every farm, veld, and project is different. Send Frits a quick message and he'll point you in the right direction.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
                <Button size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] px-10 font-bold shadow-md" asChild>
                 <a href={waLink("Hi Frits, I'm not sure which consulting service I need. Can you help?")} target="_blank" rel="noopener noreferrer">
-                  <MessageCircle className="mr-2 h-5 w-5" /> WhatsApp Frits
+                  <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
                 </a>
                </Button>
                <Button size="lg" variant="secondary" className="px-10 font-bold shadow-md" onClick={() => handleRequestConsultation()}>

@@ -3,7 +3,8 @@
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import * as z from "zod"
-import { Bird, Sprout, Wheat, MessageCircle } from "lucide-react"
+import { Bird, Sprout, Wheat } from "lucide-react"
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -179,7 +180,7 @@ function SeedInquiryForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>Your Requirements</FormLabel>
-              <FormControl><Textarea placeholder="Describe your situation — soil type, rainfall area, current veld condition, or any specific seed mixtures you have in mind." {...field} rows={5} /></FormControl>
+              <FormControl><Textarea placeholder="Describe your situation: soil type, rainfall area, current veld condition, or any specific seed mixtures you have in mind." {...field} rows={5} /></FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -188,7 +189,7 @@ function SeedInquiryForm() {
           <Button type="submit" size="lg">Request a Quote</Button>
           <Button type="button" size="lg" variant="outline" className="border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white" asChild>
             <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20enquire%20about%20custom%20seed%20mixes." target="_blank" rel="noopener noreferrer">
-              <MessageCircle className="mr-2 h-4 w-4" /> Prefer to WhatsApp Frits
+              <WhatsAppIcon className="mr-2 h-4 w-4" /> Prefer to WhatsApp Frits
             </a>
           </Button>
         </div>
@@ -209,7 +210,7 @@ export default function SeedsPage() {
       <div className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Grass Seed Enquiries</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Frits van Oudtshoorn is a registered <strong>Barenbrug SA seed agent</strong>. All seed mixes are custom-formulated per farm, soil type, and intended use — not sold off-the-shelf. Submit an enquiry below and Frits will come back to you with a recommendation.
+          Frits van Oudtshoorn is a registered <strong>Barenbrug SA seed agent</strong>. All seed mixes are custom-formulated per farm, soil type, and intended use. Not sold off-the-shelf. Submit an enquiry below and Frits will come back to you with a recommendation.
         </p>
         <div className="mt-6 inline-flex items-center gap-2 bg-secondary border border-primary/10 rounded-full px-5 py-2 text-sm text-muted-foreground">
           <Sprout className="h-4 w-4 text-primary" />

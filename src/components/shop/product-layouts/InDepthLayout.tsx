@@ -1,14 +1,15 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Button } from '@/components/ui/button';
 import type { Product } from '@/lib/types';
 import { Table, TableBody, TableCell, TableRow } from '@/components/ui/table';
 import RelatedProducts from '../RelatedProducts';
 import { useCart } from '@/context/cart-context';
 import { Input } from '@/components/ui/input';
-import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, AlertTriangle, MessageCircle } from 'lucide-react';
+import { Minus, Plus, ShoppingCart, CheckCircle2, MapPin, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { WhatsAppIcon } from '@/components/icons/WhatsAppIcon';
 import { ProductImageGallery } from '../ProductImageGallery';
 import Link from 'next/link';
 import { ShareButtons } from '@/components/share-buttons';
@@ -36,6 +37,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
   const [quantity, setQuantity] = useState(1);
   const { addToCart } = useCart();
   const [shareUrl, setShareUrl] = useState('');
+  const [added, setAdded] = useState(false);
 
   useEffect(() => {
     setShareUrl(window.location.href);
@@ -44,6 +46,12 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
   const handleQuantityChange = (amount: number) => {
     setQuantity(prev => Math.max(1, prev + amount));
   };
+
+  const handleAddToCart = useCallback(() => {
+    addToCart(product, quantity);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2000);
+  }, [addToCart, product, quantity]);
 
   const isOutOfStock = (product.stock ?? 0) <= 0;
   const waOrderUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(`Hi, I have a question about ordering the ${product.name}.`)}`;
@@ -114,7 +122,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                                     size="lg"
                                     className="flex-grow h-12 bg-primary text-primary-foreground hover:bg-primary/90 text-base font-bold shadow-md"
                                     disabled={isOutOfStock}
-                                    onClick={() => addToCart(product, quantity)}
+                                    onClick={handleAddToCart}
                                 >
                                     <ShoppingCart className="mr-2 h-5 w-5" /> {isOutOfStock ? 'Sold Out' : 'Add to Cart'}
                                 </Button>
@@ -137,7 +145,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                                     rel="noopener noreferrer"
                                     className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
                                 >
-                                    <MessageCircle className="h-3.5 w-3.5" />
+                                    <WhatsAppIcon className="h-3.5 w-3.5" />
                                     Questions about this product? <span className="underline underline-offset-2">WhatsApp the team</span>
                                 </a>
                             </div>
@@ -249,9 +257,9 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                     size="lg"
                     className="h-14 px-10 bg-primary text-primary-foreground hover:bg-primary/90 text-base font-bold shadow-md"
                     disabled={isOutOfStock}
-                    onClick={() => addToCart(product, quantity)}
+                    onClick={handleAddToCart}
                 >
-                    <ShoppingCart className="mr-2 h-5 w-5" /> {isOutOfStock ? 'Currently Unavailable' : `Add to Cart — R${product.price.toFixed(2)}`}
+                    <ShoppingCart className="mr-2 h-5 w-5" /> {added ? 'Added to Cart ✓' : isOutOfStock ? 'Currently Unavailable' : `Add to Cart — R${product.price.toFixed(2)}`}
                 </Button>
                 <a
                     href={waOrderUrl}
@@ -259,7 +267,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
-                    <MessageCircle className="h-4 w-4" />
+                    <WhatsAppIcon className="h-4 w-4" />
                     Prefer to order via WhatsApp?
                 </a>
             </div>
@@ -271,6 +279,28 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
       </section>
 
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
+
+      {/* ── Sticky mobile CTA ─────────────────────────────────────── */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-background border-t-2 border-border shadow-xl">
+        <div className="container py-3 flex items-center gap-4">
+          <div className="shrink-0">
+            <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold leading-none mb-0.5">Price</p>
+            <p className="text-xl font-bold text-accent font-headline leading-none">R{product.price.toFixed(2)}</p>
+          </div>
+          <Button
+            size="lg"
+            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-bold h-11"
+            disabled={isOutOfStock}
+            onClick={handleAddToCart}
+          >
+            <ShoppingCart className="mr-2 h-4 w-4" />
+            {added ? 'Added to Cart ✓' : isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
+          </Button>
+        </div>
+      </div>
+
+      {/* Spacer so sticky bar doesn't overlap content on mobile */}
+      <div className="h-20 lg:hidden" />
 
     </div>
   );
