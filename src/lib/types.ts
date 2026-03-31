@@ -11,19 +11,37 @@ export type Specification = {
   description: string;
 };
 
+export type EnabledSections = {
+  longDescription?: boolean;      // "About This Product" editorial body
+  whatsInside?: boolean;          // Feature bullet list
+  whoItsFor?: boolean;            // Target audience
+  howItWorks?: boolean;           // Operational instructions
+  fieldApplication?: boolean;     // Practical field use
+  specifications?: boolean;       // Technical spec table
+  expertRecommendation?: boolean; // Authority quote / blockquote
+  valueProposition?: boolean;     // Callout banner
+  calibrationNote?: boolean;      // Warning / calibration alert
+};
+
 export type Product = {
   id: string;
   name: string;
   price: number;
   stock: number;
-  description: string;
+  description: string;      // Short description / tagline (shown in header)
+  longDescription?: string; // Full editorial body text
   category: string;
   images?: string[];
   sku?: string;
   brand?: string;
-  
-  layout: 'standard' | 'in-depth' | 'book';
-  
+
+  /** Which optional page sections are active. Replaces the old layout enum. */
+  enabledSections?: EnabledSections;
+
+  /** @deprecated Use enabledSections instead. Kept for backwards compatibility. */
+  layout?: 'standard' | 'in-depth' | 'book';
+
+  // Content fields — rendered when corresponding section is enabled
   valueProposition?: string;
   specifications?: Specification[];
   features?: string[];

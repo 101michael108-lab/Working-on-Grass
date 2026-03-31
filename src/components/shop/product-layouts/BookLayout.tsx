@@ -15,22 +15,11 @@ import { ShareButtons } from '@/components/share-buttons';
 
 const WA_NUMBER = "27782280008";
 
-// Pull just the first plain-text paragraph for the header — bullets go in features below
-function getHeaderDescription(text: string): string {
-  if (!text) return '';
-  const firstPlain = text
-    .split('\n')
-    .find(l => {
-      const t = l.trim();
-      return t.length > 0 && !t.startsWith('•') && !t.startsWith('-') && !t.startsWith('*');
-    });
-  return firstPlain || '';
-}
-
 const renderFormattedText = (text: string) => {
   if (!text) return null;
   return text.split('\n').map((line, i) => {
     const trimmed = line.trim();
+    if (!trimmed) return <div key={i} className="h-3" />;
     if (trimmed.startsWith('•') || trimmed.startsWith('-') || trimmed.startsWith('*')) {
       const content = trimmed.substring(1).trim();
       return (
@@ -40,7 +29,7 @@ const renderFormattedText = (text: string) => {
         </div>
       );
     }
-    return line ? <p key={i} className="mb-4 text-foreground/80 leading-relaxed">{line}</p> : <div key={i} className="h-2" />;
+    return <p key={i} className="mb-4 text-foreground/80 leading-relaxed">{line}</p>;
   });
 };
 
@@ -79,24 +68,23 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
 
   const isOutOfStock = (product.stock ?? 0) <= 0;
   const waOrderUrl = `https://wa.me/${WA_NUMBER}?text=${encodeURIComponent(`Hi, I have a question about ordering the ${product.name}.`)}`;
-  const headerDescription = getHeaderDescription(product.description);
 
   return (
     <div className="bg-background overflow-x-hidden">
 
-      {/* ── Header ────────────────────────────────────────────────── */}
+      {/* ── Header ──────────────────────────────────────────────────── */}
       <section className="bg-surface border-b border-border">
         <div className="container py-10 md:py-16">
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-start">
 
-            {/* Image — full width on mobile, left col on desktop */}
+            {/* Image */}
             <div className="lg:col-span-5">
               <ProductImageGallery images={product.images || []} productName={product.name} />
             </div>
 
             {/* Content */}
-            <div className="lg:col-span-7 space-y-6">
-              {/* Breadcrumb + stock */}
+            <div className="lg:col-span-7 space-y-5">
+              {/* Category breadcrumb + stock badge */}
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <Link
                   href={`/shop?category=${encodeURIComponent(product.category)}`}
@@ -111,15 +99,22 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                 )}
               </div>
 
-              {/* Title */}
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-headline leading-tight">
-                {product.name}
-              </h1>
+              {/* Title + subtitle */}
+              <div>
+                <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-headline leading-tight">
+                  {product.name}
+                </h1>
+                {product.subtitle && (
+                  <p className="mt-2 text-lg text-muted-foreground font-body italic">
+                    {product.subtitle}
+                  </p>
+                )}
+              </div>
 
-              {/* Short intro — first plain-text paragraph only */}
-              {headerDescription && (
-                <p className="text-lg text-muted-foreground font-body leading-relaxed">
-                  {headerDescription}
+              {/* Short description / tagline */}
+              {product.description && (
+                <p className="text-base text-foreground/75 font-body leading-relaxed border-l-4 border-primary/20 pl-4">
+                  {product.description}
                 </p>
               )}
 
@@ -170,21 +165,33 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                 </div>
               </div>
 
-              <div>
-                <ShareButtons url={shareUrl} title={product.name} />
-              </div>
+              <ShareButtons url={shareUrl} title={product.name} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Features + Audience ───────────────────────────────────── */}
-      <section className="py-14 md:py-20">
-        <div className="container">
-          <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
-            <div className="lg:col-span-7 space-y-8">
+      {/* ── Long Description (editorial body) ───────────────────────── */}
+      {product.longDescription && (
+        <section className="py-14 md:py-20 border-b border-border">
+          <div className="container">
+            <div className="max-w-3xl mx-auto">
+              <div className="prose-like text-base font-body">
+                {renderFormattedText(product.longDescription)}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ── What's Inside + Who It's For ────────────────────────────── */}
+      {(product.features?.length || product.targetAudience) && (
+        <section className="py-14 md:py-20">
+          <div className="container">
+            <div className="grid lg:grid-cols-12 gap-12 lg:gap-16">
+
               {product.features && product.features.length > 0 && (
-                <>
+                <div className="lg:col-span-7 space-y-6">
                   <div className="flex items-center gap-3 border-b border-primary/10 pb-4">
                     <BookOpen className="h-5 w-5 text-primary shrink-0" />
                     <h2 className="text-2xl font-bold font-headline">What's Inside</h2>
@@ -197,30 +204,31 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                       </li>
                     ))}
                   </ul>
-                </>
+                </div>
               )}
-            </div>
 
-            <div className="lg:col-span-5">
               {product.targetAudience && (
-                <div className="space-y-5">
-                  <div className="flex items-center gap-3 border-b border-accent/10 pb-4">
-                    <Users className="h-5 w-5 text-accent shrink-0" />
-                    <h2 className="text-2xl font-bold font-headline">Who It's For</h2>
-                  </div>
-                  <div className="bg-accent/5 border border-accent/15 p-6 rounded-lg">
-                    <div className="text-base text-muted-foreground font-body">
-                      {renderFormattedText(product.targetAudience)}
+                <div className={product.features?.length ? "lg:col-span-5" : "lg:col-span-7"}>
+                  <div className="space-y-5">
+                    <div className="flex items-center gap-3 border-b border-accent/10 pb-4">
+                      <Users className="h-5 w-5 text-accent shrink-0" />
+                      <h2 className="text-2xl font-bold font-headline">Who It's For</h2>
+                    </div>
+                    <div className="bg-accent/5 border border-accent/15 p-6 rounded-lg">
+                      <div className="text-base text-muted-foreground font-body">
+                        {renderFormattedText(product.targetAudience)}
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
+
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* ── GrassPro Cross-sell ───────────────────────────────────── */}
+      {/* ── GrassPro Cross-sell ──────────────────────────────────────── */}
       <section className="py-10 bg-surface border-t border-border">
         <div className="container">
           <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center gap-5 bg-background rounded-lg border-2 border-primary/20 p-5 shadow-sm">
@@ -231,7 +239,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
               <p className="text-[10px] font-bold uppercase tracking-widest text-accent mb-1">Companion App</p>
               <h3 className="font-headline font-bold text-lg">Take it further with GrassPro</h3>
               <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
-                The GrassPro app covers the same 320 species with 1,400+ diagnostic images, GPS filtering, and Smart Search, built to use alongside this book. Free to download.
+                The GrassPro app covers the same 390 species with 1,400+ diagnostic images, GPS filtering, and Smart Search, built to use alongside this book. Free to download.
               </p>
             </div>
             <Link href="/grassPro" className="shrink-0">
@@ -245,7 +253,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
 
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
 
-      {/* ── Sticky mobile CTA ─────────────────────────────────────── */}
+      {/* ── Sticky mobile CTA ────────────────────────────────────────── */}
       <div className={`fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-background border-t-2 border-border shadow-xl transition-transform duration-300 ${showStickyCTA ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="container py-3 flex items-center gap-4">
           <div className="shrink-0">
@@ -264,9 +272,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
         </div>
       </div>
 
-      {/* Spacer so sticky bar doesn't overlap content on mobile */}
       <div className="h-20 lg:hidden" />
-
     </div>
   );
 }

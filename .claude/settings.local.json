@@ -9,7 +9,10 @@
       "Bash(for f:*)",
       "Bash(do echo:*)",
       "Read(//c/Users/Michael/Desktop/Projects/Working on Grass/.claude/worktrees/distracted-wozniak/**)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -l \"firestore\\\\|Firestore\" C:UsersMichaelDesktopProjectsWorking on Grass/src/firebase/*.ts C:UsersMichaelDesktopProjectsWorking on Grass/src/firebase/*.tsx)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

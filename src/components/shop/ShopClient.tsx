@@ -50,8 +50,9 @@ export default function ShopClient({ products }: { products: Product[] }) {
                            product.description.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
       
-      const isForSale = product.layout === 'standard' || product.layout === 'book';
-      const matchesPrice = !isForSale || product.price === 0 || (product.price >= priceRange[0] && product.price <= priceRange[1]);
+      // In-depth inquiry products (old layout) don't have a direct buy price; all others do
+      const isInquiryOnly = product.layout === 'in-depth' && !product.enabledSections;
+      const matchesPrice = isInquiryOnly || product.price === 0 || (product.price >= priceRange[0] && product.price <= priceRange[1]);
 
       return matchesSearch && matchesCategory && matchesPrice;
     });

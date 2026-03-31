@@ -15,6 +15,8 @@ export function WhatsAppButton() {
   const hidden =
     pathname?.startsWith("/admin") ||
     pathname?.startsWith("/checkout") ||
+    // Product pages have inline WhatsApp CTAs already — avoid doubling up and covering the sticky bar
+    (pathname?.startsWith("/shop/")) ||
     PAGES_WITH_INLINE_CTA.includes(pathname ?? "");
 
   if (hidden) return null;
