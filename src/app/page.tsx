@@ -151,7 +151,7 @@ export default function Home() {
                 </blockquote>
               </div>
               <p className="mt-5 max-w-[600px] text-muted-foreground md:text-lg/relaxed font-body">
-                Frits holds an MSc in Nature Conservation (Ecological Restoration) and has spent 30 years conducting veld assessments, rehabilitation projects, and grazing capacity studies across Southern Africa. He is the author of <em>Guide to Grasses of Southern Africa</em> (now in its 3rd edition) and a registered Barenbrug seed agent.
+                Frits holds a master's degree in Nature Conservation (Ecological Restoration) and has spent 30 years conducting veld assessments, rehabilitation projects, and grazing capacity studies across Southern Africa. He is the author of <em>Guide to Grasses of Southern Africa</em> and <em>Veld Management &ndash; Principles and Practices</em>, and a registered Barenbrug seed agent.
               </p>
               <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
@@ -183,12 +183,12 @@ export default function Home() {
               <Badge className="bg-primary text-white uppercase tracking-widest px-3 mb-2">Free Download</Badge>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">GrassPro App</h2>
               <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto sm:mx-0 font-body">
-                Identify grasses of Southern Africa in the field. Over 1,400 diagnostic images, GPS-based filtering, offline capable. Free to download with a full upgrade available.
+                Identify grasses of Southern Africa in the field. Over 1,400 diagnostic images, GPS-based filtering, offline capable. Download the evaluation version for free with a full upgrade available.
               </p>
               <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-muted-foreground text-left max-w-md sm:max-w-none mx-auto sm:mx-0">
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><Camera className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>1,400+ diagnostic images</strong> covering 320 grass species of Southern Africa.</span>
+                  <span className="font-body text-sm md:text-base"><strong>1,400+ diagnostic images</strong> covering 390 grass species of Southern Africa.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><Globe className="h-5 w-5 text-primary" /></div>
@@ -262,7 +262,7 @@ export default function Home() {
                 <div>
                   <h3 className="text-2xl font-bold font-headline">Need a consultation?</h3>
                   <p className="mt-2 text-muted-foreground leading-relaxed">
-                    Frits works directly with farmers, game ranchers, and land managers. Veld assessments, grazing capacity studies, rehabilitation plans, and mine re-vegetation, all tailored to your specific land.
+                    Frits works directly with farmers, game reserves, and land managers. Veld assessments, grazing capacity studies, rehabilitation plans, and grazing management, all tailored to your specific land.
                   </p>
                 </div>
                 <div className="mt-auto pt-2 flex flex-col sm:flex-row gap-3">
