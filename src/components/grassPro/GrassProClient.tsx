@@ -30,7 +30,7 @@ const features = [
     icon: Camera,
     title: "1,400+ diagnostic images",
     description:
-      "High-resolution images covering 320 grass species found across Southern Africa: roots, stems, leaves, seed heads.",
+      "High-resolution images covering 390 grass species found across Southern Africa: roots, stems, leaves, seed heads.",
   },
   {
     icon: Search,
@@ -85,7 +85,7 @@ export function GrassProClient() {
                 by Frits van Oudtshoorn
               </p>
               <p className="mt-5 text-xl text-primary-foreground/90 font-body max-w-xl mx-auto lg:mx-0">
-                Identify grasses of Southern Africa in the field. 320 species,
+                Identify grasses of Southern Africa in the field. 390 species,
                 1,400+ images, GPS filtering, Smart Search, and full offline
                 capability.
               </p>
@@ -210,7 +210,7 @@ export function GrassProClient() {
                 <strong className="text-foreground">
                   Guide to Grasses of Southern Africa
                 </strong>{" "}
-                (3rd edition), covering the same 320 species in your hands and on your
+                (3rd edition), covering the same 390 species in your hands and on your
                 phone. The book gives you the full identification keys and
                 ecological detail; the app gives you the images and GPS tools in
                 the field.
@@ -230,7 +230,7 @@ export function GrassProClient() {
               </h3>
               <p className="text-muted-foreground text-sm mt-2">Third Revised Edition</p>
               <ul className="mt-4 text-sm text-muted-foreground space-y-1 text-left">
-                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" /> 320 grass species</li>
+                <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" /> 390 grass species</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" /> 1,000+ full-colour photographs</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" /> Identification keys and ecological notes</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary flex-shrink-0" /> The only full-colour guide for the region</li>
