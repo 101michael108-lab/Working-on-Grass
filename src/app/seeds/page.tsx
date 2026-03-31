@@ -188,7 +188,7 @@ function SeedInquiryForm() {
         />
         <div className="flex flex-col sm:flex-row gap-3">
           <Button type="submit" size="lg">Request a Quote</Button>
-          <Button type="button" size="lg" variant="outline" className="border-[#25D366] text-[#25D366] hover:bg-[#25D366] hover:text-white" asChild>
+          <Button type="button" size="lg" variant="outline" className="border-whatsapp text-whatsapp hover:bg-whatsapp hover:text-white" asChild>
             <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20enquire%20about%20custom%20seed%20mixes." target="_blank" rel="noopener noreferrer">
               <WhatsAppIcon className="mr-2 h-4 w-4" /> Prefer to WhatsApp Frits
             </a>

@@ -7,7 +7,6 @@ import { notFound } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query, where, documentId, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
-import { productUrl } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 
@@ -67,32 +66,8 @@ export default function ProductPageContent({ productId }: { productId: string })
         return null;
     }
 
-    const jsonLd = {
-        '@context': 'https://schema.org',
-        '@type': 'Product',
-        name: product.name,
-        description: product.description,
-        image: product.images?.[0],
-        sku: product.sku || product.id,
-        brand: {
-            '@type': 'Brand',
-            name: product.brand || 'Working on Grass',
-        },
-        offers: {
-            '@type': 'Offer',
-            priceCurrency: 'ZAR',
-            price: product.price.toFixed(2),
-            availability: 'https://schema.org/InStock',
-            url: `${typeof window !== 'undefined' ? window.location.origin : ''}${productUrl(product)}`,
-        },
-    };
-
     return (
         <>
-            <script
-                type="application/ld+json"
-                dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-            />
             <div className="container pt-8">
                 <Breadcrumbs 
                     items={[

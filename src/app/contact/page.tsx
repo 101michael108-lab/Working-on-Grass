@@ -6,6 +6,7 @@ import * as z from "zod"
 import { Mail, MapPin, Phone } from "lucide-react"
 import { useSearchParams } from 'next/navigation'
 import React, { Suspense } from 'react'
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -203,7 +204,14 @@ function ContactForm() {
             </FormItem>
           )}
         />
-        <Button type="submit" size="lg">Send Message</Button>
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Button type="submit" size="lg">Send Message</Button>
+          <Button type="button" size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white" asChild>
+            <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20get%20in%20touch." target="_blank" rel="noopener noreferrer">
+              <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Instead
+            </a>
+          </Button>
+        </div>
       </form>
     </Form>
   )

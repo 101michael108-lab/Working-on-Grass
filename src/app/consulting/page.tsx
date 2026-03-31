@@ -81,7 +81,7 @@ export default function ServicesPage() {
             <div className="mt-8 flex flex-wrap items-center gap-4">
               <Button
                 size="lg"
-                className="bg-[#25D366] text-white hover:bg-[#1ebe5d]"
+                className="bg-whatsapp hover:bg-whatsapp-hover text-white"
                 asChild
               >
                 <a href={waLink("Hi Frits, I'd like to discuss a consultation.")} target="_blank" rel="noopener noreferrer">
@@ -115,7 +115,7 @@ export default function ServicesPage() {
         {/* Services Grid */}
         <div id="services" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services.map((service) => (
-            <Card key={service.title} className="flex flex-col border-2 hover:border-primary/50 transition-colors">
+            <Card key={service.title} className="flex flex-col border-2 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
               <CardHeader>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{service.whoIsItFor}</p>
                 <CardTitle className="font-headline text-2xl">{service.title}</CardTitle>
@@ -124,7 +124,7 @@ export default function ServicesPage() {
                 <CardDescription className="font-body text-base leading-relaxed">{service.description}</CardDescription>
               </CardContent>
               <CardFooter className="flex flex-col gap-2">
-                <Button className="w-full bg-[#25D366] text-white hover:bg-[#1ebe5d]" asChild>
+                <Button className="w-full bg-whatsapp hover:bg-whatsapp-hover text-white" asChild>
                   <a href={waLink(`Hi Frits, I'd like to enquire about: ${service.title}`)} target="_blank" rel="noopener noreferrer">
                     <WhatsAppIcon className="mr-2 h-4 w-4" /> WhatsApp Frits
                   </a>
@@ -218,7 +218,7 @@ export default function ServicesPage() {
                 Every farm, veld, and project is different. Send Frits a quick message and he'll point you in the right direction.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-               <Button size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] px-10 font-bold shadow-md" asChild>
+               <Button size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white px-10 font-bold shadow-md" asChild>
                 <a href={waLink("Hi Frits, I'm not sure which consulting service I need. Can you help?")} target="_blank" rel="noopener noreferrer">
                   <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
                 </a>

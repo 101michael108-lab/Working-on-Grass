@@ -102,7 +102,7 @@ export default function AboutPage() {
             WhatsApp Frits directly — he responds personally.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto border-b-4 border-black/20">
+            <Button asChild size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white w-full sm:w-auto border-b-4 border-black/20">
               <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20discuss%20a%20project." target="_blank" rel="noopener noreferrer">
                 <WhatsAppIcon className="mr-2 h-5 w-5 shrink-0" /> WhatsApp Frits
               </a>

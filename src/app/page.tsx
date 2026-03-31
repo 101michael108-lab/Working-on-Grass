@@ -67,7 +67,7 @@ export default function Home() {
           ) : (
             <div className="w-full h-full bg-secondary animate-pulse" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/15" />
         </div>
 
         <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,7 +79,7 @@ export default function Home() {
               {t("hero.subheadline")}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
-              <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto shadow-lg border-b-4 border-black/20">
+              <Button asChild size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white w-full sm:w-auto shadow-lg border-b-4 border-black/20">
                 <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation." target="_blank" rel="noopener noreferrer">
                   <WhatsAppIcon className="mr-2 h-5 w-5 shrink-0" /> WhatsApp Frits
                 </a>
@@ -94,12 +94,14 @@ export default function Home() {
 
       {/* ── Trust Strip ──────────────────────────────────────────────── */}
       <section className="bg-background border-b">
-        <div className="container px-4 md:px-6 py-6">
+        <div className="container px-4 md:px-6 py-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
             {trustPillars.map((pillar, index) => (
-              <div key={index} className="flex flex-col items-center justify-center gap-2">
-                <pillar.icon className="w-7 h-7 text-primary" />
-                <p className="text-sm font-medium text-muted-foreground">{pillar.text}</p>
+              <div key={index} className="flex flex-col items-center justify-center gap-3">
+                <div className="bg-primary/10 rounded-full p-3">
+                  <pillar.icon className="w-6 h-6 text-primary" />
+                </div>
+                <p className="text-sm font-semibold text-foreground leading-snug">{pillar.text}</p>
               </div>
             ))}
           </div>
@@ -116,7 +118,7 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 sm:gap-6">
             {isLoading
               ? Array.from({ length: 3 }).map((_, i) => (
                   <Skeleton key={i} className="h-[380px] rounded-lg" />
@@ -128,7 +130,7 @@ export default function Home() {
           </div>
 
           <div className="mt-10 text-center">
-            <Button asChild variant="outline" className="border-2 border-primary/30 hover:border-primary hover:bg-primary hover:text-primary-foreground font-bold transition-colors">
+            <Button asChild variant="outline" className="border-2 border-primary/60 hover:border-primary hover:bg-primary hover:text-primary-foreground font-bold transition-colors">
               <Link href="/shop">Browse the Full Shop <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
@@ -139,20 +141,6 @@ export default function Home() {
       <section id="about" className="w-full py-16 md:py-24 bg-surface">
         <div className="container px-4 md:px-6">
           <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-            <div className="flex justify-center lg:order-last">
-              {aboutImage ? (
-                <Image
-                  src={aboutImage.imageUrl}
-                  alt={aboutImage.description}
-                  width={450}
-                  height={450}
-                  className="rounded-lg object-cover aspect-square shadow-lg border-4 border-white"
-                  data-ai-hint={aboutImage.imageHint}
-                />
-              ) : (
-                <Skeleton className="w-[450px] h-[450px] rounded-lg" />
-              )}
-            </div>
             <div className="text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">
                 Meet Frits van Oudtshoorn
@@ -165,9 +153,23 @@ export default function Home() {
               <p className="mt-5 max-w-[600px] text-muted-foreground md:text-lg/relaxed font-body">
                 Frits holds an MSc in Nature Conservation (Ecological Restoration) and has spent 30 years conducting veld assessments, rehabilitation projects, and grazing capacity studies across Southern Africa. He is the author of <em>Guide to Grasses of Southern Africa</em> (now in its 3rd edition) and a registered Barenbrug seed agent.
               </p>
-              <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90 border-b-4 border-black/20">
+              <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
+            </div>
+            <div className="flex justify-center">
+              {aboutImage ? (
+                <Image
+                  src={aboutImage.imageUrl}
+                  alt={aboutImage.description}
+                  width={450}
+                  height={450}
+                  className="rounded-lg object-cover aspect-square shadow-lg border-4 border-white"
+                  data-ai-hint={aboutImage.imageHint}
+                />
+              ) : (
+                <Skeleton className="w-[450px] h-[450px] rounded-lg" />
+              )}
             </div>
           </div>
         </div>
@@ -264,7 +266,7 @@ export default function Home() {
                   </p>
                 </div>
                 <div className="mt-auto pt-2 flex flex-col sm:flex-row gap-3">
-                  <Button asChild className="bg-[#25D366] text-white hover:bg-[#1ebe5d]">
+                  <Button asChild className="bg-whatsapp hover:bg-whatsapp-hover text-white">
                     <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation." target="_blank" rel="noopener noreferrer">
                       <WhatsAppIcon className="mr-2 h-4 w-4" /> WhatsApp Frits
                     </a>
@@ -309,7 +311,7 @@ export default function Home() {
           <h2 className="text-3xl font-bold font-headline">Need expert guidance on your land or veld?</h2>
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Get in touch and our team will make sure you reach the right person.</p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-[#25D366] text-white hover:bg-[#1ebe5d] w-full sm:w-auto border-b-4 border-black/20">
+            <Button asChild size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white w-full sm:w-auto border-b-4 border-black/20">
               <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%20need%20expert%20guidance%20on%20my%20land." target="_blank" rel="noopener noreferrer">
                 <WhatsAppIcon className="mr-2 h-5 w-5 shrink-0" /> WhatsApp Frits
               </a>

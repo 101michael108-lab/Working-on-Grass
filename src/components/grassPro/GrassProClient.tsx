@@ -177,7 +177,7 @@ export function GrassProClient() {
             {features.map((f) => (
               <Card
                 key={f.title}
-                className="border-2 hover:border-primary/40 transition-colors"
+                className="border-2 hover:border-primary/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-200"
               >
                 <CardContent className="pt-6 pb-6 flex flex-col gap-3">
                   <div className="bg-primary/10 p-2 rounded-md w-fit">
@@ -285,7 +285,7 @@ export function GrassProClient() {
             <Button
               asChild
               size="lg"
-              className="bg-[#25D366] text-white hover:bg-[#1ebe5d] border-b-4 border-black/20"
+              className="bg-whatsapp hover:bg-whatsapp-hover text-white border-b-4 border-black/20"
             >
               <a href={WHATSAPP} target="_blank" rel="noopener noreferrer">
                 <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
