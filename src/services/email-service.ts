@@ -197,63 +197,68 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
+  const orderRef = `#${payload.orderId.substring(0, 8).toUpperCase()}`;
+  const orderDate = payload.orderDate
+    ? new Date(payload.orderDate as any).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' })
+    : new Date().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });
 
   const itemsList = payload.items.map(i => `
     <tr>
-      <td style="padding: 8px; border-bottom: 1px solid #eee;">${i.name}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: center;">${i.quantity}</td>
-      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R${i.price.toFixed(2)}</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee;">${i.name} (x${i.quantity})</td>
+      <td style="padding: 8px; border-bottom: 1px solid #eee; text-align: right;">R${(i.price * i.quantity).toFixed(2)}</td>
     </tr>
   `).join('');
-  
+
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
     message: {
-      subject: `[SALES] New Order #${payload.orderId.substring(0, 8)} - ${payload.customerName}`,
+      subject: `[SALES] New Order ${orderRef} - ${payload.customerName}`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.5; color: #111; max-width: 700px; margin: auto; border: 2px solid #1a3a1a; padding: 40px;">
           <div style="border-bottom: 2px solid #eee; padding-bottom: 20px; margin-bottom: 30px;">
             <h1 style="color: #1a3a1a; margin: 0; font-size: 24px;">New Paid Order Received</h1>
-            <p style="color: #666; margin: 5px 0 0 0;">ID: #${payload.orderId}</p>
+            <p style="color: #666; margin: 5px 0 0 0;">Order ${orderRef} &bull; ${orderDate}</p>
           </div>
 
-          <div style="display: flex; gap: 40px; margin-bottom: 30px;">
-            <div style="flex: 1;">
-                <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: 1px;">Customer Details</h3>
-                <p style="margin: 0; font-weight: bold;">${payload.customerName}</p>
-                <p style="margin: 0; color: #007bff;">${payload.shippingInfo?.email || 'No email'}</p>
-            </div>
-            <div style="flex: 1;">
-                <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: 1px;">Shipping Address</h3>
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
+            <tr>
+              <td style="vertical-align: top; width: 50%; padding-right: 20px;">
+                <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin: 0 0 10px 0; letter-spacing: 1px;">Customer Details</h3>
+                <p style="margin: 2px 0; font-weight: bold;">${payload.customerName}</p>
+                <p style="margin: 2px 0; color: #007bff;">${payload.shippingInfo?.email || 'No email'}</p>
+                ${payload.shippingInfo?.phone ? `<p style="margin: 2px 0;">${payload.shippingInfo.phone}</p>` : ''}
+              </td>
+              <td style="vertical-align: top; width: 50%;">
+                <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin: 0 0 10px 0; letter-spacing: 1px;">Shipping Address</h3>
                 ${payload.shippingInfo ? `
-                    <p style="margin: 0;">${payload.shippingInfo.address}</p>
-                    <p style="margin: 0;">${payload.shippingInfo.city}, ${payload.shippingInfo.postalCode}</p>
-                    <p style="margin: 0;">${payload.shippingInfo.country}</p>
+                    <p style="margin: 2px 0;">${payload.shippingInfo.address}</p>
+                    <p style="margin: 2px 0;">${payload.shippingInfo.city}, ${payload.shippingInfo.postalCode}</p>
+                    <p style="margin: 2px 0;">${payload.shippingInfo.country}</p>
                 ` : '<p>No shipping info provided.</p>'}
-            </div>
-          </div>
+              </td>
+            </tr>
+          </table>
 
           <h3 style="font-size: 12px; text-transform: uppercase; color: #999; margin-bottom: 10px; letter-spacing: 1px;">Ordered Items</h3>
           <table style="width: 100%; border-collapse: collapse; margin-bottom: 30px;">
             <thead>
                 <tr style="background-color: #f4f4f4;">
-                    <th style="padding: 10px; text-align: left; font-size: 13px;">Item Description</th>
-                    <th style="padding: 10px; text-align: center; font-size: 13px;">Qty</th>
-                    <th style="padding: 10px; text-align: right; font-size: 13px;">Price</th>
+                    <th style="padding: 10px; text-align: left; font-size: 13px;">Item</th>
+                    <th style="padding: 10px; text-align: right; font-size: 13px;">Amount</th>
                 </tr>
             </thead>
             <tbody>${itemsList}</tbody>
             <tfoot>
                 <tr>
-                    <td colspan="2" style="padding: 20px 10px 10px 10px; text-align: right; font-weight: bold; font-size: 18px;">Total Paid:</td>
+                    <td style="padding: 20px 10px 10px 10px; text-align: right; font-weight: bold; font-size: 18px;">Total Paid:</td>
                     <td style="padding: 20px 10px 10px 10px; text-align: right; font-weight: bold; font-size: 18px; color: #c2410c;">R${payload.totalAmount.toFixed(2)}</td>
                 </tr>
             </tfoot>
           </table>
 
           <div style="border-top: 1px dashed #ccc; padding-top: 20px; font-size: 12px; color: #888;">
-            <p>This email serves as an official order notification for <strong>${storeName}</strong>. 
+            <p>This email serves as an official order notification for <strong>${storeName}</strong>.
             Payment has been successfully processed via PayFast. Please fulfill this order as soon as possible.</p>
           </div>
         </div>

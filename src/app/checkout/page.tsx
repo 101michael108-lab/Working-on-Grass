@@ -33,6 +33,7 @@ const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
+  phone: z.string().min(7, "Phone number is required"),
   address: z.string().min(5, "Address is required"),
   city: z.string().min(2, "City is required"),
   postalCode: z.string().min(4, "Postal code is required"),
@@ -73,6 +74,7 @@ export default function CheckoutPage() {
       email: user?.email || "",
       firstName: user?.displayName?.split(' ')[0] || "",
       lastName: user?.displayName?.split(' ')[1] || "",
+      phone: "",
       address: "",
       city: "",
       postalCode: "",
@@ -160,6 +162,7 @@ export default function CheckoutPage() {
           email: values.email,
           firstName: values.firstName,
           lastName: values.lastName,
+          phone: values.phone,
           address: values.address,
           city: values.city,
           postalCode: values.postalCode,
@@ -250,6 +253,9 @@ export default function CheckoutPage() {
                   <FormItem><FormLabel>Last Name</FormLabel><FormControl><Input placeholder="Last Name" {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
+              <FormField name="phone" control={form.control} render={({ field }) => (
+                <FormItem><FormLabel>Phone Number</FormLabel><FormControl><Input placeholder="+27 82 000 0000" type="tel" {...field} /></FormControl><FormMessage /></FormItem>
+              )} />
               <FormField name="address" control={form.control} render={({ field }) => (
                   <FormItem><FormLabel>Street Address</FormLabel><FormControl><Input placeholder="123 Veld Way" {...field} /></FormControl><FormMessage /></FormItem>
               )} />
