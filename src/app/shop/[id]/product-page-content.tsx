@@ -7,6 +7,7 @@ import { notFound } from 'next/navigation';
 import { useDoc, useFirestore, useMemoFirebase, useCollection } from '@/firebase';
 import { doc, collection, query, where, documentId, limit } from 'firebase/firestore';
 import type { Product } from '@/lib/types';
+import { productUrl } from '@/lib/utils';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Breadcrumbs } from '@/components/breadcrumbs';
 
@@ -82,7 +83,7 @@ export default function ProductPageContent({ productId }: { productId: string })
             priceCurrency: 'ZAR',
             price: product.price.toFixed(2),
             availability: 'https://schema.org/InStock',
-            url: `${typeof window !== 'undefined' ? window.location.origin : ''}/shop/${product.id}`,
+            url: `${typeof window !== 'undefined' ? window.location.origin : ''}${productUrl(product)}`,
         },
     };
 

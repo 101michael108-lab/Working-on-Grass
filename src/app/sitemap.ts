@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { initializeFirebase } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
+import { slugify } from '@/lib/utils';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za';
@@ -11,7 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const productsSnapshot = await getDocs(collection(firestore, 'products'));
     productEntries = productsSnapshot.docs.map((doc) => ({
-      url: `${baseUrl}/shop/${doc.id}`,
+      url: `${baseUrl}/shop/${slugify(doc.data().name ?? '')}--${doc.id}`,
       lastModified: new Date(),
       changeFrequency: 'weekly',
       priority: 0.7,

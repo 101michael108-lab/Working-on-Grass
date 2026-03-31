@@ -7,6 +7,7 @@ import { ShoppingCart, AlertCircle, ArrowRight } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
+import { productUrl } from '@/lib/utils';
 
 // Pull the first plain-text paragraph — skip bullet lines
 function getDescriptionTeaser(description: string): string {
@@ -35,7 +36,7 @@ export default function ProductCard({ product }: { product: Product }) {
       )}
 
       {/* Image — 4:3, object-contain so full product is always visible */}
-      <Link href={`/shop/${product.id}`} className="block overflow-hidden border-b border-border bg-white">
+      <Link href={productUrl(product)} className="block overflow-hidden border-b border-border bg-white">
         <div className="relative aspect-[4/3] flex items-center justify-center p-4 sm:p-6">
           <Image
             src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/400/300`}
@@ -55,7 +56,7 @@ export default function ProductCard({ product }: { product: Product }) {
         >
           {product.category}
         </Link>
-        <Link href={`/shop/${product.id}`} className="block">
+        <Link href={productUrl(product)} className="block">
           <h3 className="font-headline text-lg sm:text-xl leading-tight line-clamp-2 group-hover:text-primary transition-colors">
             {product.name}
           </h3>
@@ -84,7 +85,7 @@ export default function ProductCard({ product }: { product: Product }) {
           </Button>
         </div>
         <Link
-          href={`/shop/${product.id}`}
+          href={productUrl(product)}
           className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
         >
           View details <ArrowRight className="h-3 w-3" />

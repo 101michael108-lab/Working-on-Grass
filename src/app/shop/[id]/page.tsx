@@ -4,6 +4,7 @@ import { initializeFirebase } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
 import ProductPageContent from './product-page-content';
 import { notFound } from 'next/navigation';
+import { extractProductId } from '@/lib/utils';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -14,8 +15,9 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { id } = await params;
+  const docId = extractProductId(id);
   const { firestore } = initializeFirebase();
-  const docRef = doc(firestore, 'products', id);
+  const docRef = doc(firestore, 'products', docId);
   const docSnap = await getDoc(docRef);
   
   if (!docSnap.exists()) {
@@ -36,8 +38,5 @@ export async function generateMetadata(
 
 export default async function ProductPage({ params }: Props) {
   const { id } = await params;
-  
-  // We just pass the ID to the client component which handles real-time data
-  // but metadata is handled here on the server for SEO.
-  return <ProductPageContent productId={id} />;
+  return <ProductPageContent productId={extractProductId(id)} />;
 }

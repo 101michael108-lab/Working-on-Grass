@@ -10,6 +10,7 @@ import { ShoppingCart, Library } from "lucide-react"
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase"
 import { collection, query, where, orderBy } from "firebase/firestore"
 import type { Product } from "@/lib/types"
+import { productUrl } from "@/lib/utils"
 
 export default function CoursesPage() {
   const { addToCart } = useCart()
@@ -33,7 +34,7 @@ export default function CoursesPage() {
             {courses.map((course) => (
                 <Card key={course.id} className="flex flex-col group">
                 <CardHeader>
-                    <Link href={`/shop/${course.id}`}>
+                    <Link href={productUrl(course)}>
                     <div className="aspect-video bg-secondary/50 rounded-md overflow-hidden flex items-center justify-center">
                         <Image
                         src={course.image || `https://picsum.photos/seed/${course.id}/400/225`}
@@ -47,7 +48,7 @@ export default function CoursesPage() {
                     </Link>
                 </CardHeader>
                 <CardContent className="flex-grow">
-                    <Link href={`/shop/${course.id}`}>
+                    <Link href={productUrl(course)}>
                     <CardTitle className="text-xl hover:text-primary transition-colors">{course.name}</CardTitle>
                     </Link>
                     <CardDescription className="mt-2 text-sm">{course.description.substring(0,120)}...</CardDescription>

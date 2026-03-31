@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCart } from '@/context/cart-context';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -49,9 +49,22 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
   const { addToCart } = useCart();
   const [shareUrl, setShareUrl] = useState('');
   const [added, setAdded] = useState(false);
+  const [showStickyCTA, setShowStickyCTA] = useState(false);
+  const purchaseBoxRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setShareUrl(window.location.href);
+  }, []);
+
+  useEffect(() => {
+    const el = purchaseBoxRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setShowStickyCTA(!entry.isIntersecting),
+      { threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
   }, []);
 
   const handleQuantityChange = (amount: number) => {
@@ -111,7 +124,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
               )}
 
               {/* Purchase box */}
-              <div className="bg-background border-2 border-border rounded-lg p-5 max-w-md shadow-sm">
+              <div ref={purchaseBoxRef} className="bg-background border-2 border-border rounded-lg p-5 max-w-md shadow-sm">
                 <div className="flex items-baseline gap-2 mb-4">
                   <span className="text-4xl font-bold font-headline text-accent">R{product.price.toFixed(2)}</span>
                   <span className="text-xs text-muted-foreground font-bold uppercase tracking-wider">Incl. VAT</span>
@@ -233,7 +246,7 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
       <RelatedProducts products={relatedProducts} isLoading={isLoadingRelated} />
 
       {/* ── Sticky mobile CTA ─────────────────────────────────────── */}
-      <div className="fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-background border-t-2 border-border shadow-xl">
+      <div className={`fixed bottom-0 left-0 right-0 z-40 lg:hidden bg-background border-t-2 border-border shadow-xl transition-transform duration-300 ${showStickyCTA ? 'translate-y-0' : 'translate-y-full'}`}>
         <div className="container py-3 flex items-center gap-4">
           <div className="shrink-0">
             <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold leading-none mb-0.5">Price</p>
