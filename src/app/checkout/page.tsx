@@ -202,7 +202,9 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payfastData),
       });
-      const { signature } = await sigRes.json();
+      const sigData = await sigRes.json();
+      console.log('[PayFast Debug]', sigData);
+      const { signature } = sigData;
 
       setPayfastConfig({ ...payfastData, signature });
       clearCart();

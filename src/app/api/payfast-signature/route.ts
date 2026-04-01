@@ -29,8 +29,5 @@ export async function POST(req: NextRequest) {
     : checkString;
 
   const signature = crypto.createHash('md5').update(fullString).digest('hex');
-  console.log('[PayFast Signature] Passphrase found:', !!passphrase);
-  console.log('[PayFast Signature] String hashed:', fullString);
-  console.log('[PayFast Signature] Result:', signature);
-  return NextResponse.json({ signature });
+  return NextResponse.json({ signature, _debug_hasPassphrase: !!passphrase, _debug_string: fullString });
 }
