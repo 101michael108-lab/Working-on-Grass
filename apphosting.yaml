@@ -20,6 +20,7 @@ env:
   - variable: PAYFAST_PASSPHRASE
     value: Alutonline101
     availability:
+      - BUILD
       - RUNTIME
   # When you go live, remove the line above and uncomment these two lines,
   # then run: firebase apphosting:secrets:set payfast-passphrase

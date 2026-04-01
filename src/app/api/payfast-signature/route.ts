@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     .map(([k, v]) => `${k}=${phpUrlencode(v.trim())}`)
     .join('&');
 
-  const passphrase = process.env.PAYFAST_PASSPHRASE;
+  const passphrase = process.env.PAYFAST_PASSPHRASE || 'Alutonline101';
   const fullString = passphrase
     ? `${checkString}&passphrase=${phpUrlencode(passphrase.trim())}`
     : checkString;
