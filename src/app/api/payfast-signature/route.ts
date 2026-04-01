@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
 // Mimics PHP's urlencode() which PayFast uses server-side to verify signatures.
-// encodeURIComponent leaves !, ', (, ), *, ~ unencoded — PHP encodes them.
 function phpUrlencode(str: string): string {
   return encodeURIComponent(str)
     .replace(/%20/g, '+')
@@ -17,7 +16,10 @@ function phpUrlencode(str: string): string {
 export async function POST(req: NextRequest) {
   const data: Record<string, string> = await req.json();
 
-  const checkString = Object.entries(data)
+  // PayFast sorts fields alphabetically (ksort) before building the signature string.
+  const sortedEntries = Object.entries(data).sort(([a], [b]) => a.localeCompare(b));
+
+  const checkString = sortedEntries
     .map(([k, v]) => `${k}=${phpUrlencode(v.trim())}`)
     .join('&');
 
