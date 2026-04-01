@@ -23,11 +23,11 @@ export async function POST(req: NextRequest) {
     .map(([k, v]) => `${k}=${phpUrlencode(v.trim())}`)
     .join('&');
 
-  const passphrase = process.env.PAYFAST_PASSPHRASE || 'Alutonline101';
+  const passphrase = process.env.PAYFAST_PASSPHRASE;
   const fullString = passphrase
     ? `${checkString}&passphrase=${phpUrlencode(passphrase.trim())}`
     : checkString;
 
   const signature = crypto.createHash('md5').update(fullString).digest('hex');
-  return NextResponse.json({ signature, _debug_hasPassphrase: !!passphrase, _debug_string: fullString });
+  return NextResponse.json({ signature });
 }

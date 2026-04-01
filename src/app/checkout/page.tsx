@@ -96,7 +96,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (payfastConfig && payfastFormRef.current) {
-        setTimeout(() => payfastFormRef.current?.submit(), 8000);
+        payfastFormRef.current.submit();
     }
   }, [payfastConfig]);
 
@@ -202,9 +202,7 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payfastData),
       });
-      const sigData = await sigRes.json();
-      console.log('[PayFast Debug]', sigData);
-      const { signature } = sigData;
+      const { signature } = await sigRes.json();
 
       setPayfastConfig({ ...payfastData, signature });
       clearCart();
