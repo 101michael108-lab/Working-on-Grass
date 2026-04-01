@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
 
-// Mimics PHP's urlencode() which PayFast uses server-side to verify signatures.
+// Replicates PHP's urlencode() used by PayFast's generateSignature function.
+// encodeURIComponent leaves !, ', (, ), *, ~ unencoded — PHP encodes them.
 function phpUrlencode(str: string): string {
   return encodeURIComponent(str)
     .replace(/%20/g, '+')
@@ -16,13 +17,16 @@ function phpUrlencode(str: string): string {
 export async function POST(req: NextRequest) {
   const data: Record<string, string> = await req.json();
 
+  // PayFast's generateSignature iterates fields in insertion order (array_filter preserves order),
+  // url-encodes each value with PHP urlencode, and skips empty values.
   const checkString = Object.entries(data)
-    .map(([k, v]) => `${k}=${v.trim()}`)
+    .filter(([, v]) => v.trim() !== '')
+    .map(([k, v]) => `${k}=${phpUrlencode(v.trim())}`)
     .join('&');
 
   const passphrase = process.env.PAYFAST_PASSPHRASE;
   const fullString = passphrase
-    ? `${checkString}&passphrase=${passphrase.trim()}`
+    ? `${checkString}&passphrase=${phpUrlencode(passphrase.trim())}`
     : checkString;
 
   const signature = crypto.createHash('md5').update(fullString).digest('hex');
