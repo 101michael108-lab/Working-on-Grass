@@ -18,7 +18,7 @@ env:
   # SANDBOX (current): plain value is fine for test credentials.
   # LIVE: replace with a Secret Manager reference (see comment below).
   - variable: PAYFAST_PASSPHRASE
-    value: pass12312345
+    value: Alutonline101
     availability:
       - RUNTIME
   # When you go live, remove the line above and uncomment these two lines,
