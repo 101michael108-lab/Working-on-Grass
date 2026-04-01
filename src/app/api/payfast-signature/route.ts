@@ -29,5 +29,7 @@ export async function POST(req: NextRequest) {
     : checkString;
 
   const signature = crypto.createHash('md5').update(fullString).digest('hex');
+  console.log('[PayFast Signature] String hashed:', fullString);
+  console.log('[PayFast Signature] Result:', signature);
   return NextResponse.json({ signature });
 }
