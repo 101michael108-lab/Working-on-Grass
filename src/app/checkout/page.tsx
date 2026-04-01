@@ -180,9 +180,10 @@ export default function CheckoutPage() {
       const docRef = await addDocumentNonBlocking(ordersCollection, orderData);
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       
+      const isLive = settings?.isLiveMode === true;
       const payfastData = {
-        merchant_id: settings?.payfastMerchantId || "10000100",
-        merchant_key: settings?.payfastMerchantKey || "46f0cd694581a",
+        merchant_id: isLive ? (settings?.payfastMerchantId || "") : "10043133",
+        merchant_key: isLive ? (settings?.payfastMerchantKey || "") : "wh7ky81lq556u",
         return_url: new URL(`/checkout/success?orderId=${docRef.id}`, origin).href,
         cancel_url: new URL('/cart', origin).href,
         notify_url: new URL('/api/payfast-itn', origin).href,
