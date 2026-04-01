@@ -196,7 +196,15 @@ export default function CheckoutPage() {
         custom_str1: effectiveUser.uid,
       };
 
-      setPayfastConfig(payfastData);
+      // Get server-side signature (includes passphrase without exposing it to the client)
+      const sigRes = await fetch('/api/payfast-signature', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payfastData),
+      });
+      const { signature } = await sigRes.json();
+
+      setPayfastConfig({ ...payfastData, signature });
       clearCart();
     } catch (error: any) {
        toast({ variant: "destructive", title: "Uh oh!", description: error.message });
