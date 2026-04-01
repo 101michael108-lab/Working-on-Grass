@@ -16,15 +16,13 @@ function phpUrlencode(str: string): string {
 export async function POST(req: NextRequest) {
   const data: Record<string, string> = await req.json();
 
-  // Use insertion order — PayFast verifies using the order fields are received in the POST,
-  // which matches the order they appear in our HTML form (Object.entries insertion order).
   const checkString = Object.entries(data)
-    .map(([k, v]) => `${k}=${phpUrlencode(v.trim())}`)
+    .map(([k, v]) => `${k}=${v.trim()}`)
     .join('&');
 
   const passphrase = process.env.PAYFAST_PASSPHRASE;
   const fullString = passphrase
-    ? `${checkString}&passphrase=${phpUrlencode(passphrase.trim())}`
+    ? `${checkString}&passphrase=${passphrase.trim()}`
     : checkString;
 
   const signature = crypto.createHash('md5').update(fullString).digest('hex');
