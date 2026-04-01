@@ -96,7 +96,7 @@ export default function CheckoutPage() {
 
   useEffect(() => {
     if (payfastConfig && payfastFormRef.current) {
-        payfastFormRef.current.submit();
+        setTimeout(() => payfastFormRef.current?.submit(), 8000);
     }
   }, [payfastConfig]);
 
