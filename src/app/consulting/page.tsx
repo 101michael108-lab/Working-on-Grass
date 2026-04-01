@@ -73,7 +73,6 @@ export default function ServicesPage() {
         {/* Hero Section */}
         <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
           <div>
-            <p className="text-sm font-bold uppercase tracking-widest text-accent mb-2">Frits van Oudtshoorn · MSc Nature Conservation</p>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline">{t("consulting.headline")}</h1>
             <p className="mt-4 max-w-xl text-lg text-muted-foreground font-body">
               {t("consulting.subheadline")}
@@ -113,17 +112,16 @@ export default function ServicesPage() {
         </div>
 
         {/* Services Grid */}
-        <div id="services" className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div id="services" className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {services.map((service) => (
             <Card key={service.title} className="flex flex-col border-2 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-              <CardHeader>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-1">{service.whoIsItFor}</p>
+              <CardHeader className="pb-2">
                 <CardTitle className="font-headline text-2xl">{service.title}</CardTitle>
               </CardHeader>
               <CardContent className="flex-grow">
                 <CardDescription className="font-body text-base leading-relaxed">{service.description}</CardDescription>
               </CardContent>
-              <CardFooter className="flex flex-col gap-2">
+              <CardFooter className="flex flex-col sm:flex-row gap-2 pt-2">
                 <Button className="w-full bg-whatsapp hover:bg-whatsapp-hover text-white" asChild>
                   <a href={waLink(`Hi Frits, I'd like to enquire about: ${service.title}`)} target="_blank" rel="noopener noreferrer">
                     <WhatsAppIcon className="mr-2 h-4 w-4" /> WhatsApp Frits

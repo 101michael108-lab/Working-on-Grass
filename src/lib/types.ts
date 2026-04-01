@@ -122,6 +122,19 @@ export type MediaLibraryItem = {
     uploadedAt: any; // Firestore Timestamp
 };
 
+export type Resource = {
+  id: string;
+  title: string;
+  description: string;
+  resourceType: 'PDF' | 'Video' | 'Article' | 'Template' | 'Guide' | 'Map' | 'Checklist';
+  fileUrl: string;
+  relatedHref?: string;
+  relatedLabel?: string;
+  isPublished: boolean;
+  sortOrder: number;
+  createdAt: any;
+};
+
 export type SiteSettings = {
   storeName: string;
   contactEmail: string;

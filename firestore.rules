@@ -63,6 +63,15 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // Resources (/resources)
+    // ------------------------------------------------------------------
+    match /resources/{resourceId} {
+      allow get: if true;
+      allow list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ------------------------------------------------------------------
     // Settings (/settings)
     // ------------------------------------------------------------------
     match /settings/config {

@@ -36,8 +36,7 @@ export default function Home() {
 
   const trustPillars = [
     { icon: Award,    text: "30+ years of hands-on field experience" },
-    { icon: BookOpen, text: "Author · Guide to Grasses of Southern Africa" },
-    { icon: Leaf,     text: "MSc Nature Conservation · Ecological Restoration" },
+    { icon: BookOpen, text: "Author · Veld Management – Principles and Practices" },
     { icon: Globe,    text: "Registered Barenbrug SA Seed Agent" },
   ];
 
@@ -93,15 +92,13 @@ export default function Home() {
       </section>
 
       {/* ── Trust Strip ──────────────────────────────────────────────── */}
-      <section className="bg-background border-b">
-        <div className="container px-4 md:px-6 py-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+      <section className="bg-muted/40 border-b">
+        <div className="container px-4 md:px-6 py-0">
+          <div className="flex flex-wrap items-center justify-center">
             {trustPillars.map((pillar, index) => (
-              <div key={index} className="flex flex-col items-center justify-center gap-3">
-                <div className="bg-primary/10 rounded-full p-3">
-                  <pillar.icon className="w-6 h-6 text-primary" />
-                </div>
-                <p className="text-sm font-semibold text-foreground leading-snug">{pillar.text}</p>
+              <div key={index} className={`flex items-center gap-2.5 px-7 py-4${index > 0 ? ' border-l border-border' : ''}`}>
+                <pillar.icon className="w-4 h-4 text-primary shrink-0" />
+                <span className="text-sm font-semibold text-foreground whitespace-nowrap">{pillar.text}</span>
               </div>
             ))}
           </div>
@@ -140,7 +137,21 @@ export default function Home() {
       {/* ── About Frits ──────────────────────────────────────────────── */}
       <section id="about" className="w-full py-16 md:py-24 bg-surface">
         <div className="container px-4 md:px-6">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
+          <div className="flex flex-col sm:flex-row gap-8 items-start">
+            <div className="shrink-0">
+              {aboutImage ? (
+                <Image
+                  src={aboutImage.imageUrl}
+                  alt={aboutImage.description}
+                  width={200}
+                  height={200}
+                  className="rounded-lg object-cover aspect-square shadow-lg border-4 border-white"
+                  data-ai-hint={aboutImage.imageHint}
+                />
+              ) : (
+                <Skeleton className="w-[200px] h-[200px] rounded-lg" />
+              )}
+            </div>
             <div className="text-left">
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">
                 Meet Frits van Oudtshoorn
@@ -151,25 +162,11 @@ export default function Home() {
                 </blockquote>
               </div>
               <p className="mt-5 max-w-[600px] text-muted-foreground md:text-lg/relaxed font-body">
-                Frits holds a master's degree in Nature Conservation (Ecological Restoration) and has spent 30 years conducting veld assessments, rehabilitation projects, and grazing capacity studies across Southern Africa. He is the author of <em>Guide to Grasses of Southern Africa</em> and <em>Veld Management &ndash; Principles and Practices</em>, and a registered Barenbrug seed agent.
+                Frits has spent 30 years conducting veld assessments, rehabilitation projects, and grazing capacity studies across Southern Africa. He is the author of <em>Guide to Grasses of Southern Africa</em> and <em>Veld Management &ndash; Principles and Practices</em>, and a registered Barenbrug seed agent.
               </p>
               <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
                 <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
-            </div>
-            <div className="flex justify-center">
-              {aboutImage ? (
-                <Image
-                  src={aboutImage.imageUrl}
-                  alt={aboutImage.description}
-                  width={450}
-                  height={450}
-                  className="rounded-lg object-cover aspect-square shadow-lg border-4 border-white"
-                  data-ai-hint={aboutImage.imageHint}
-                />
-              ) : (
-                <Skeleton className="w-[450px] h-[450px] rounded-lg" />
-              )}
             </div>
           </div>
         </div>
@@ -183,16 +180,16 @@ export default function Home() {
               <Badge className="bg-primary text-white uppercase tracking-widest px-3 mb-2">Free Download</Badge>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">GrassPro App</h2>
               <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto sm:mx-0 font-body">
-                Identify grasses of Southern Africa in the field. Over 1,400 diagnostic images, GPS-based filtering, offline capable. Download the evaluation version for free with a full upgrade available.
+                Identify grasses of Southern Africa in the field. Over 2 000 diagnostic images, GPS-based filtering, offline capable. Download the evaluation version for free with a full upgrade available.
               </p>
               <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-muted-foreground text-left max-w-md sm:max-w-none mx-auto sm:mx-0">
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><Camera className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>1,400+ diagnostic images</strong> covering 390 grass species of Southern Africa.</span>
+                  <span className="font-body text-sm md:text-base"><strong>2 000+ diagnostic images</strong> covering 390 grass species of Southern Africa.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><Globe className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>GPS-based filtering</strong> and interactive distribution maps per species.</span>
+                  <span className="font-body text-sm md:text-base"><strong>GPS functionality</strong> indicates grass species in your immediate vicinity.</span>
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><CheckCircle2 className="h-5 w-5 text-primary" /></div>
@@ -200,7 +197,7 @@ export default function Home() {
                 </li>
                 <li className="flex items-start gap-3">
                   <div className="bg-primary/10 p-2 rounded-md shrink-0"><BookOpen className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>Pairs with the book</strong>, built as a companion to <em>Guide to Grasses of Southern Africa</em>.</span>
+                  <span className="font-body text-sm md:text-base"><strong>Filters and ranks</strong> grass species using an award-winning &ldquo;Smart Search&rdquo; function.</span>
                 </li>
               </ul>
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
@@ -218,7 +215,7 @@ export default function Home() {
                 </Button>
               </div>
               <p className="mt-3 text-sm text-muted-foreground text-center sm:text-left">
-                Free to download · 50 grasses included · Full upgrade ~R199.99 once-off.
+                Free to download · 50 grasses included · Full upgrade ~R199.99 per year.
               </p>
             </div>
             <div className="flex justify-center">

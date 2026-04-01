@@ -39,19 +39,19 @@ export default function AboutPage() {
       {/* ── Meet Frits ───────────────────────────────────────────────── */}
       <div className="bg-surface py-16 md:py-24">
         <div className="container">
-          <div className="grid md:grid-cols-2 gap-12 md:gap-16 items-center">
-            <div className="flex justify-center">
+          <div className="flex flex-col sm:flex-row gap-8 items-start">
+            <div className="shrink-0">
               {aboutImage ? (
                 <Image
                   src={aboutImage.imageUrl}
                   alt={aboutImage.description}
-                  width={420}
-                  height={420}
-                  className="rounded-lg object-cover shadow-lg aspect-square border-4 border-background"
+                  width={180}
+                  height={180}
+                  className="rounded-lg object-cover aspect-square shadow-lg border-4 border-background"
                   data-ai-hint={aboutImage.imageHint}
                 />
               ) : (
-                <Skeleton className="h-[420px] w-[420px] rounded-lg" />
+                <Skeleton className="h-[180px] w-[180px] rounded-lg" />
               )}
             </div>
             <div className="space-y-4 text-muted-foreground text-base">
@@ -60,17 +60,17 @@ export default function AboutPage() {
                 "My goal is to bridge the gap between science and the farmer — sustainable land management builds resilient, profitable agricultural businesses for generations to come."
               </blockquote>
               <p>
-                Frits grew up on a farm in Limpopo and has spent over 30 years in the field as a grassland ecologist, consultant, and author. He holds a <strong className="text-foreground">Master's degree in Nature Conservation, specialising in Ecological Restoration</strong>. Everything he does is grounded in that practical and scientific foundation.
+                Frits grew up on a farm in Limpopo Province, South Africa, and has spent more than 30 years working as a rangeland and pasture consultant, training provider, and author. He holds a <strong className="text-foreground">Master's degree in Nature Conservation, specialising in Ecological Restoration</strong>, and grounds his work in both practical experience and sound scientific principles.
               </p>
               <p>
-                He is widely regarded as Southern Africa's foremost practical grass and veld expert. His consulting work spans commercial livestock farms, game ranches, nature reserves, mine rehabilitation projects, and EIA assessments. His approach is direct: science-based advice delivered in plain language, specific to the farm or property at hand.
+                He is widely regarded as one of Southern Africa's leading practical experts on grasslands and veld management. His consulting spans commercial livestock farms, game ranches, nature reserves, and land rehabilitation projects. His approach is straightforward: science-based advice, communicated in plain language and tailored to the specific conditions of each farm or property.
               </p>
               <p>
-                Frits is the author of two authoritative works:{" "}
+                Frits is the author of two authoritative publications:{" "}
                 <Link href="/shop" className="text-accent underline underline-offset-2 hover:text-accent/80 transition-colors font-medium">Guide to Grasses of Southern Africa</Link>{" "}
-                (3rd edition, the only full-colour grass ID guide for the region) and{" "}
+                (3rd edition, the only full-colour grass identification guide for the region) and{" "}
                 <Link href="/shop" className="text-accent underline underline-offset-2 hover:text-accent/80 transition-colors font-medium">Veld Management: Principles and Practices</Link>.
-                He also developed the <Link href="/grassPro" className="text-accent underline underline-offset-2 hover:text-accent/80 transition-colors font-medium">GrassPro app</Link> for field grass identification.
+                He also developed the <Link href="/grassPro" className="text-accent underline underline-offset-2 hover:text-accent/80 transition-colors font-medium">GrassPro Southern Africa app</Link>, a mobile tool that assists with grass identification and provides extensive ecological and agricultural information on each species.
               </p>
             </div>
           </div>
@@ -82,7 +82,7 @@ export default function AboutPage() {
         <div className="container">
           <h2 className="text-3xl font-bold mb-3 text-center">Who Frits Works With</h2>
           <p className="text-center text-muted-foreground mb-8 max-w-xl mx-auto">
-            From commercial farms to mine rehabilitation. If the work involves grass, veld, or land, Frits has likely done it.
+            From commercial farms to conservation sanctuaries and mines. If the work involves grass, natural rangelands or pastures and forages, Frits has likely done it.
           </p>
           <div className="max-w-3xl mx-auto flex flex-wrap justify-center gap-3">
             {clientTypes.map((client, index) => (

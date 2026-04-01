@@ -18,8 +18,8 @@ const translations: Record<string, Record<Language, string>> = {
     af: "Volhoubare Veldbeheer, Gelei deur Ondervinding",
   },
   "hero.subheadline": {
-    en: "30 years of hands-on veld and grassland expertise — available to your farm or reserve.",
-    af: "30 jaar praktiese veld- en grasveldkundige ondervinding — beskikbaar vir u plaas of reservaat.",
+    en: "30 years of hands-on rangeland and pasture expertise — available to your farm or reserve.",
+    af: "30 jaar praktiese weiding- en weidingkundige ondervinding — beskikbaar vir u plaas of reservaat.",
   },
   "hero.cta.whatsapp": {
     en: "WhatsApp Frits",
@@ -35,8 +35,8 @@ const translations: Record<string, Record<Language, string>> = {
     af: "Graafsaad Navrae",
   },
   "seeds.subheadline": {
-    en: "Frits van Oudtshoorn is a registered Barenbrug SA seed agent. All seed mixes are custom-formulated per farm, soil type, and intended use — not sold off-the-shelf.",
-    af: "Frits van Oudtshoorn is 'n geregistreerde Barenbrug SA saadagent. Alle saadmengsels word op maat gemaak per plaas, grondtipe en beoogde gebruik — nie van die rak verkoop nie.",
+    en: "Frits van Oudtshoorn is a registered Barenbrug SA seed agent, offering a wide range of pasture, forage, and cover crop seed. Expert advice is provided to help you select the most suitable species for your specific needs and conditions, including the formulation of customised seed mixtures.",
+    af: "Frits van Oudtshoorn is 'n geregistreerde Barenbrug SA saadagent wat 'n wye verskeidenheid weiding-, voer- en bedekkingsgewassaad bied. Kundige advies word verskaf om u te help om die mees geskikte spesies vir u spesifieke behoeftes en toestande te kies, insluitend die formulering van aangepaste saadmengsels.",
   },
   // Consulting page
   "consulting.headline": {

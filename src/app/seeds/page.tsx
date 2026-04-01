@@ -213,11 +213,14 @@ export default function SeedsPage() {
       <div className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{t("seeds.headline")}</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          {t("seeds.subheadline")} Submit an enquiry below and Frits will come back to you with a recommendation.
+          {t("seeds.subheadline")}
+        </p>
+        <p className="mt-2 max-w-3xl mx-auto text-muted-foreground">
+          Submit an enquiry below, and Frits will respond with a tailored recommendation.
         </p>
         <div className="mt-6 inline-flex items-center gap-2 bg-secondary border border-primary/10 rounded-full px-5 py-2 text-sm text-muted-foreground">
           <Sprout className="h-4 w-4 text-primary" />
-          <span>Summer &amp; winter pastures · Legumes · Cover crops · Turf · Indigenous grasses</span>
+          <span>Summer &amp; winter pastures · Legumes · Cover crops · Turf</span>
         </div>
       </div>
 

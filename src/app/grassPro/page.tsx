@@ -5,7 +5,7 @@ import { GrassProClient } from "@/components/grassPro/GrassProClient";
 export const metadata: Metadata = {
   title: "GrassPro App — Grass Identification for Southern Africa",
   description:
-    "Identify grasses of Southern Africa with GrassPro — 1,400+ diagnostic images, GPS filtering, offline mode, and sightings logging. Free download on iOS and Android. Developed by Frits van Oudtshoorn.",
+    "Identify grasses of Southern Africa with GrassPro — 2 000+ diagnostic images, GPS functionality, offline mode, and sightings logging. Free download on iOS and Android. Developed by Frits van Oudtshoorn.",
   alternates: { canonical: "/grassPro" },
 };
 
@@ -30,7 +30,7 @@ const appJsonLd = {
     name: "Frits van Oudtshoorn",
   },
   description:
-    "Identify grasses of Southern Africa — 1,400+ diagnostic images, GPS filtering, Smart Search, offline mode.",
+    "Identify grasses of Southern Africa — 2 000+ diagnostic images, GPS functionality, Smart Search, offline mode.",
   downloadUrl: [PLAY_STORE, APP_STORE],
 };
 
