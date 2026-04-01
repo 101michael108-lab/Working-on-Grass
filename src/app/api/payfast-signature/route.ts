@@ -16,10 +16,9 @@ function phpUrlencode(str: string): string {
 export async function POST(req: NextRequest) {
   const data: Record<string, string> = await req.json();
 
-  // PayFast sorts fields alphabetically (ksort) before building the signature string.
-  const sortedEntries = Object.entries(data).sort(([a], [b]) => a.localeCompare(b));
-
-  const checkString = sortedEntries
+  // Use insertion order — PayFast verifies using the order fields are received in the POST,
+  // which matches the order they appear in our HTML form (Object.entries insertion order).
+  const checkString = Object.entries(data)
     .map(([k, v]) => `${k}=${phpUrlencode(v.trim())}`)
     .join('&');
 
