@@ -5,3 +5,25 @@ runConfig:
   # Increase this value if you'd like to automatically spin up
   # more instances in response to increased traffic.
   maxInstances: 1
+
+env:
+  # The canonical public domain — used to build PayFast return/cancel/notify URLs.
+  - variable: NEXT_PUBLIC_SITE_URL
+    value: https://workingongrass.co.za
+    availability:
+      - BUILD
+      - RUNTIME
+
+  # PayFast passphrase used to verify ITN webhook signatures.
+  # SANDBOX (current): plain value is fine for test credentials.
+  # LIVE: replace with a Secret Manager reference (see comment below).
+  - variable: PAYFAST_PASSPHRASE
+    value: pass12312345
+    availability:
+      - RUNTIME
+  # When you go live, remove the line above and uncomment these two lines,
+  # then run: firebase apphosting:secrets:set payfast-passphrase
+  # - variable: PAYFAST_PASSPHRASE
+  #   secret: payfast-passphrase
+  #   availability:
+  #     - RUNTIME

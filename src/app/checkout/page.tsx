@@ -203,10 +203,11 @@ export default function CheckoutPage() {
     }
   }
 
-  if (typeof window !== 'undefined' && cartItems.length === 0 && !payfastConfig) {
-     router.replace('/shop');
-     return null;
-  }
+  useEffect(() => {
+    if (cartItems.length === 0 && !payfastConfig) {
+      router.replace('/shop');
+    }
+  }, [cartItems.length, payfastConfig, router]);
   
   if (payfastConfig) {
     return (

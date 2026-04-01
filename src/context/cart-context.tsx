@@ -45,45 +45,35 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
   const addToCart = (product: Product, quantity: number) => {
     const stockLimit = product.stock ?? 999;
-    
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.product.id === product.id);
-      const currentQty = existingItem ? existingItem.quantity : 0;
-      const newQty = currentQty + quantity;
+    const existingItem = cartItems.find(item => item.product.id === product.id);
+    const currentQty = existingItem ? existingItem.quantity : 0;
+    const newQty = currentQty + quantity;
 
-      if (newQty > stockLimit) {
-        toast({
-          title: "Stock limit reached",
-          description: `Only ${stockLimit} units available. We've adjusted your cart to the maximum available stock.`,
-          variant: "destructive"
-        });
-        
-        if (existingItem) {
-            return prevItems.map(item =>
-                item.product.id === product.id ? { ...item, quantity: stockLimit } : item
-            );
-        }
-        return [...prevItems, { product, quantity: stockLimit }];
-      }
-
-      if (existingItem) {
-        toast({
-          title: "Cart updated",
-          description: `Added ${quantity} more of ${product.name}.`,
-        });
-        return prevItems.map(item =>
-          item.product.id === product.id
-            ? { ...item, quantity: newQty }
-            : item
-        );
-      }
-
+    if (newQty > stockLimit) {
       toast({
-        title: "Item added to cart",
-        description: `${quantity} x ${product.name}`,
+        title: "Stock limit reached",
+        description: `Only ${stockLimit} units available. We've adjusted your cart to the maximum available stock.`,
+        variant: "destructive"
       });
-      return [...prevItems, { product, quantity }];
-    });
+      if (existingItem) {
+        setCartItems(prev => prev.map(item =>
+          item.product.id === product.id ? { ...item, quantity: stockLimit } : item
+        ));
+      } else {
+        setCartItems(prev => [...prev, { product, quantity: stockLimit }]);
+      }
+      return;
+    }
+
+    if (existingItem) {
+      toast({ title: "Cart updated", description: `Added ${quantity} more of ${product.name}.` });
+      setCartItems(prev => prev.map(item =>
+        item.product.id === product.id ? { ...item, quantity: newQty } : item
+      ));
+    } else {
+      toast({ title: "Item added to cart", description: `${quantity} x ${product.name}` });
+      setCartItems(prev => [...prev, { product, quantity }]);
+    }
   };
 
   const removeFromCart = (productId: string) => {
