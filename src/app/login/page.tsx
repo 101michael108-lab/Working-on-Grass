@@ -19,7 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser } from "@/firebase";
 import { signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { getAuthErrorMessage } from "@/lib/auth-errors";
 import { ensureUserProfile } from "@/lib/ensure-user-profile";
 import {
@@ -66,7 +66,7 @@ async function routeAfterLogin(
   }
 }
 
-export default function LoginPage() {
+function LoginPageContent() {
   const { toast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -206,5 +206,21 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function LoginLoading() {
+  return (
+    <div className="container flex min-h-[80vh] items-center justify-center py-12">
+      <p>Loading...</p>
+    </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoginLoading />}>
+      <LoginPageContent />
+    </Suspense>
   );
 }
