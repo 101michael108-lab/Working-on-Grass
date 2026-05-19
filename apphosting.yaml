@@ -1,30 +1,37 @@
-# Settings to manage and configure a Firebase App Hosting backend.
+# Firebase App Hosting — production & preview environment variables
 # https://firebase.google.com/docs/app-hosting/configure
+#
+# All production secrets and public env vars belong HERE (not in git values).
+# Local development uses .env.local — see docs/ENVIRONMENT.md
 
 runConfig:
-  # Increase this value if you'd like to automatically spin up
-  # more instances in response to increased traffic.
   maxInstances: 1
 
 env:
-  # The canonical public domain — used to build PayFast return/cancel/notify URLs.
+  # Canonical public URL (PayFast callbacks, emails, SEO metadataBase)
   - variable: NEXT_PUBLIC_SITE_URL
     value: https://workingongrass.co.za
     availability:
       - BUILD
       - RUNTIME
 
-  # PayFast passphrase used to verify ITN webhook signatures.
-  # SANDBOX (current): plain value is fine for test credentials.
-  # LIVE: replace with a Secret Manager reference (see comment below).
+  # PayFast ITN + signature (server-only)
+  # Create once: firebase apphosting:secrets:set payfast-passphrase
   - variable: PAYFAST_PASSPHRASE
-    value: Alutonline101
+    secret: payfast-passphrase
     availability:
-      - BUILD
       - RUNTIME
-  # When you go live, remove the line above and uncomment these two lines,
-  # then run: firebase apphosting:secrets:set payfast-passphrase
-  # - variable: PAYFAST_PASSPHRASE
-  #   secret: payfast-passphrase
+
+  # Sandbox merchant credentials — only needed when settings/config has isLiveMode: false
+  # on the hosted environment. Live merchant ID/key live in Firestore settings/config.
+  # Uncomment and set secrets if you run sandbox checkout on App Hosting:
+  # - variable: NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_ID
+  #   secret: payfast-sandbox-merchant-id
   #   availability:
+  #     - BUILD
+  #     - RUNTIME
+  # - variable: NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_KEY
+  #   secret: payfast-sandbox-merchant-key
+  #   availability:
+  #     - BUILD
   #     - RUNTIME

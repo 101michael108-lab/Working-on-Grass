@@ -37,12 +37,11 @@ export default function CoursesPage() {
                     <Link href={productUrl(course)}>
                     <div className="aspect-video bg-secondary/50 rounded-md overflow-hidden flex items-center justify-center">
                         <Image
-                        src={course.image || `https://picsum.photos/seed/${course.id}/400/225`}
+                        src={course.images?.[0] || `https://picsum.photos/seed/${course.id}/400/225`}
                         alt={course.name}
                         width={400}
                         height={225}
                         className="object-cover w-full h-full group-hover:scale-105 transition-transform"
-                        data-ai-hint={course.imageHint}
                         />
                     </div>
                     </Link>

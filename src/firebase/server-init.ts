@@ -1,6 +1,5 @@
 /**
- * @fileOverview This file is deprecated. 
- * Please use the client SDK exclusively as per project guidelines.
- * Server-side data fetching should use initializeFirebase() from '@/firebase'.
+ * Server-only Firebase Admin SDK.
+ * Use in API routes and server actions — never import from client components.
  */
-export {};
+export { getAdminFirestore, getAdminAuth } from '@/lib/firebase-admin';

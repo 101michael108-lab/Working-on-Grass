@@ -22,8 +22,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useUser, useFirestore, addDocumentNonBlocking, useAuth, setDocumentNonBlocking, useDoc, useMemoFirebase } from "@/firebase";
-import { collection, serverTimestamp, doc, getDoc } from "firebase/firestore";
+import { useUser, useFirestore, useAuth, useDoc, useMemoFirebase } from "@/firebase";
+import { collection, serverTimestamp, doc, getDoc, addDoc, setDoc } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
 import type { SiteSettings, Product } from "@/lib/types";
@@ -141,7 +141,7 @@ export default function CheckoutPage() {
                 createdAt: serverTimestamp(),
                 updatedAt: serverTimestamp(),
             };
-            setDocumentNonBlocking(userDocRef, userData, { merge: false });
+            await setDoc(userDocRef, userData);
         } catch (error) {
             toast({ variant: "destructive", title: "Could not create guest session." });
             setIsProcessing(false);
@@ -177,13 +177,15 @@ export default function CheckoutPage() {
     };
 
     try {
-      const docRef = await addDocumentNonBlocking(ordersCollection, orderData);
+      const docRef = await addDoc(ordersCollection, orderData);
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       
       const isLive = settings?.isLiveMode === true;
+      const sandboxMerchantId = process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_ID || "";
+      const sandboxMerchantKey = process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_KEY || "";
       const payfastData = {
-        merchant_id: isLive ? (settings?.payfastMerchantId || "") : "10043133",
-        merchant_key: isLive ? (settings?.payfastMerchantKey || "") : "wh7ky81lq556u",
+        merchant_id: isLive ? (settings?.payfastMerchantId || "") : sandboxMerchantId,
+        merchant_key: isLive ? (settings?.payfastMerchantKey || "") : sandboxMerchantKey,
         return_url: new URL(`/checkout/success?orderId=${docRef.id}`, origin).href,
         cancel_url: new URL('/cart', origin).href,
         notify_url: new URL('/api/payfast-itn', origin).href,

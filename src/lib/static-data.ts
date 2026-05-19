@@ -2,23 +2,29 @@
 import type { Service, SeedCategory } from './types';
 
 export const services: Service[] = [
-    { 
-        title: "Veld & Ecological Assessments", 
-        description: "Comprehensive evaluation of veld condition, grazing capacity, and detailed vegetation surveys for farm planning, EIAs, or conservation compliance.",
+    {
+        title: "Property Assessments",
+        description: "Comprehensive evaluations of veld condition, grazing capacity, and vegetation classification, including mapping, long-term monitoring, agricultural potential assessments, and specialised habitat evaluations for rare game species.",
         cta: "Request Assessment",
-        whoIsItFor: "For Farmers, Reserves & EIAs"
+        whoIsItFor: ""
     },
     {
-        title: "Grazing & Restoration Planning",
-        description: "Actionable plans to restore degraded grasslands and optimize grazing systems. We cover everything from rotational plans to water point and fencing layouts.",
-        cta: "Create a Plan",
-        whoIsItFor: "For Livestock Producers & Land Managers"
+        title: "Veld Management Advice",
+        description: "Practical, science-based guidance on improving and restoring veld condition, including grazing management, control of problem plants, prescribed burning, and erosion control.",
+        cta: "Discuss Your Veld",
+        whoIsItFor: ""
     },
     {
-        title: "Mine & Industrial Rehabilitation",
-        description: "Expert strategies to restore mined or degraded industrial land, helping you meet regulatory requirements, prevent soil erosion, and re-establish productive ecosystems.",
-        cta: "Discuss a Project",
-        whoIsItFor: "For Mining Houses & Industrial Sites"
+        title: "Planted Pastures and Forages",
+        description: "Recommendations on suitable forage and cover crops tailored to your specific needs and environmental conditions, drawing on extensive experience and a wide network of experts.",
+        cta: "Get Recommendations",
+        whoIsItFor: ""
+    },
+    {
+        title: "Training & Presentations",
+        description: "Short courses and training on grass identification and veld management, as well as presentations at farmers' days and industry events.",
+        cta: "Enquire",
+        whoIsItFor: ""
     }
 ];
 

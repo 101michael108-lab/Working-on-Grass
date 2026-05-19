@@ -2,8 +2,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { useFirestore } from "@/firebase";
-import { collectionGroup, query, where, getDocs, limit } from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,7 +24,6 @@ const getStatusIcon = (status: Order['status']) => {
 }
 
 export default function TrackOrderPage() {
-    const firestore = useFirestore();
     const [orderId, setOrderId] = useState("");
     const [email, setEmail] = useState("");
     const [order, setOrder] = useState<Order | null>(null);
@@ -43,17 +40,18 @@ export default function TrackOrderPage() {
         setOrder(null);
 
         try {
-            const ordersQuery = query(
-                collectionGroup(firestore, 'orders'), 
-                where('shippingInfo.email', '==', email.trim().toLowerCase()),
-                limit(10)
-            );
-            
-            const snapshot = await getDocs(ordersQuery);
-            const foundOrder = snapshot.docs.find(d => d.id === orderId.trim());
+            const res = await fetch('/api/track-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    orderId: orderId.trim(),
+                    email: email.trim().toLowerCase(),
+                }),
+            });
 
-            if (foundOrder) {
-                setOrder({ ...foundOrder.data() as Omit<Order, 'id'>, id: foundOrder.id });
+            if (res.ok) {
+                const { order: foundOrder } = await res.json();
+                setOrder(foundOrder as Order);
             } else {
                 setError("Order not found. Please check your Order ID and Email Address.");
             }

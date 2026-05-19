@@ -4,6 +4,7 @@
 
 import { initializeFirebase } from '@/firebase';
 import { collection, addDoc, Firestore } from 'firebase/firestore';
+import { getSiteUrl } from '@/lib/site-url';
 
 interface OrderConfirmationPayload {
   to: string;
@@ -326,7 +327,7 @@ export async function sendAdminInquiryNotification(payload: InquiryPayload, db?:
           <hr/>
           <p><strong>Message / Requirements:</strong></p>
           <div style="white-space: pre-wrap; background: #f1f5f9; padding: 15px; border-radius: 4px;">${payload.message || 'No additional details provided.'}</div>
-          <p style="margin-top: 20px;"><a href="${typeof window !== 'undefined' ? window.location.origin : ''}/admin/inquiries">View in Admin Dashboard</a></p>
+          <p style="margin-top: 20px;"><a href="${getSiteUrl()}/admin/inquiries">View in Admin Dashboard</a></p>
         </div>
       `
     }

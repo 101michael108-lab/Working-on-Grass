@@ -44,9 +44,7 @@ service cloud.firestore {
       allow get: if true;
       allow list: if true;
       allow create: if isAdmin();
-      // Allow admins to update or allow automated stock reduction from the ITN route (unauthenticated)
-      allow update: if (isAdmin() && isExistingDoc()) || 
-                    (request.auth == null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['stock']));
+      allow update: if isAdmin() && isExistingDoc();
       allow delete: if isAdmin() && isExistingDoc();
     }
 
@@ -113,8 +111,7 @@ service cloud.firestore {
         allow list: if isOwner(userId) || isAdmin();
         allow create: if isOwner(userId) && request.resource.data.userId == userId;
         allow update: if (isAdmin() && isExistingDoc()) || 
-                      (isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId) ||
-                      (request.auth == null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'paymentInfo']));
+                      (isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId);
         allow delete: if isOwner(userId) || isAdmin();
 
         match /orderItems/{orderItemId} {
@@ -126,13 +123,9 @@ service cloud.firestore {
       }
     }
     
-    // Collection Group Access for Orders (Public Tracking & Admin List)
+    // Collection group: admin dashboards only (public tracking uses /api/track-order)
     match /{path=**}/orders/{orderId} {
-        // Allow list for admins
-        // Allow list for public order status lookup IF strictly limited and email is provided
-        allow list: if isAdmin() || (request.query.limit <= 10 && request.query.filters.size() >= 1);
-        // Allow get for anyone if they have the specific orderId
-        allow get: if true; 
+        allow list, get: if isAdmin();
     }
   }
 }

@@ -104,9 +104,9 @@ export default function BookLayout({ product, relatedProducts, isLoadingRelated 
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-headline leading-tight">
                   {product.name}
                 </h1>
-                {product.subtitle && (
+                {product.brand && (
                   <p className="mt-2 text-lg text-muted-foreground font-body italic">
-                    {product.subtitle}
+                    {product.brand}
                   </p>
                 )}
               </div>

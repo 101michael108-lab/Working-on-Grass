@@ -11,7 +11,6 @@ export function Logo() {
         style={{
           shapeRendering: 'geometricPrecision',
           textRendering: 'geometricPrecision',
-          imageRendering: 'optimizeQuality',
           fillRule: 'evenodd',
           clipRule: 'evenodd',
         }}

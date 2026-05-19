@@ -42,9 +42,14 @@ export default function LoginPage() {
                 if (userDocSnap.exists()) {
                     const userData = userDocSnap.data();
                     if (userData.role === 'admin') {
-                        router.push('/admin');
+                        user.getIdToken().then((idToken) =>
+                            fetch('/api/auth/session', {
+                                method: 'POST',
+                                headers: { Authorization: `Bearer ${idToken}` },
+                            })
+                        ).then(() => router.push('/admin'));
                     } else {
-                        router.push('/');
+                        fetch('/api/auth/session', { method: 'DELETE' }).then(() => router.push('/'));
                     }
                 }
             });
@@ -72,8 +77,14 @@ export default function LoginPage() {
                     description: "Welcome back! Redirecting...",
                 });
                 if (userData.role === 'admin') {
+                    const idToken = await user.getIdToken();
+                    await fetch('/api/auth/session', {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${idToken}` },
+                    });
                     router.push('/admin');
                 } else {
+                    await fetch('/api/auth/session', { method: 'DELETE' });
                     router.push('/');
                 }
             } else {

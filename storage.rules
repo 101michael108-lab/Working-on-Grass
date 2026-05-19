@@ -2,27 +2,27 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Images in siteImages are publicly readable.
-    // Writes are allowed by any authenticated user.
-    // The admin media page is protected by app logic, so only admins should be able to trigger uploads here.
+
+    function isAdmin() {
+      return request.auth != null &&
+        firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
     match /siteImages/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // Media library images are publicly readable, writes by authenticated users
     match /mediaLibrary/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // Resource files (PDFs etc) are publicly readable, writes by authenticated users
     match /resources/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null;
+      allow write: if isAdmin();
     }
 
-    // User-specific files can only be read/written by the owning user.
     match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }

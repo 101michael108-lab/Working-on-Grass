@@ -11,13 +11,18 @@ import {
   Wifi,
   Camera,
   FileDown,
-  BookOpen,
-  Smartphone,
-  Users,
+  ArrowRight,
+  Tractor,
+  TreePine,
+  Leaf,
+  BarChart3,
+  HardHat,
+  Microscope,
+  GraduationCap,
+  Binoculars,
 } from "lucide-react";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useMedia } from "@/context/media-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -26,7 +31,6 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
 
 const PLAY_STORE =
   "https://play.google.com/store/apps/details?id=za.co.highbranching.grasspro";
@@ -34,44 +38,17 @@ const APP_STORE = "https://apps.apple.com/za/app/grasspro/id1586118050";
 const WHATSAPP =
   "https://wa.me/27782280008?text=Hi%20Frits%2C%20I%20have%20a%20question%20about%20the%20GrassPro%20app.";
 
-const features = [
-  {
-    icon: Camera,
-    title: "2 000+ diagnostic images",
-    description:
-      "High-resolution images covering 390 grass species found across Southern Africa: roots, stems, leaves, seed heads.",
-  },
-  {
-    icon: Search,
-    title: "Smart Search",
-    description:
-      "Filter by multiple attributes simultaneously: growth form, leaf texture, habitat, and more, to narrow down an identification quickly.",
-  },
-  {
-    icon: MapPin,
-    title: "GPS functionality",
-    description:
-      "Indicates grass species in your immediate vicinity, reducing the identification pool based on your location.",
-  },
-  {
-    icon: Globe,
-    title: "Interactive distribution maps",
-    description:
-      "View the recorded distribution of each species across Southern Africa to confirm whether it's expected in your region.",
-  },
-  {
-    icon: Wifi,
-    title: "Fully offline capable",
-    description:
-      "All species data and images are stored on your device. No signal needed, works anywhere in the field.",
-  },
-  {
-    icon: CheckCircle2,
-    title: "Sightings log",
-    description:
-      "Record and save your grass sightings with GPS coordinates. Build a personal record of species on your property.",
-  },
-];
+const PlayStoreSVG = () => (
+  <svg className="mr-2 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z" />
+  </svg>
+);
+
+const AppStoreSVG = () => (
+  <svg className="mr-2 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+  </svg>
+);
 
 const accordionItems = [
   {
@@ -130,316 +107,447 @@ const accordionItems = [
   },
 ];
 
-const roles = [
-  "Livestock farmers",
-  "Game ranch managers",
-  "Nature reserve staff",
-  "Agricultural consultants",
-  "Environmental practitioners",
-  "Mine rehabilitation teams",
-  "Veld ecologists",
-  "Naturalists & students",
+const audiences = [
+  { icon: Tractor,      label: "Livestock farmers" },
+  { icon: Binoculars,   label: "Game ranch managers" },
+  { icon: Leaf,         label: "Nature reserve staff" },
+  { icon: BarChart3,    label: "Agricultural consultants" },
+  { icon: Globe,        label: "Environmental practitioners" },
+  { icon: HardHat,      label: "Mine rehabilitation teams" },
+  { icon: Microscope,   label: "Veld ecologists" },
+  { icon: GraduationCap,label: "Naturalists & students" },
 ];
 
 export function GrassProClient() {
   const { getImage, isLoading } = useMedia();
   const appPromoImage = getImage("grass-app-promo");
 
+  const PhoneShell = ({ priority = false }: { priority?: boolean }) => (
+    <div className="relative mx-auto w-[250px] sm:w-[280px]">
+      <div className="absolute inset-x-0 bottom-0 h-2/3 bg-primary/20 blur-3xl rounded-full" />
+      <div className="relative rounded-[44px] bg-gray-900 border-[6px] border-gray-800 shadow-[0_30px_80px_rgba(0,0,0,0.45)] overflow-hidden">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-gray-900 rounded-b-2xl z-10" />
+        {appPromoImage ? (
+          <Image
+            src={appPromoImage.imageUrl}
+            alt={appPromoImage.description || "GrassPro app screenshot"}
+            width={280}
+            height={560}
+            className="block"
+            priority={priority}
+          />
+        ) : isLoading ? (
+          <Skeleton className="w-[280px] h-[560px] rounded-none" />
+        ) : (
+          <div className="w-[280px] h-[560px] bg-gray-800 flex items-center justify-center">
+            <p className="text-gray-500 text-sm text-center px-6">App screenshot</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <>
-      {/* ── Section 1: Hero ── */}
-      <section className="w-full bg-primary text-primary-foreground py-20 md:py-28">
-        <div className="container px-4 md:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="text-center lg:text-left">
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-headline tracking-tight">
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 1 — HERO
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="w-full bg-primary text-primary-foreground overflow-hidden">
+        <div className="container px-4 md:px-6 pt-16 md:pt-24 pb-0">
+          <div className="grid lg:grid-cols-2 gap-10 items-end">
+
+            {/* Left — copy */}
+            <div className="pb-16 md:pb-24 text-center lg:text-left">
+              <p className="text-primary-foreground/50 text-sm font-semibold uppercase tracking-widest mb-3">
+                Southern Africa&rsquo;s grass identification app
+              </p>
+              <h1 className="text-6xl md:text-7xl lg:text-8xl font-bold font-headline tracking-tight leading-none">
                 GrassPro
               </h1>
-              <p className="mt-2 text-primary-foreground/70 text-lg font-semibold">
+              <p className="mt-2 text-primary-foreground/60 text-base font-medium">
                 by Frits van Oudtshoorn &amp; SmartSearch Apps
               </p>
-              <p className="mt-5 text-xl text-primary-foreground/90 font-body max-w-xl mx-auto lg:mx-0">
-                Identify grasses of Southern Africa in the field. 390 species,
-                2 000+ images, GPS functionality, Smart Search, and full offline
-                capability.
+              <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 font-body max-w-lg mx-auto lg:mx-0 leading-relaxed">
+                Identify any grass species in the field — with award-winning Smart Search,
+                GPS-aware filtering, 2&nbsp;000+ diagnostic images, and full offline capability.
               </p>
+
+              {/* Store buttons */}
               <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-white text-primary hover:bg-white/90 font-bold shadow-lg"
-                >
+                <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-bold shadow-lg h-14 px-6">
                   <a href={PLAY_STORE} target="_blank" rel="noopener noreferrer">
-                    <svg
-                      className="mr-2 h-5 w-5 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z" />
-                    </svg>
-                    Google Play
+                    <PlayStoreSVG /> Google Play
                   </a>
                 </Button>
-                <Button
-                  asChild
-                  size="lg"
-                  className="bg-white text-primary hover:bg-white/90 font-bold shadow-lg"
-                >
+                <Button asChild size="lg" className="bg-white/10 text-white hover:bg-white/20 border border-white/20 font-bold h-14 px-6">
                   <a href={APP_STORE} target="_blank" rel="noopener noreferrer">
-                    <svg
-                      className="mr-2 h-5 w-5 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
-                    </svg>
-                    App Store
+                    <AppStoreSVG /> App Store
                   </a>
                 </Button>
               </div>
-              <p className="mt-4 text-sm text-primary-foreground/60">
-                Free to download · 50 grasses included · Full upgrade ~R199.99 per year
+              <p className="mt-3 text-xs text-primary-foreground/40">
+                Free to download · 50 species included · Full version R199.99/year
               </p>
+
+              {/* Stats strip */}
+              <div className="mt-10 pt-8 border-t border-white/15 flex flex-wrap gap-x-8 gap-y-4 justify-center lg:justify-start">
+                {[
+                  { value: "390",    label: "grass species" },
+                  { value: "2 000+", label: "diagnostic images" },
+                  { value: "28",     label: "languages" },
+                  { value: "Free",   label: "to start" },
+                ].map((stat) => (
+                  <div key={stat.label}>
+                    <span className="text-2xl font-bold text-white">{stat.value}</span>
+                    <span className="text-primary-foreground/50 text-sm ml-1.5">{stat.label}</span>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* App promo image */}
-            <div className="flex justify-center">
-              {appPromoImage ? (
-                <div className="relative group">
-                  <div className="absolute -inset-4 bg-primary-foreground/5 rounded-2xl blur-2xl group-hover:bg-primary-foreground/10 transition-colors" />
-                  <Image
-                    src={appPromoImage.imageUrl}
-                    alt={appPromoImage.description || "GrassPro Mobile App Screenshot"}
-                    width={320}
-                    height={640}
-                    className="relative rounded-2xl object-cover shadow-2xl border-8 border-primary-foreground/10"
-                    priority
-                  />
-                </div>
-              ) : (
-                <div className="relative w-[280px] h-[560px] bg-primary-foreground/5 rounded-3xl border-4 border-primary-foreground/10 flex items-center justify-center shadow-2xl">
-                  {isLoading ? (
-                    <Skeleton className="w-full h-full rounded-2xl bg-primary-foreground/20" />
+            {/* Right — phone, sits on the bottom edge */}
+            <div className="flex justify-center lg:justify-end items-end pb-0">
+              <div className="relative mx-auto w-[240px] sm:w-[280px] lg:w-[300px]">
+                <div className="absolute -inset-8 bg-white/5 blur-3xl rounded-full" />
+                <div className="relative rounded-[44px] bg-gray-900 border-[6px] border-gray-800 shadow-[0_-20px_80px_rgba(0,0,0,0.4),0_30px_60px_rgba(0,0,0,0.4)] overflow-hidden">
+                  <div className="absolute top-0 left-1/2 -translate-x-1/2 w-20 h-5 bg-gray-900 rounded-b-2xl z-10" />
+                  {appPromoImage ? (
+                    <Image
+                      src={appPromoImage.imageUrl}
+                      alt="GrassPro app home screen"
+                      width={300}
+                      height={600}
+                      className="block"
+                      priority
+                    />
+                  ) : isLoading ? (
+                    <Skeleton className="w-[300px] h-[600px] rounded-none bg-primary-foreground/10" />
                   ) : (
-                    <p className="text-primary-foreground/40 text-sm text-center px-4">
-                      App screenshot
-                      <br />
-                      (No promo image found)
-                    </p>
+                    <div className="w-[300px] h-[600px] bg-gray-800" />
                   )}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Section 2: About GrassPro ── */}
-      <section className="w-full py-16 md:py-24 bg-background">
-        <div className="container px-4 md:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* Left column */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">
-                About GrassPro
-              </h2>
-              <p className="text-muted-foreground leading-relaxed mb-4">
-                GrassPro Southern Africa is a smart mobile tool that helps you identify
-                grasses and provides a wealth of ecological and agricultural information
-                on each species. It contains a comprehensive content-rich database with
-                written and taxonomic information, distribution maps, illustrative
-                photographs, and other useful content.
-              </p>
-              <p className="text-muted-foreground leading-relaxed mb-6">
-                What sets this app apart is that it filters and ranks your grass species
-                list during a search, using the innovative, intuitive and interactive
-                award-winning &ldquo;Smart Search&rdquo; function. It further includes GPS
-                functionality to indicate the grass species occurring in your immediate
-                vicinity.
-              </p>
-              <div className="bg-primary/10 border-l-4 border-primary rounded-r-lg p-4 mb-4">
-                <p className="text-sm leading-relaxed">
-                  GrassPro is a collaborative initiative by grass expert Frits van
-                  Oudtshoorn and well-known app developer SmartSearch Apps. It was
-                  officially launched on 26 July 2023 during the 58th annual congress
-                  of the Grassland Society of Southern Africa (GSSA).
-                </p>
               </div>
-              <p className="text-xs text-muted-foreground">
-                Endorsed by the Grassland Society of Southern Africa · Supported by Briza Publications
-              </p>
             </div>
 
-            {/* Right column: feature cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {features.map((f) => (
-                <Card
-                  key={f.title}
-                  className="border hover:border-primary/40 hover:shadow-md transition-all duration-200"
-                >
-                  <CardContent className="pt-5 pb-5 flex flex-col gap-2">
-                    <div className="bg-primary/10 p-2 rounded-md w-fit">
-                      <f.icon className="h-4 w-4 text-primary" />
-                    </div>
-                    <h3 className="font-bold font-headline text-sm">{f.title}</h3>
-                    <p className="text-muted-foreground text-xs leading-relaxed">
-                      {f.description}
-                    </p>
-                  </CardContent>
-                </Card>
-              ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 3 — FEATURE DEEP-DIVES (alternating)
+      ───────────────────────────────────────────────────────────────── */}
+
+      {/* Feature A — Smart Search */}
+      <section className="w-full py-20 md:py-28 bg-background overflow-hidden">
+        <div className="container px-4 md:px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-semibold mb-5">
+                <Search className="h-4 w-4" /> Smart Search
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
+                Identify any grass<br />in minutes
+              </h2>
+              <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-lg">
+                The award-winning Smart Search filters and ranks your species list as you
+                describe the plant — narrowing 390 species down to a handful of candidates fast.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  "Filter by plant height, leaf width, inflorescence type and more",
+                  "Ranked results — most likely match shown first",
+                  "Build custom lists by ecological group, grazing value, or uses",
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="order-1 lg:order-2 flex justify-center">
+              <PhoneShell priority />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Section 3: App Functions in Detail ── */}
-      <section className="w-full py-16 md:py-24 bg-muted/30">
-        <div className="container px-4 md:px-6 max-w-4xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-bold font-headline">
-              App Functions in Detail
-            </h2>
-            <p className="mt-3 text-muted-foreground max-w-2xl mx-auto">
-              Below is an overview of each main function available in GrassPro.
-            </p>
+      {/* Feature B — GPS & Location */}
+      <section className="w-full py-20 md:py-28 bg-primary/5 overflow-hidden">
+        <div className="container px-4 md:px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="flex justify-center">
+              <PhoneShell />
+            </div>
+            <div>
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-semibold mb-5">
+                <MapPin className="h-4 w-4" /> GPS & Location
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
+                Your location,<br />your species list
+              </h2>
+              <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-lg">
+                The app uses your GPS position to show only the grass species that occur in
+                your immediate area — making identification dramatically faster in the field.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  "Current GPS position or select any location on the map",
+                  "Coverage across all seven southern African countries",
+                  "Interactive distribution maps per species",
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
+        </div>
+      </section>
+
+      {/* Feature C — Species Database */}
+      <section className="w-full py-20 md:py-28 bg-background overflow-hidden">
+        <div className="container px-4 md:px-6">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="order-2 lg:order-1">
+              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary rounded-full px-4 py-1.5 text-sm font-semibold mb-5">
+                <Camera className="h-4 w-4" /> Species Database
+              </div>
+              <h2 className="text-4xl md:text-5xl font-bold font-headline leading-tight">
+                2 000+ images,<br />one species at a time
+              </h2>
+              <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-lg">
+                Every species comes with up to 10 diagnostic photos, a full written description,
+                grazing value, ecological notes, and a distribution map — all stored on your device.
+              </p>
+              <ul className="mt-6 space-y-3">
+                {[
+                  "3–10 photos per species: whole plant, inflorescence, spikelets, leaves",
+                  "Grazing value, ecological status, and weediness at a glance",
+                  "Fully offline — no signal needed anywhere in the field",
+                ].map((point) => (
+                  <li key={point} className="flex items-start gap-3">
+                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span className="text-muted-foreground">{point}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div className="order-1 lg:order-2 flex justify-center">
+              <PhoneShell />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* App functions accordion */}
+      <section className="w-full py-16 md:py-20 bg-muted/40 border-y">
+        <div className="container px-4 md:px-6 max-w-3xl mx-auto">
+          <h2 className="text-2xl font-bold font-headline text-center mb-2">
+            Explore every function
+          </h2>
+          <p className="text-center text-muted-foreground text-sm mb-8">
+            A complete overview of everything GrassPro can do.
+          </p>
           <Accordion type="single" collapsible defaultValue="smart-search" className="w-full">
             {accordionItems.map((item) => (
               <AccordionItem key={item.value} value={item.value}>
-                <AccordionTrigger className="text-left font-semibold">
+                <AccordionTrigger className="text-left font-semibold text-sm">
                   {item.trigger}
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground leading-relaxed">
+                <AccordionContent className="text-muted-foreground leading-relaxed text-sm">
                   {item.content}
                 </AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
+          <div className="mt-6 text-center">
+            <Button asChild variant="outline" className="border-primary/30 hover:border-primary">
+              <Link href="/resources">
+                <FileDown className="mr-2 h-4 w-4" /> Download full PDF user guide
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
-      {/* ── Section 4: Getting the App + PDF Guide ── */}
-      <section className="w-full py-16 md:py-24 bg-background">
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 4 — ENDORSEMENT STRIP
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="bg-background border-b py-5">
         <div className="container px-4 md:px-6">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
-            {/* Left: How to get the app */}
-            <div>
-              <h2 className="text-3xl md:text-4xl font-bold font-headline mb-6">
-                How to Get the App
-              </h2>
-              <ol className="space-y-5">
+          <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground">
+            <span>Endorsed by the <strong className="text-foreground">Grassland Society of Southern Africa</strong></span>
+            <span className="hidden sm:block text-border">·</span>
+            <span>Supported by <strong className="text-foreground">Briza Publications</strong></span>
+            <span className="hidden sm:block text-border">·</span>
+            <span>Launched at the 58th GSSA Congress, July 2023</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 5 — PRICING
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="w-full py-20 md:py-28 bg-background">
+        <div className="container px-4 md:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold font-headline">Simple pricing</h2>
+            <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+              Start for free, upgrade when you&rsquo;re ready. No hidden costs.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Free card */}
+            <div className="rounded-2xl border-2 border-border p-8">
+              <p className="text-sm font-bold uppercase tracking-widest text-muted-foreground mb-2">Evaluation version</p>
+              <p className="text-5xl font-bold font-headline">Free</p>
+              <p className="text-muted-foreground mt-1 text-sm">Always free to download</p>
+              <ul className="mt-8 space-y-3">
                 {[
-                  'Search for "GrassPro" on the Google Play Store or Apple App Store and download the free evaluation version.',
-                  "The free version includes 50 sample grass species — enough to explore the app before upgrading.",
-                  'To unlock all 390 species, tap "Purchase Options" below the GrassPro title on the home screen and follow the instructions.',
-                  "The full version costs R 199.99/year, which includes free access to all future expansions and upgrades.",
-                ].map((step, i) => (
-                  <li key={i} className="flex gap-4 items-start">
-                    <span className="shrink-0 mt-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold">
-                      {i + 1}
-                    </span>
-                    <p className="text-muted-foreground leading-relaxed text-sm">{step}</p>
+                  "50 sample grass species",
+                  "Full Smart Search functionality",
+                  "GPS-based location filtering",
+                  "Distribution maps",
+                  "Fully offline",
+                  "iOS & Android",
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
+                    <span>{f}</span>
                   </li>
                 ))}
-              </ol>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                <Button asChild className="bg-white text-primary border border-primary/20 hover:bg-primary/5 font-bold shadow-sm">
+              </ul>
+              <div className="mt-8 space-y-2">
+                <Button asChild variant="outline" className="w-full border-2">
                   <a href={PLAY_STORE} target="_blank" rel="noopener noreferrer">
-                    <svg className="mr-2 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z" />
-                    </svg>
-                    Google Play
+                    <PlayStoreSVG /> Google Play
                   </a>
                 </Button>
-                <Button asChild className="bg-white text-primary border border-primary/20 hover:bg-primary/5 font-bold shadow-sm">
+                <Button asChild variant="outline" className="w-full border-2">
                   <a href={APP_STORE} target="_blank" rel="noopener noreferrer">
-                    <svg className="mr-2 h-4 w-4 shrink-0" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
-                    </svg>
-                    App Store
+                    <AppStoreSVG /> App Store
                   </a>
                 </Button>
               </div>
             </div>
 
-            {/* Right: PDF Guide download */}
-            <div>
-              <div className="border-2 border-primary/20 bg-primary/5 p-8 text-center rounded-lg">
-                <FileDown className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h3 className="text-xl font-bold font-headline mb-2">
-                  GrassPro User Guide
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                  A comprehensive PDF guide covering all app features, functions, and
-                  how to get the most out of GrassPro in the field.
-                </p>
-                <Button asChild className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
-                  <Link href="/resources">
-                    Download PDF Guide
-                    <svg
-                      className="ml-2 h-4 w-4 shrink-0"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12h14M12 5l7 7-7 7" />
-                    </svg>
-                  </Link>
-                </Button>
-                <p className="text-xs text-muted-foreground mt-3">
-                  Available free from our Resources page
-                </p>
+            {/* Full version card */}
+            <div className="rounded-2xl border-2 border-primary bg-primary text-primary-foreground p-8 relative overflow-hidden">
+              <div className="absolute top-4 right-4 bg-white/20 text-white text-[10px] font-bold uppercase tracking-widest px-2 py-1 rounded-full">
+                Recommended
               </div>
+              <p className="text-sm font-bold uppercase tracking-widest text-primary-foreground/60 mb-2">Full version</p>
+              <div className="flex items-end gap-1">
+                <p className="text-5xl font-bold font-headline">R199.99</p>
+                <span className="text-primary-foreground/60 mb-1">/year</span>
+              </div>
+              <p className="text-primary-foreground/60 mt-1 text-sm">Includes all future expansions &amp; upgrades</p>
+              <ul className="mt-8 space-y-3">
+                {[
+                  "All 390 grass species unlocked",
+                  "Full Smart Search & species lists",
+                  "GPS & location filtering",
+                  "2 000+ diagnostic images",
+                  "Full descriptions & distribution maps",
+                  "Sightings log with GPS coordinates",
+                  "28 southern African language names",
+                  "All future updates free",
+                ].map((f) => (
+                  <li key={f} className="flex items-center gap-3 text-sm">
+                    <CheckCircle2 className="h-4 w-4 text-white shrink-0" />
+                    <span className="text-primary-foreground/90">{f}</span>
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-8 text-xs text-primary-foreground/50 text-center">
+                Upgrade via &ldquo;Purchase Options&rdquo; inside the app
+              </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ── Section 5: Who Uses GrassPro? ── */}
-      <section className="w-full py-16 md:py-20 bg-background">
-        <div className="container px-4 md:px-6 text-center">
-          <h2 className="text-3xl font-bold font-headline mb-8">
-            Who uses GrassPro?
-          </h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 max-w-3xl mx-auto">
-            {roles.map((role) => (
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 6 — WHO IT'S FOR
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="w-full py-20 md:py-28 bg-muted/40 border-y">
+        <div className="container px-4 md:px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold font-headline">Who uses GrassPro?</h2>
+            <p className="mt-3 text-muted-foreground max-w-md mx-auto">
+              Used by professionals and enthusiasts who work with Southern African grass and veld.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 max-w-3xl mx-auto">
+            {audiences.map(({ icon: Icon, label }) => (
               <div
-                key={role}
-                className="bg-secondary text-secondary-foreground rounded-full px-4 py-2 text-sm font-medium border shadow-sm"
+                key={label}
+                className="flex flex-col items-center text-center gap-3 p-5 bg-background rounded-xl border-2 border-border hover:border-primary/40 hover:shadow-md transition-all duration-200"
               >
-                {role}
+                <div className="bg-primary/10 rounded-full p-3">
+                  <Icon className="h-6 w-6 text-primary" />
+                </div>
+                <span className="text-sm font-semibold text-foreground leading-snug">{label}</span>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Section 6: Final CTA ── */}
-      <section className="w-full py-16 md:py-20 bg-secondary/30 border-t-2">
-        <div className="container px-4 md:px-6 text-center">
-          <h2 className="text-3xl font-bold font-headline">
-            Questions about GrassPro?
+      {/* ─────────────────────────────────────────────────────────────────
+          SECTION 7 — DOWNLOAD CTA
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="w-full py-24 md:py-32 bg-primary text-primary-foreground text-center">
+        <div className="container px-4 md:px-6">
+          <p className="text-primary-foreground/50 text-sm font-semibold uppercase tracking-widest mb-4">
+            Available on iOS &amp; Android
+          </p>
+          <h2 className="text-5xl md:text-6xl font-bold font-headline">
+            Download GrassPro
           </h2>
+          <p className="mt-4 text-primary-foreground/70 text-lg max-w-md mx-auto">
+            Free to download. Start identifying grasses today.
+          </p>
+          <div className="mt-10 flex flex-col sm:flex-row gap-4 justify-center">
+            <Button asChild size="lg" className="bg-white text-primary hover:bg-white/90 font-bold h-14 px-8 text-base shadow-xl">
+              <a href={PLAY_STORE} target="_blank" rel="noopener noreferrer">
+                <PlayStoreSVG /> Google Play
+              </a>
+            </Button>
+            <Button asChild size="lg" className="bg-white/10 text-white hover:bg-white/20 border border-white/25 font-bold h-14 px-8 text-base">
+              <a href={APP_STORE} target="_blank" rel="noopener noreferrer">
+                <AppStoreSVG /> App Store
+              </a>
+            </Button>
+          </div>
+          <p className="mt-4 text-primary-foreground/40 text-xs">
+            Free · 50 species included · Upgrade to full version for R199.99/year
+          </p>
+        </div>
+      </section>
+
+      {/* ─────────────────────────────────────────────────────────────────
+          QUESTIONS CTA
+      ───────────────────────────────────────────────────────────────── */}
+      <section className="w-full py-16 md:py-20 bg-background border-t">
+        <div className="container px-4 md:px-6 text-center">
+          <h2 className="text-3xl font-bold font-headline">Questions about GrassPro?</h2>
           <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
             Having trouble identifying a species, or want to know if the app is right
             for your work? Ask Frits directly.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              asChild
-              size="lg"
-              className="bg-whatsapp hover:bg-whatsapp-hover text-white border-b-4 border-black/20"
-            >
+            <Button asChild size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white border-b-4 border-black/20">
               <a href={WHATSAPP} target="_blank" rel="noopener noreferrer">
                 <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
               </a>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-2">
-              <Link href="/contact">Send a Message</Link>
+              <Link href="/contact">Send a Message <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
         </div>

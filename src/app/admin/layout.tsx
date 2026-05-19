@@ -103,7 +103,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <SidebarMenu>
             <NavLink href="/admin/settings" icon={<Settings />} tooltip="Settings">Settings</NavLink>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={() => signOut(auth)}>
+              <SidebarMenuButton onClick={async () => {
+                await fetch('/api/auth/session', { method: 'DELETE' });
+                await signOut(auth);
+                router.push('/login');
+              }}>
                 <LogOut />
                 <span>Logout</span>
               </SidebarMenuButton>
