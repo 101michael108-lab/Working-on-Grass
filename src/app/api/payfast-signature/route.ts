@@ -7,17 +7,43 @@ type SignatureRequestBody = {
   isLiveMode?: boolean;
 };
 
+function parseSignatureRequest(body: unknown): SignatureRequestBody | null {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return null;
+  }
+
+  const record = body as Record<string, unknown>;
+
+  if (
+    record.payfastData &&
+    typeof record.payfastData === 'object' &&
+    !Array.isArray(record.payfastData)
+  ) {
+    return {
+      payfastData: record.payfastData as Record<string, string>,
+      isLiveMode: record.isLiveMode === true,
+    };
+  }
+
+  if (typeof record.merchant_id === 'string') {
+    return {
+      payfastData: record as Record<string, string>,
+      isLiveMode: record.isLiveMode === true,
+    };
+  }
+
+  return null;
+}
+
 export async function POST(req: NextRequest) {
   try {
-    const body = (await req.json()) as SignatureRequestBody | Record<string, string>;
+    const parsed = parseSignatureRequest(await req.json());
 
-    const isLiveMode =
-      'isLiveMode' in body && body.isLiveMode === true;
-    const data =
-      'payfastData' in body && body.payfastData
-        ? body.payfastData
-        : (body as Record<string, string>);
+    if (!parsed) {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
 
+    const { payfastData: data, isLiveMode = false } = parsed;
     const merchantId = data.merchant_id?.trim() ?? '';
     const merchantKey = data.merchant_key?.trim() ?? '';
 
