@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { FieldValue } from 'firebase-admin/firestore';
 import { getAdminFirestore } from '@/lib/firebase-admin';
-import { generatePayfastSignatureFromEntries } from '@/lib/payfast-signature';
 import { initializeFirebase } from '@/firebase';
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/services/email-service';
 import type { SiteSettings } from '@/lib/types';
+import {
+  confirmItnWithPayfast,
+  isPayfastPaymentComplete,
+  verifyItnSignature,
+} from '@/lib/payfast-itn';
 
 const PROCESSED_STATUSES = new Set(['Processing', 'Shipped', 'Fulfilled', 'Delivered']);
 
@@ -17,6 +21,7 @@ export async function POST(req: NextRequest) {
 
     const settingsSnap = await db.collection('settings').doc('config').get();
     const settings = settingsSnap.exists ? (settingsSnap.data() as SiteSettings) : null;
+    const isLive = settings?.isLiveMode === true;
 
     const entries: Array<[string, string]> = [];
     const pfData: Record<string, string> = {};
@@ -27,12 +32,19 @@ export async function POST(req: NextRequest) {
     }
 
     const receivedSignature = pfData.signature;
-    const passphrase = process.env.PAYFAST_PASSPHRASE;
-    const calculatedSignature = generatePayfastSignatureFromEntries(entries, passphrase);
+    const passphrase = process.env.PAYFAST_PASSPHRASE?.trim() || undefined;
 
-    if (passphrase && calculatedSignature !== receivedSignature) {
-      console.warn('PayFast ITN: Signature mismatch.');
-      return new NextResponse('Invalid signature', { status: 400 });
+    const payfastValid = await confirmItnWithPayfast(entries, isLive);
+    if (!payfastValid) {
+      console.warn('PayFast ITN: PayFast validate endpoint returned INVALID.');
+      return new NextResponse('Invalid ITN', { status: 400 });
+    }
+
+    const signatureOk = verifyItnSignature(entries, pfData, receivedSignature, passphrase);
+    if (passphrase && !signatureOk) {
+      console.warn(
+        'PayFast ITN: Local signature mismatch but PayFast validate was VALID — processing order.'
+      );
     }
 
     const orderId = pfData.m_payment_id;
@@ -44,7 +56,9 @@ export async function POST(req: NextRequest) {
       return new NextResponse('Missing custom data', { status: 400 });
     }
 
-    console.log(`PayFast ITN: Processing order ${orderId} for user ${userId}. Status: ${paymentStatus}`);
+    console.log(
+      `PayFast ITN: order=${orderId} user=${userId} payment_status=${paymentStatus} live=${isLive}`
+    );
 
     const orderRef = db.collection('users').doc(userId).collection('orders').doc(orderId);
     const orderSnap = await orderRef.get();
@@ -55,7 +69,7 @@ export async function POST(req: NextRequest) {
     }
 
     const orderData = orderSnap.data()!;
-    const isSuccess = paymentStatus === 'COMPLETE';
+    const isSuccess = isPayfastPaymentComplete(paymentStatus);
     const newStatus = isSuccess ? 'Processing' : 'Cancelled';
 
     if (PROCESSED_STATUSES.has(orderData.status)) {
@@ -70,7 +84,7 @@ export async function POST(req: NextRequest) {
         itn_validated_at: new Date().toISOString(),
       },
     });
-    console.log('PayFast ITN: Order status updated successfully.');
+    console.log(`PayFast ITN: Order ${orderId} status set to ${newStatus}.`);
 
     if (isSuccess) {
       for (const item of orderData.items || []) {
@@ -78,48 +92,47 @@ export async function POST(req: NextRequest) {
           await db.collection('products').doc(item.productId).update({
             stock: FieldValue.increment(-item.quantity),
           });
-          console.log(`PayFast ITN: Reduced stock for product ${item.productId}.`);
         } catch (e: unknown) {
           const message = e instanceof Error ? e.message : String(e);
-          console.warn(`PayFast ITN: Could not update stock for product ${item.productId}.`, message);
+          console.warn(`PayFast ITN: Stock update failed for ${item.productId}:`, message);
         }
       }
 
-      const { firestore } = initializeFirebase();
+      try {
+        const { firestore } = initializeFirebase();
 
-      await sendOrderConfirmationEmail(
-        {
-          to: orderData.shippingInfo.email,
-          orderId,
-          orderDate: new Date(),
-          customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
-          totalAmount: orderData.totalAmount,
-          items: orderData.items,
-          shippingInfo: orderData.shippingInfo,
-          storeName: settings?.storeName,
-          fromEmail: settings?.senderEmail,
-        },
-        firestore
-      )
-        .then(() => console.log('PayFast ITN: Customer confirmation email queued.'))
-        .catch((e) => console.error('PayFast ITN: Customer email failed.', e));
+        await sendOrderConfirmationEmail(
+          {
+            to: orderData.shippingInfo.email,
+            orderId,
+            orderDate: new Date(),
+            customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
+            totalAmount: orderData.totalAmount,
+            items: orderData.items,
+            shippingInfo: orderData.shippingInfo,
+            storeName: settings?.storeName,
+            fromEmail: settings?.senderEmail,
+          },
+          firestore
+        );
 
-      await sendAdminOrderNotification(
-        {
-          to: settings?.contactEmail || 'admin@workingongrass.co.za',
-          orderId,
-          orderDate: new Date(),
-          customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
-          totalAmount: orderData.totalAmount,
-          items: orderData.items,
-          shippingInfo: orderData.shippingInfo,
-          storeName: settings?.storeName,
-          fromEmail: settings?.senderEmail,
-        },
-        firestore
-      )
-        .then(() => console.log('PayFast ITN: Admin notification email queued.'))
-        .catch((e) => console.error('PayFast ITN: Admin email failed.', e));
+        await sendAdminOrderNotification(
+          {
+            to: settings?.contactEmail || 'admin@workingongrass.co.za',
+            orderId,
+            orderDate: new Date(),
+            customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
+            totalAmount: orderData.totalAmount,
+            items: orderData.items,
+            shippingInfo: orderData.shippingInfo,
+            storeName: settings?.storeName,
+            fromEmail: settings?.senderEmail,
+          },
+          firestore
+        );
+      } catch (e) {
+        console.error('PayFast ITN: Email queue failed (order still updated):', e);
+      }
     }
 
     return new NextResponse('OK', { status: 200 });
