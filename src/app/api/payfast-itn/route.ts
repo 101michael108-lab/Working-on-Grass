@@ -9,6 +9,7 @@ import {
   isPayfastPaymentComplete,
   verifyItnSignature,
 } from '@/lib/payfast-itn';
+import { getPayfastPassphrase } from '@/lib/payfast-config';
 
 const PROCESSED_STATUSES = new Set(['Processing', 'Shipped', 'Fulfilled', 'Delivered']);
 
@@ -32,7 +33,7 @@ export async function POST(req: NextRequest) {
     }
 
     const receivedSignature = pfData.signature;
-    const passphrase = process.env.PAYFAST_PASSPHRASE?.trim() || undefined;
+    const passphrase = getPayfastPassphrase(isLive);
 
     const payfastValid = await confirmItnWithPayfast(entries, isLive);
     if (!payfastValid) {

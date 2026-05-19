@@ -220,7 +220,7 @@ export default function CheckoutPage() {
       const sigRes = await fetch('/api/payfast-signature', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payfastData),
+        body: JSON.stringify({ payfastData, isLiveMode: isLivePayfast }),
       });
       const sigBody = await sigRes.json();
 
