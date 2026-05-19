@@ -18,10 +18,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore } from "@/firebase";
 import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
-import { doc, serverTimestamp } from "firebase/firestore";
-import { setDocumentNonBlocking } from "@/firebase";
+import { doc, serverTimestamp, setDoc } from "firebase/firestore";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { getAuthErrorMessage } from "@/lib/auth-errors";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -58,18 +58,18 @@ export default function SignupPage() {
                 updatedAt: serverTimestamp(),
             };
             
-            setDocumentNonBlocking(userDocRef, userData, { merge: false });
+            await setDoc(userDocRef, userData);
 
             toast({
                 title: "Account Created!",
-                description: "Welcome! You can now log in.",
+                description: "Welcome! Redirecting...",
             });
-            router.push('/login');
-        } catch (error: any) {
+            router.push('/');
+        } catch (error) {
              toast({
                 variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: error.message,
+                title: "Sign up failed",
+                description: getAuthErrorMessage(error),
             });
         } finally {
             setIsSubmitting(false);

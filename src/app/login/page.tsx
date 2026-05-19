@@ -17,102 +17,119 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser } from "@/firebase";
-import { signInWithEmailAndPassword } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
+import { getAuthErrorMessage } from "@/lib/auth-errors";
+import { ensureUserProfile } from "@/lib/ensure-user-profile";
+import {
+  checkIsAdmin,
+  clearAdminSession,
+  establishAdminSession,
+} from "@/lib/admin-auth";
 
 const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-export default function LoginPage() {
-    const { toast } = useToast();
-    const router = useRouter();
-    const auth = useAuth();
-    const firestore = useFirestore();
-    const { user, isUserLoading } = useUser();
-    const [isSubmitting, setIsSubmitting] = useState(false);
+async function routeAfterLogin(authUser: User, router: ReturnType<typeof useRouter>) {
+  const admin = await checkIsAdmin(authUser);
 
-    useEffect(() => {
-        if (!isUserLoading && user) {
-            const userDocRef = doc(firestore, "users", user.uid);
-            getDoc(userDocRef).then(userDocSnap => {
-                if (userDocSnap.exists()) {
-                    const userData = userDocSnap.data();
-                    if (userData.role === 'admin') {
-                        user.getIdToken().then((idToken) =>
-                            fetch('/api/auth/session', {
-                                method: 'POST',
-                                headers: { Authorization: `Bearer ${idToken}` },
-                            })
-                        ).then(() => router.push('/admin'));
-                    } else {
-                        fetch('/api/auth/session', { method: 'DELETE' }).then(() => router.push('/'));
-                    }
-                }
-            });
-        }
-    }, [user, isUserLoading, router, firestore]);
-
-    const form = useForm<z.infer<typeof formSchema>>({
-        resolver: zodResolver(formSchema),
-        defaultValues: { email: "", password: "" },
-    });
-
-    async function onSubmit(values: z.infer<typeof formSchema>) {
-        setIsSubmitting(true);
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, values.email, values.password);
-            const user = userCredential.user;
-
-            const userDocRef = doc(firestore, "users", user.uid);
-            const userDocSnap = await getDoc(userDocRef);
-
-            if (userDocSnap.exists()) {
-                const userData = userDocSnap.data();
-                toast({
-                    title: "Logged In",
-                    description: "Welcome back! Redirecting...",
-                });
-                if (userData.role === 'admin') {
-                    const idToken = await user.getIdToken();
-                    await fetch('/api/auth/session', {
-                        method: 'POST',
-                        headers: { Authorization: `Bearer ${idToken}` },
-                    });
-                    router.push('/admin');
-                } else {
-                    await fetch('/api/auth/session', { method: 'DELETE' });
-                    router.push('/');
-                }
-            } else {
-                 toast({
-                    variant: "destructive",
-                    title: "Login failed.",
-                    description: "User data not found. Please contact support.",
-                });
-            }
-        } catch (error: any) {
-             toast({
-                variant: "destructive",
-                title: "Uh oh! Something went wrong.",
-                description: error.message,
-            });
-        } finally {
-            setIsSubmitting(false);
-        }
+  if (admin) {
+    const ok = await establishAdminSession(authUser);
+    if (!ok) {
+      throw new Error("Your account is not authorized for admin access.");
     }
+    router.push("/admin");
+  } else {
+    await clearAdminSession(authUser);
+    router.push("/");
+  }
+}
 
-  if (isUserLoading || user) {
+export default function LoginPage() {
+  const { toast } = useToast();
+  const router = useRouter();
+  const auth = useAuth();
+  const firestore = useFirestore();
+  const { user, isUserLoading } = useUser();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (isUserLoading || !user) return;
+
+    let cancelled = false;
+    setIsRedirecting(true);
+
+    (async () => {
+      try {
+        await ensureUserProfile(firestore, user);
+        if (cancelled) return;
+        await routeAfterLogin(user, router);
+      } catch (error) {
+        console.error("Login redirect failed:", error);
+        if (!cancelled) {
+          await signOut(auth);
+          setIsRedirecting(false);
+          toast({
+            variant: "destructive",
+            title: "Could not complete login",
+            description: getAuthErrorMessage(error),
+          });
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isUserLoading, router, firestore, auth, toast]);
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { email: "", password: "" },
+  });
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setIsSubmitting(true);
+    try {
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        values.email,
+        values.password
+      );
+      const authUser = userCredential.user;
+
+      await ensureUserProfile(firestore, authUser);
+
+      toast({
+        title: "Logged In",
+        description: "Welcome back! Redirecting...",
+      });
+
+      setIsRedirecting(true);
+      await routeAfterLogin(authUser, router);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Login failed",
+        description: getAuthErrorMessage(error),
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  if (isUserLoading || isRedirecting || user) {
     return (
-        <div className="container flex min-h-[80vh] items-center justify-center py-12">
-            <p>Loading...</p>
-        </div>
+      <div className="container flex min-h-[80vh] items-center justify-center py-12">
+        <p>Loading...</p>
+      </div>
     );
   }
-  
+
   return (
     <div className="container flex min-h-[80vh] items-center justify-center py-12">
       <Card className="w-full max-w-md">
@@ -121,39 +138,51 @@ export default function LoginPage() {
           <CardDescription>Enter your credentials to access your account</CardDescription>
         </CardHeader>
         <CardContent>
-            <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                    <FormField name="email" control={form.control} render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Email</FormLabel>
-                            <FormControl><Input type="email" placeholder="you@example.com" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <FormField name="password" control={form.control} render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Password</FormLabel>
-                            <FormControl><Input type="password" placeholder="********" {...field} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                    )} />
-                    <div className="flex items-center justify-between">
-                        <div />
-                        <Link href="#" className="text-sm text-muted-foreground hover:underline">
-                            Forgot password?
-                        </Link>
-                    </div>
-                    <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                        {isSubmitting ? "Logging In..." : "Log In"}
-                    </Button>
-                </form>
-            </Form>
-             <div className="mt-6 text-center text-sm text-muted-foreground">
-                Don't have an account?{" "}
-                <Link href="/signup" className="font-semibold text-primary hover:underline">
-                    Sign up
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              <FormField
+                name="email"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Email</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="you@example.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                name="password"
+                control={form.control}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Password</FormLabel>
+                    <FormControl>
+                      <Input type="password" placeholder="********" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="flex items-center justify-between">
+                <div />
+                <Link href="#" className="text-sm text-muted-foreground hover:underline">
+                  Forgot password?
                 </Link>
-            </div>
+              </div>
+              <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
+                {isSubmitting ? "Logging In..." : "Log In"}
+              </Button>
+            </form>
+          </Form>
+          <div className="mt-6 text-center text-sm text-muted-foreground">
+            Don&apos;t have an account?{" "}
+            <Link href="/signup" className="font-semibold text-primary hover:underline">
+              Sign up
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

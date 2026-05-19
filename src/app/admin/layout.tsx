@@ -31,8 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth, useUser } from "@/firebase"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
-import { doc, getDoc } from "firebase/firestore"
-import { useFirestore } from "@/firebase"
+import { checkIsAdmin, clearAdminSession } from "@/lib/admin-auth"
 
 const NavLink = ({ href, children, icon, tooltip }: { href: string; children: React.ReactNode; icon: React.ReactNode; tooltip?: string }) => {
   const pathname = usePathname();
@@ -54,25 +53,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSidebarOpen, setIsSidebarOpen] = React.useState(true);
   const { user, isUserLoading } = useUser();
   const auth = useAuth();
-  const firestore = useFirestore();
   const router = useRouter();
+  const [accessChecked, setAccessChecked] = React.useState(false);
 
   React.useEffect(() => {
-    if (!isUserLoading && !user) {
-      router.push('/login');
-    } else if (user) {
-      const userDocRef = doc(firestore, 'users', user.uid);
-      getDoc(userDocRef).then((docSnap) => {
-        if (docSnap.exists() && docSnap.data().role !== 'admin') {
-          router.push('/');
-        } else if (!docSnap.exists()) {
-          router.push('/');
-        }
-      });
-    }
-  }, [user, isUserLoading, router, firestore]);
+    if (isUserLoading) return;
 
-  if (isUserLoading || !user) {
+    if (!user) {
+      router.push('/login');
+      return;
+    }
+
+    let cancelled = false;
+
+    (async () => {
+      const allowed = await checkIsAdmin(user);
+      if (cancelled) return;
+
+      if (!allowed) {
+        router.push('/');
+        return;
+      }
+
+      setAccessChecked(true);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [user, isUserLoading, router]);
+
+  if (isUserLoading || !user || !accessChecked) {
     return (
       <div className="flex h-screen items-center justify-center">
         <p>Loading...</p>
@@ -104,7 +115,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             <NavLink href="/admin/settings" icon={<Settings />} tooltip="Settings">Settings</NavLink>
             <SidebarMenuItem>
               <SidebarMenuButton onClick={async () => {
-                await fetch('/api/auth/session', { method: 'DELETE' });
+                if (user) await clearAdminSession(user);
                 await signOut(auth);
                 router.push('/login');
               }}>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { Menu, ShoppingCart, User, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, ShoppingCart, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,8 +16,10 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
-import { useUser, useAuth, useFirestore } from "@/firebase";
+import { useUser, useAuth } from "@/firebase";
 import { signOut } from "firebase/auth";
+import { useIsAdmin } from "@/hooks/use-is-admin";
+import { clearAdminSession } from "@/lib/admin-auth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -26,8 +28,6 @@ import {
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { doc, getDoc } from "firebase/firestore";
-import { useLanguage } from "@/context/language-context";
 
 const navLinks = [
   { href: "/about", label: "About" },
@@ -45,26 +45,9 @@ export function Header() {
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const { user } = useUser();
   const auth = useAuth();
-  const firestore = useFirestore();
-  const [isAdmin, setIsAdmin] = React.useState(false);
+  const isAdmin = useIsAdmin();
 
-  // Hide header on admin pages
   const isAdminPage = pathname?.startsWith('/admin');
-
-  React.useEffect(() => {
-    if (user && firestore) {
-      const userDocRef = doc(firestore, 'users', user.uid);
-      getDoc(userDocRef).then((docSnap) => {
-        if (docSnap.exists() && docSnap.data().role === 'admin') {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
-      });
-    } else {
-      setIsAdmin(false);
-    }
-  }, [user, firestore]);
 
   if (isAdminPage) return null;
 
@@ -144,21 +127,22 @@ export function Header() {
                                 Dashboard
                             </Link>
                             </SheetClose>
-                            <Button onClick={() => signOut(auth)} variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start w-full text-left font-normal h-auto">
+                            <Button onClick={async () => { if (user) await clearAdminSession(user); await signOut(auth); }} variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start w-full text-left font-normal h-auto">
                                 <LogOut className="h-5 w-5" />
                                 <span>Log out</span>
                             </Button>
                         </div>
                     ) : (
-                        <div className="grid gap-2 text-base font-medium">
+                        <div className="grid gap-2">
                         <SheetClose asChild>
-                            <Link
-                                href="/login"
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                            >
-                                <User className="h-5 w-5" />
-                                Login / Sign Up
-                            </Link>
+                            <Button className="w-full" asChild>
+                                <Link href="/login">Log in</Link>
+                            </Button>
+                        </SheetClose>
+                        <SheetClose asChild>
+                            <Button variant="outline" className="w-full" asChild>
+                                <Link href="/signup">Sign up</Link>
+                            </Button>
                         </SheetClose>
                         </div>
                     )}
@@ -226,15 +210,25 @@ export function Header() {
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut(auth)}>
+                <DropdownMenuItem onClick={async () => { if (user) await clearAdminSession(user); await signOut(auth); }}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
-          ) : null}
+          ) : (
+            <div className="hidden sm:flex items-center gap-2">
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/signup">Sign up</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/login">Log in</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </header>
   );
 }
+

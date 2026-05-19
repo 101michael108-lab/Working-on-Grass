@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth, getAdminFirestore } from '@/lib/firebase-admin';
+import { getAdminAuth } from '@/lib/firebase-admin';
+import { isAdminUid } from '@/lib/admin-config';
 
 const SESSION_COOKIE = '__session';
 const SESSION_MAX_AGE_MS = 60 * 60 * 24 * 5 * 1000; // 5 days
@@ -15,18 +16,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing token' }, { status: 401 });
     }
 
-    const decoded = await getAdminAuth().verifyIdToken(idToken);
-    const userSnap = await getAdminFirestore().collection('users').doc(decoded.uid).get();
+    const auth = getAdminAuth();
+    const decoded = await auth.verifyIdToken(idToken);
 
-    if (!userSnap.exists || userSnap.data()?.role !== 'admin') {
+    if (!isAdminUid(decoded.uid)) {
       return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
     }
 
-    const sessionCookie = await getAdminAuth().createSessionCookie(idToken, {
+    await auth.setCustomUserClaims(decoded.uid, { admin: true });
+
+    const sessionCookie = await auth.createSessionCookie(idToken, {
       expiresIn: SESSION_MAX_AGE_MS,
     });
 
-    const response = NextResponse.json({ ok: true });
+    const response = NextResponse.json({ ok: true, refreshToken: true });
     response.cookies.set(SESSION_COOKIE, sessionCookie, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -42,8 +45,23 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(req: NextRequest) {
   const response = NextResponse.json({ ok: true });
+
+  try {
+    const authHeader = req.headers.get('Authorization');
+    const idToken = authHeader?.startsWith('Bearer ')
+      ? authHeader.slice(7)
+      : null;
+
+    if (idToken) {
+      const decoded = await getAdminAuth().verifyIdToken(idToken);
+      await getAdminAuth().setCustomUserClaims(decoded.uid, { admin: false });
+    }
+  } catch {
+    /* ignore */
+  }
+
   response.cookies.set(SESSION_COOKIE, '', {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',

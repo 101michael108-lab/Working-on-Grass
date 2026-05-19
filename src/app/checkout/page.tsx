@@ -28,6 +28,7 @@ import { useState, useRef, useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
 import type { SiteSettings, Product } from "@/lib/types";
 import { AlertCircle, ShieldCheck } from "lucide-react";
+import { getPayfastProcessUrl, isPayfastLiveMode } from "@/lib/payfast-mode";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -59,9 +60,8 @@ export default function CheckoutPage() {
   const { data: settings } = useDoc<SiteSettings>(settingsRef);
   
   const shippingFee = settings?.shippingFee ?? 150;
-  const payfastUrl = settings?.isLiveMode 
-    ? "https://www.payfast.co.za/eng/process" 
-    : "https://sandbox.payfast.co.za/eng/process";
+  const payfastUrl = getPayfastProcessUrl(settings);
+  const isLivePayfast = isPayfastLiveMode(settings);
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -180,12 +180,30 @@ export default function CheckoutPage() {
       const docRef = await addDoc(ordersCollection, orderData);
       const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       
-      const isLive = settings?.isLiveMode === true;
       const sandboxMerchantId = process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_ID || "";
       const sandboxMerchantKey = process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_KEY || "";
+      const merchantId = isLivePayfast
+        ? (settings?.payfastMerchantId?.trim() || "")
+        : sandboxMerchantId.trim();
+      const merchantKey = isLivePayfast
+        ? (settings?.payfastMerchantKey?.trim() || "")
+        : sandboxMerchantKey.trim();
+
+      if (!merchantId || !merchantKey) {
+        toast({
+          variant: "destructive",
+          title: "PayFast not configured",
+          description: isLivePayfast
+            ? "Add your live Merchant ID and Key in Admin → Settings and enable Live mode."
+            : "Add NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_ID and KEY to .env.local for local checkout.",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
       const payfastData = {
-        merchant_id: isLive ? (settings?.payfastMerchantId || "") : sandboxMerchantId,
-        merchant_key: isLive ? (settings?.payfastMerchantKey || "") : sandboxMerchantKey,
+        merchant_id: merchantId,
+        merchant_key: merchantKey,
         return_url: new URL(`/checkout/success?orderId=${docRef.id}`, origin).href,
         cancel_url: new URL('/cart', origin).href,
         notify_url: new URL('/api/payfast-itn', origin).href,
@@ -204,9 +222,21 @@ export default function CheckoutPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payfastData),
       });
-      const { signature } = await sigRes.json();
+      const sigBody = await sigRes.json();
 
-      setPayfastConfig({ ...payfastData, signature });
+      if (!sigRes.ok || !sigBody.signature) {
+        toast({
+          variant: "destructive",
+          title: "Payment setup failed",
+          description:
+            sigBody.error ||
+            "Could not generate PayFast signature. Check App Hosting PAYFAST_PASSPHRASE matches your PayFast dashboard.",
+        });
+        setIsProcessing(false);
+        return;
+      }
+
+      setPayfastConfig({ ...payfastData, signature: sigBody.signature });
       clearCart();
     } catch (error: any) {
        toast({ variant: "destructive", title: "Uh oh!", description: error.message });
