@@ -20,6 +20,12 @@ env:
     availability:
       - RUNTIME
 
+  - variable: NEXT_PUBLIC_ADMIN_UIDS
+    value: SRSc2O7T4XOnTe8ehJMl8oXLtwz2
+    availability:
+      - BUILD
+      - RUNTIME
+
   # PayFast ITN + signature (server-only)
   # firebase apphosting:secrets:set payfast-passphrase
   - variable: PAYFAST_PASSPHRASE

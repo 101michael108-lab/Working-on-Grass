@@ -18,7 +18,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser } from "@/firebase";
 import { signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { getAuthErrorMessage } from "@/lib/auth-errors";
 import { ensureUserProfile } from "@/lib/ensure-user-profile";
@@ -33,24 +33,44 @@ const formSchema = z.object({
   password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
-async function routeAfterLogin(authUser: User, router: ReturnType<typeof useRouter>) {
+function getPostLoginPath(
+  admin: boolean,
+  redirectParam: string | null
+): string {
+  if (
+    redirectParam &&
+    redirectParam.startsWith("/") &&
+    !redirectParam.startsWith("//")
+  ) {
+    return redirectParam;
+  }
+  return admin ? "/admin" : "/";
+}
+
+async function routeAfterLogin(
+  authUser: User,
+  router: ReturnType<typeof useRouter>,
+  redirectParam: string | null
+) {
   const admin = await checkIsAdmin(authUser);
 
   if (admin) {
-    const ok = await establishAdminSession(authUser);
-    if (!ok) {
-      throw new Error("Your account is not authorized for admin access.");
+    const session = await establishAdminSession(authUser);
+    if (!session.ok) {
+      throw new Error(session.message);
     }
-    router.push("/admin");
+    router.push(getPostLoginPath(true, redirectParam));
   } else {
     await clearAdminSession(authUser);
-    router.push("/");
+    router.push(getPostLoginPath(false, redirectParam));
   }
 }
 
 export default function LoginPage() {
   const { toast } = useToast();
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirectParam = searchParams.get("redirect");
   const auth = useAuth();
   const firestore = useFirestore();
   const { user, isUserLoading } = useUser();
@@ -67,7 +87,7 @@ export default function LoginPage() {
       try {
         await ensureUserProfile(firestore, user);
         if (cancelled) return;
-        await routeAfterLogin(user, router);
+        await routeAfterLogin(user, router, redirectParam);
       } catch (error) {
         console.error("Login redirect failed:", error);
         if (!cancelled) {
@@ -85,7 +105,7 @@ export default function LoginPage() {
     return () => {
       cancelled = true;
     };
-  }, [user, isUserLoading, router, firestore, auth, toast]);
+  }, [user, isUserLoading, router, firestore, auth, toast, redirectParam]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -110,7 +130,7 @@ export default function LoginPage() {
       });
 
       setIsRedirecting(true);
-      await routeAfterLogin(authUser, router);
+      await routeAfterLogin(authUser, router, redirectParam);
     } catch (error) {
       toast({
         variant: "destructive",

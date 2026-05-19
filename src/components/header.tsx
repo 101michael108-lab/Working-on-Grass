@@ -27,7 +27,7 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/user-avatar";
 
 const navLinks = [
   { href: "/about", label: "About" },
@@ -108,10 +108,7 @@ export function Header() {
                     {user ? (
                         <div className="grid gap-2 text-base font-medium">
                             <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-                            <Avatar className="h-9 w-9">
-                                <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || ''} />
-                                <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
-                            </Avatar>
+                            <UserAvatar user={user} className="h-9 w-9" />
                             <div className="flex flex-col">
                                 <span className="text-sm font-semibold">{user.displayName || 'User'}</span>
                                 <span className="text-xs text-muted-foreground">{user.email}</span>
@@ -124,7 +121,7 @@ export function Header() {
                                 className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
                             >
                                 <LayoutDashboard className="h-5 w-5" />
-                                Dashboard
+                                {isAdmin ? "Admin dashboard" : "Dashboard"}
                             </Link>
                             </SheetClose>
                             <Button onClick={async () => { if (user) await clearAdminSession(user); await signOut(auth); }} variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start w-full text-left font-normal h-auto">
@@ -188,11 +185,8 @@ export function Header() {
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.photoURL || undefined} alt={user.displayName || user.email || ''} />
-                    <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
-                  </Avatar>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                  <UserAvatar user={user} className="h-8 w-8" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
@@ -206,7 +200,7 @@ export function Header() {
                 <Link href={isAdmin ? "/admin" : "/dashboard"}>
                   <DropdownMenuItem>
                     <LayoutDashboard className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
+                    <span>{isAdmin ? "Admin dashboard" : "Dashboard"}</span>
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />

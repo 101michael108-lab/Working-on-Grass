@@ -31,7 +31,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useAuth, useUser } from "@/firebase"
 import { signOut } from "firebase/auth"
 import { useRouter } from "next/navigation"
-import { checkIsAdmin, clearAdminSession } from "@/lib/admin-auth"
+import { checkIsAdmin, clearAdminSession, establishAdminSession } from "@/lib/admin-auth"
 
 const NavLink = ({ href, children, icon, tooltip }: { href: string; children: React.ReactNode; icon: React.ReactNode; tooltip?: string }) => {
   const pathname = usePathname();
@@ -72,6 +72,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       if (!allowed) {
         router.push('/');
+        return;
+      }
+
+      const session = await establishAdminSession(user);
+      if (cancelled) return;
+      if (!session.ok) {
+        console.error(session.message);
+        router.push(`/login?redirect=${encodeURIComponent('/admin')}`);
         return;
       }
 

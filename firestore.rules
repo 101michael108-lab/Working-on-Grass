@@ -1,10 +1,9 @@
-
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
     // ------------------------------------------------------------------
-    // Helper Functions
+    // Helpers
     // ------------------------------------------------------------------
 
     function isSignedIn() {
@@ -14,117 +13,123 @@ service cloud.firestore {
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
     }
-    
+
     function isExistingDoc() {
-        return resource != null;
+      return resource != null;
     }
 
+    // Admin = custom claim set by /api/auth/session (ADMIN_UIDS)
     function isAdmin() {
       return isSignedIn() && request.auth.token.admin == true;
     }
 
     // ------------------------------------------------------------------
-    // User Profiles (/users)
+    // Users & nested orders
     // ------------------------------------------------------------------
 
     match /users/{userId} {
       allow get: if isOwner(userId) || isAdmin();
       allow list: if isAdmin();
-      allow create: if isOwner(userId) && request.resource.data.id == userId && request.resource.data.role == 'user';
-      allow update: if (isOwner(userId) && isExistingDoc() && request.resource.data.role == resource.data.role) || (isAdmin() && isExistingDoc());
-      allow delete: if isOwner(userId) && isExistingDoc();
+      allow create: if isOwner(userId)
+        && request.resource.data.id == userId
+        && request.resource.data.role == 'user';
+      allow update: if (isOwner(userId)
+        && isExistingDoc()
+        && request.resource.data.role == resource.data.role)
+        || (isAdmin() && isExistingDoc());
+      allow delete: if isOwner(userId) || isAdmin();
+
+      match /orders/{orderId} {
+        allow get: if isOwner(userId) || isAdmin();
+        allow list: if isOwner(userId) || isAdmin();
+        allow create: if (isOwner(userId) && request.resource.data.userId == userId)
+          || isAdmin();
+        allow update: if (isAdmin() && isExistingDoc())
+          || (isOwner(userId)
+            && isExistingDoc()
+            && request.resource.data.userId == resource.data.userId);
+        allow delete: if isOwner(userId) || isAdmin();
+
+        match /orderItems/{orderItemId} {
+          allow read: if isOwner(userId) || isAdmin();
+          allow create: if isOwner(userId) || isAdmin();
+          allow update, delete: if (isOwner(userId) || isAdmin()) && isExistingDoc();
+        }
+      }
+    }
+
+    // Collection group: admin orders dashboard (collectionGroup 'orders')
+    match /{path=**}/orders/{orderId} {
+      allow read: if isAdmin();
+      allow update, delete: if isAdmin();
     }
 
     // ------------------------------------------------------------------
-    // Products (/products)
+    // Products
     // ------------------------------------------------------------------
 
     match /products/{productId} {
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
       allow create: if isAdmin();
-      allow update: if isAdmin() && isExistingDoc();
-      allow delete: if isAdmin() && isExistingDoc();
+      allow update, delete: if isAdmin() && isExistingDoc();
     }
 
     // ------------------------------------------------------------------
-    // Site Media & Images
+    // Site images & media library
     // ------------------------------------------------------------------
+
     match /siteImages/{imageId} {
       allow read: if true;
       allow write: if isAdmin();
     }
 
     match /mediaLibrary/{imageId} {
-      allow read, write: if isAdmin();
+      allow read: if true;
+      allow write: if isAdmin();
     }
 
     // ------------------------------------------------------------------
-    // Resources (/resources)
+    // Resources
     // ------------------------------------------------------------------
+
     match /resources/{resourceId} {
-      allow get: if true;
-      allow list: if true;
+      allow get, list: if true;
       allow create, update, delete: if isAdmin();
     }
 
     // ------------------------------------------------------------------
-    // Settings (/settings)
+    // Settings
     // ------------------------------------------------------------------
+
     match /settings/config {
       allow get: if true;
       allow write: if isAdmin();
     }
 
     // ------------------------------------------------------------------
-    // Mail (/mail) - Trigger Email Extension
+    // Mail (Trigger Email extension)
     // ------------------------------------------------------------------
+
     match /mail/{mailId} {
-      allow get, list: if isAdmin();
+      allow read: if isAdmin();
       allow create: if true;
       allow update, delete: if isAdmin();
     }
 
     // ------------------------------------------------------------------
-    // Leads & Inquiries
+    // Leads & inquiries
     // ------------------------------------------------------------------
+
     match /contactFormEntries/{id} {
-      allow get, list: if isAdmin();
+      allow read: if isAdmin();
       allow create: if true;
-      allow delete: if isAdmin();
+      allow update, delete: if isAdmin();
     }
 
     match /consultationRequests/{id} {
-      allow get, list: if isAdmin();
+      allow read: if isAdmin();
       allow create: if true;
-      allow delete: if isAdmin();
-    }
-
-    // ------------------------------------------------------------------
-    // User-Owned Data (/users/{userId}/...)
-    // ------------------------------------------------------------------
-
-    match /users/{userId} {
-      match /orders/{orderId} {
-        allow get: if isOwner(userId) || isAdmin();
-        allow list: if isOwner(userId) || isAdmin();
-        allow create: if isOwner(userId) && request.resource.data.userId == userId;
-        allow update: if (isAdmin() && isExistingDoc()) || 
-                      (isOwner(userId) && isExistingDoc() && request.resource.data.userId == resource.data.userId);
-        allow delete: if isOwner(userId) || isAdmin();
-
-        match /orderItems/{orderItemId} {
-          allow get, list: if isOwner(userId) || isAdmin();
-          allow create: if isOwner(userId) || isAdmin();
-          allow update: if (isOwner(userId) || isAdmin()) && isExistingDoc();
-          allow delete: if isOwner(userId) || isAdmin();
-        }
-      }
-    }
-    
-    // Collection group: admin dashboards only (public tracking uses /api/track-order)
-    match /{path=**}/orders/{orderId} {
-        allow list, get: if isAdmin();
+      allow update, delete: if isAdmin();
     }
   }
 }

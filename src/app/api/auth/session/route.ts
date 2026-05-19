@@ -1,11 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAdminAuth } from '@/lib/firebase-admin';
+import { getAdminAuth, hasAdminCredentials } from '@/lib/firebase-admin';
 import { isAdminUid } from '@/lib/admin-config';
 
 const SESSION_COOKIE = '__session';
 const SESSION_MAX_AGE_MS = 60 * 60 * 24 * 5 * 1000; // 5 days
 
 export async function POST(req: NextRequest) {
+  if (!hasAdminCredentials()) {
+    return NextResponse.json(
+      {
+        error:
+          'Firebase Admin SDK is not configured. Set GOOGLE_APPLICATION_CREDENTIALS to your service account JSON path in .env.local.',
+        code: 'admin_sdk_missing',
+      },
+      { status: 503 }
+    );
+  }
+
   try {
     const authHeader = req.headers.get('Authorization');
     const idToken = authHeader?.startsWith('Bearer ')
@@ -20,7 +31,13 @@ export async function POST(req: NextRequest) {
     const decoded = await auth.verifyIdToken(idToken);
 
     if (!isAdminUid(decoded.uid)) {
-      return NextResponse.json({ error: 'Not authorized' }, { status: 403 });
+      return NextResponse.json(
+        {
+          error: `UID ${decoded.uid} is not listed in ADMIN_UIDS.`,
+          code: 'not_authorized',
+        },
+        { status: 403 }
+      );
     }
 
     await auth.setCustomUserClaims(decoded.uid, { admin: true });
@@ -41,7 +58,13 @@ export async function POST(req: NextRequest) {
     return response;
   } catch (error) {
     console.error('Session creation failed:', error);
-    return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
+    return NextResponse.json(
+      {
+        error: 'Could not verify token or create session. Check service account permissions.',
+        code: 'session_failed',
+      },
+      { status: 401 }
+    );
   }
 }
 
