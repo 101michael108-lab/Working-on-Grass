@@ -65,9 +65,23 @@ function initAdminApp(): App {
   return adminApp;
 }
 
-/** True when a service account file or inline JSON is configured. */
+/**
+ * True when Admin SDK can authenticate.
+ * Local: service-account.json or FIREBASE_SERVICE_ACCOUNT_KEY.
+ * App Hosting / Cloud Run: Application Default Credentials (no file needed).
+ */
 export function hasAdminCredentials(): boolean {
-  return loadServiceAccount() !== null;
+  if (loadServiceAccount() !== null) return true;
+
+  if (
+    process.env.K_SERVICE ||
+    process.env.FUNCTION_TARGET ||
+    process.env.FIREBASE_CONFIG
+  ) {
+    return true;
+  }
+
+  return false;
 }
 
 export function getAdminFirestore(): Firestore {

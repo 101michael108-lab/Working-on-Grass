@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       {
         error:
-          'Firebase Admin SDK is not configured. Set GOOGLE_APPLICATION_CREDENTIALS to your service account JSON path in .env.local.',
+          'Firebase Admin SDK is not configured locally. Set GOOGLE_APPLICATION_CREDENTIALS=./service-account.json in .env.local.',
         code: 'admin_sdk_missing',
       },
       { status: 503 }

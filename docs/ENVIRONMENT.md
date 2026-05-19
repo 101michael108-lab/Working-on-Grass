@@ -50,7 +50,14 @@ Admins are **not** defined in Firestore. Set Firebase Auth UID(s) in env:
 
 Multiple admins: `UID1,UID2,UID3`
 
-After login, the app sets an `admin` custom claim and a session cookie. **Deploy Firestore + Storage rules** after changing admin config:
+After login, the app sets an `admin` custom claim and a session cookie.
+
+**Live site admin not working?** Usually one of:
+1. Latest code not deployed to App Hosting (push + rollout).
+2. `ADMIN_UIDS` / `NEXT_PUBLIC_ADMIN_UIDS` do not match your Firebase Auth UID.
+3. Sign out and log in again after deploy (refreshes the `admin` claim).
+
+**Deploy Firestore + Storage rules** after changing admin config:
 
 ```bash
 firebase deploy --only firestore:rules,storage
