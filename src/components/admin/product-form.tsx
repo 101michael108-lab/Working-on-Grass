@@ -339,7 +339,6 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                     <FormMessage />
                   </FormItem>
                 )} />
-              </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <FormField name="sku" control={form.control} render={({ field }) => (
