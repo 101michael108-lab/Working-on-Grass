@@ -28,6 +28,8 @@ export type Product = {
   name: string;
   price: number;
   stock: number;
+  /** When set, overrides the store-wide shipping fee from Settings for this product. */
+  shippingFee?: number;
   description: string;      // Short description / tagline (shown in header)
   longDescription?: string; // Full editorial body text
   category: string;
@@ -79,6 +81,8 @@ export type Order = {
   orderDate: any; // Firestore Timestamp
   totalAmount: number;
   status: 'Pending' | 'Processing' | 'Shipped' | 'Fulfilled' | 'Delivered' | 'Cancelled';
+  /** Shipping charged for this order (after product overrides). */
+  shippingFee?: number;
   shippingInfo: any;
   items: OrderItem[];
 };

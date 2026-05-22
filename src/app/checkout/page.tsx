@@ -29,6 +29,10 @@ import { signInAnonymously } from "firebase/auth";
 import type { SiteSettings, Product } from "@/lib/types";
 import { AlertCircle, ShieldCheck } from "lucide-react";
 import { getPayfastProcessUrl, isPayfastLiveMode } from "@/lib/payfast-mode";
+import {
+  calculateOrderShipping,
+  cartUsesProductShippingOverride,
+} from "@/lib/shipping";
 
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -59,7 +63,12 @@ export default function CheckoutPage() {
   const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
   const { data: settings } = useDoc<SiteSettings>(settingsRef);
   
-  const shippingFee = settings?.shippingFee ?? 150;
+  const globalShippingFee = settings?.shippingFee ?? 150;
+  const shippingFee = calculateOrderShipping(cartItems, globalShippingFee);
+  const hasShippingOverride = cartUsesProductShippingOverride(
+    cartItems,
+    globalShippingFee
+  );
   const payfastUrl = getPayfastProcessUrl(settings);
   const isLivePayfast = isPayfastLiveMode(settings);
 
@@ -158,6 +167,7 @@ export default function CheckoutPage() {
       orderDate: serverTimestamp(),
       totalAmount: totalAmount,
       status: 'Pending',
+      shippingFee,
       shippingInfo: {
           email: values.email,
           firstName: values.firstName,
@@ -376,7 +386,9 @@ export default function CheckoutPage() {
                   <span>R{subtotal.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between text-muted-foreground text-sm">
-                  <span>Flat Rate Shipping</span>
+                  <span>
+                    {hasShippingOverride ? "Shipping (product rate)" : "Flat rate shipping"}
+                  </span>
                   <span>R{shippingFee.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-xl pt-2 border-t border-dashed">

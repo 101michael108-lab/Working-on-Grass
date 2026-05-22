@@ -7,7 +7,7 @@ import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
 import { useFirestore } from "@/firebase";
-import { collection, doc } from "firebase/firestore";
+import { collection, doc, deleteField } from "firebase/firestore";
 import { setDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,7 @@ const formSchema = z.object({
   description: z.string().min(5, "Short description is required"),
   price: z.coerce.number().nonnegative(),
   stock: z.coerce.number().int().nonnegative(),
+  shippingFee: z.union([z.literal(''), z.coerce.number().nonnegative()]).optional(),
   category: z.string().min(2, "Category is required"),
   sku: z.string().optional(),
   brand: z.string().optional(),
@@ -186,6 +187,8 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       description: product?.description ?? "",
       price: product?.price ?? 0,
       stock: product?.stock ?? 0,
+      shippingFee:
+        product?.shippingFee != null ? String(product.shippingFee) : '',
       category: product?.category ?? "Measurement & Tools",
       sku: product?.sku ?? "",
       brand: product?.brand ?? "",
@@ -226,13 +229,20 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   };
 
   async function onSubmit(values: FormValues) {
-    const productData = {
-      ...values,
+    const { shippingFee: shippingFeeInput, ...rest } = values;
+    const productData: Record<string, unknown> = {
+      ...rest,
       price: Number(values.price),
       stock: Number(values.stock),
       images,
       features: values.features?.map(f => f.text) ?? [],
     };
+
+    if (shippingFeeInput !== '' && shippingFeeInput != null) {
+      productData.shippingFee = Number(shippingFeeInput);
+    } else if (product) {
+      productData.shippingFee = deleteField();
+    }
 
     if (product) {
       const ref = doc(firestore, 'products', product.id);
@@ -278,7 +288,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                 </FormItem>
               )} />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField name="price" control={form.control} render={({ field }) => (
                   <FormItem>
                     <FormLabel>Price (R)</FormLabel>
@@ -293,7 +303,27 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                     <FormMessage />
                   </FormItem>
                 )} />
-                <FormField name="category" control={form.control} render={({ field }) => (
+              </div>
+              <FormField name="shippingFee" control={form.control} render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Shipping fee override (R)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min={0}
+                      placeholder="Leave empty to use store default from Settings"
+                      {...field}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                  <p className="text-xs text-muted-foreground">
+                    Optional. When set, checkout uses this instead of the global shipping fee for orders containing this product.
+                  </p>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <FormField name="category" control={form.control} render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
