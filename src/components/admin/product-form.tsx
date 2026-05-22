@@ -188,7 +188,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       price: product?.price ?? 0,
       stock: product?.stock ?? 0,
       shippingFee:
-        product?.shippingFee != null ? String(product.shippingFee) : '',
+        product?.shippingFee != null ? product.shippingFee : '',
       category: product?.category ?? "Measurement & Tools",
       sku: product?.sku ?? "",
       brand: product?.brand ?? "",
@@ -313,8 +313,18 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                       step="0.01"
                       min={0}
                       placeholder="Leave empty to use store default from Settings"
-                      {...field}
-                      value={field.value ?? ''}
+                      name={field.name}
+                      ref={field.ref}
+                      onBlur={field.onBlur}
+                      value={
+                        field.value === '' || field.value === undefined
+                          ? ''
+                          : field.value
+                      }
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        field.onChange(raw === '' ? '' : Number(raw));
+                      }}
                     />
                   </FormControl>
                   <p className="text-xs text-muted-foreground">
