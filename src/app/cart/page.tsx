@@ -3,11 +3,45 @@
 
 import Image from "next/image";
 import Link from "next/link";
+import React, { useEffect, useState } from "react";
 import { useCart } from "@/context/cart-context";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Minus, Plus, Trash2, ShoppingCart as ShoppingCartIcon, ShieldCheck, Lock } from "lucide-react";
+
+/**
+ * Quantity field that edits a local draft and only commits a valid number on
+ * blur/Enter — so a transient empty field or "0" doesn't snap to 1 or remove
+ * the item mid-typing. Clamping to stock is handled by updateQuantity.
+ */
+function CartQuantityInput({ value, onCommit }: { value: number; onCommit: (n: number) => void }) {
+  const [draft, setDraft] = useState(String(value));
+  useEffect(() => { setDraft(String(value)); }, [value]);
+
+  const commit = () => {
+    const n = parseInt(draft, 10);
+    if (!Number.isFinite(n) || n < 1) {
+      setDraft(String(value)); // revert invalid/empty input
+      return;
+    }
+    onCommit(n);
+  };
+
+  return (
+    <Input
+      type="number"
+      min={1}
+      inputMode="numeric"
+      aria-label="Quantity"
+      className="w-12 h-8 text-center border-0 shadow-none focus-visible:ring-0"
+      value={draft}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => { if (e.key === "Enter") (e.target as HTMLInputElement).blur(); }}
+    />
+  );
+}
 
 export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
@@ -55,11 +89,9 @@ export default function CartPage() {
                         <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(product.id, quantity - 1)}>
                             <Minus className="h-4 w-4" />
                         </Button>
-                        <Input
-                            type="number"
-                            className="w-12 h-8 text-center border-0 shadow-none focus-visible:ring-0"
+                        <CartQuantityInput
                             value={quantity}
-                            onChange={(e) => updateQuantity(product.id, parseInt(e.target.value) || 1)}
+                            onCommit={(n) => updateQuantity(product.id, n)}
                         />
                          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => updateQuantity(product.id, quantity + 1)}>
                             <Plus className="h-4 w-4" />
@@ -93,8 +125,8 @@ export default function CartPage() {
                   <span>Calculated at checkout</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
-                  <span>Taxes</span>
-                  <span>Calculated at checkout</span>
+                  <span>VAT (15%)</span>
+                  <span>Included</span>
                 </div>
               </CardContent>
               <CardFooter className="flex-col gap-2">

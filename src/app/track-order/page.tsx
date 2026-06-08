@@ -11,6 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Search, Package, MapPin, CheckCircle2, Truck, Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { Breadcrumbs } from "@/components/breadcrumbs";
+import { InvoiceActions } from "@/components/invoice-actions";
 
 const getStatusIcon = (status: Order['status']) => {
     switch (status) {
@@ -27,6 +28,7 @@ export default function TrackOrderPage() {
     const [orderId, setOrderId] = useState("");
     const [email, setEmail] = useState("");
     const [order, setOrder] = useState<Order | null>(null);
+    const [invoiceToken, setInvoiceToken] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [copied, setCopied] = useState(false);
@@ -38,6 +40,7 @@ export default function TrackOrderPage() {
         setIsLoading(true);
         setError(null);
         setOrder(null);
+        setInvoiceToken(null);
 
         try {
             const res = await fetch('/api/track-order', {
@@ -50,8 +53,9 @@ export default function TrackOrderPage() {
             });
 
             if (res.ok) {
-                const { order: foundOrder } = await res.json();
+                const { order: foundOrder, invoiceToken: tok } = await res.json();
                 setOrder(foundOrder as Order);
+                setInvoiceToken(tok ?? null);
             } else {
                 setError("Order not found. Please check your Order ID and Email Address.");
             }
@@ -138,6 +142,13 @@ export default function TrackOrderPage() {
                                 Track Another Order
                             </Button>
                         </div>
+
+                        {order.userId && (
+                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-lg border-2">
+                                <p className="text-sm font-medium">Need a copy of your invoice?</p>
+                                <InvoiceActions orderId={order.id} uid={order.userId} token={invoiceToken ?? undefined} />
+                            </div>
+                        )}
 
                         <div className="grid md:grid-cols-2 gap-8">
                             <Card className="border-2">

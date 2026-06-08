@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Eye, Package, MapPin } from "lucide-react";
 import type { Order } from "@/lib/types";
+import { InvoiceActions } from "@/components/invoice-actions";
 
 const getStatusVariant = (status: Order['status']): "secondary" | "default" | "success" | "destructive" | "outline" => {
     switch (status) {
@@ -157,8 +158,9 @@ export default function UserOrdersPage() {
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-4 border-t">
-                                <Button variant="outline" onClick={() => setSelectedOrder(null)}>Close</Button>
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 pt-4 border-t">
+                                {user && <InvoiceActions orderId={selectedOrder.id} uid={user.uid} />}
+                                <Button variant="outline" onClick={() => setSelectedOrder(null)} className="w-full sm:w-auto">Close</Button>
                             </div>
                         </div>
                     )}

@@ -17,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser } from "@/firebase";
-import { signInWithEmailAndPassword, signOut, type User } from "firebase/auth";
+import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut, type User } from "firebase/auth";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { Suspense, useEffect, useState } from "react";
 import { getAuthErrorMessage } from "@/lib/auth-errors";
@@ -112,6 +112,31 @@ function LoginPageContent() {
     defaultValues: { email: "", password: "" },
   });
 
+  async function handleForgotPassword() {
+    const email = form.getValues("email");
+    if (!z.string().email().safeParse(email).success) {
+      toast({
+        variant: "destructive",
+        title: "Enter your email first",
+        description: "Type the email address above, then click “Forgot password?” again.",
+      });
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast({
+        title: "Reset email sent",
+        description: `Check ${email} for a link to reset your password.`,
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Could not send reset email",
+        description: getAuthErrorMessage(error),
+      });
+    }
+  }
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsSubmitting(true);
     try {
@@ -188,9 +213,13 @@ function LoginPageContent() {
               />
               <div className="flex items-center justify-between">
                 <div />
-                <Link href="#" className="text-sm text-muted-foreground hover:underline">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  className="text-sm text-muted-foreground hover:underline"
+                >
                   Forgot password?
-                </Link>
+                </button>
               </div>
               <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
                 {isSubmitting ? "Logging In..." : "Log In"}

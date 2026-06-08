@@ -4,7 +4,25 @@
 
 import { initializeFirebase } from '@/firebase';
 import { collection, addDoc, Firestore } from 'firebase/firestore';
+import type { Firestore as AdminFirestore } from 'firebase-admin/firestore';
 import { getSiteUrl } from '@/lib/site-url';
+
+/** Either the client Firestore or the Admin Firestore (server routes). */
+type AnyFirestore = Firestore | AdminFirestore;
+
+/**
+ * Writes an email document to the `mail` collection (consumed by the Firebase
+ * Trigger Email extension). Works with the client SDK (admin-authenticated UI,
+ * permitted by the `mail` rule) or the Admin SDK (server routes, which bypass
+ * rules). Untrusted/public flows must go through a server route with the Admin
+ * SDK so clients can never write arbitrary `mail` documents.
+ */
+async function queueMail(db: AnyFirestore, emailData: Record<string, unknown>) {
+  if (typeof (db as { collection?: unknown }).collection === 'function') {
+    return (db as AdminFirestore).collection('mail').add(emailData);
+  }
+  return addDoc(collection(db as Firestore, 'mail'), emailData);
+}
 
 interface OrderConfirmationPayload {
   to: string;
@@ -25,6 +43,10 @@ interface OrderConfirmationPayload {
   };
   storeName?: string;
   fromEmail?: string;
+  /** Base64-encoded PDF invoice, attached to the email when present. */
+  invoicePdfBase64?: string;
+  /** Filename for the attached invoice (e.g. "Invoice-AB12CD34.pdf"). */
+  invoiceFileName?: string;
 }
 
 interface StatusUpdatePayload {
@@ -58,7 +80,7 @@ function formatFrom(name: string, email?: string): string | undefined {
 /**
  * Queues a customer order confirmation email in Firestore.
  */
-export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: Firestore) {
+export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: AnyFirestore) {
   if (!payload.to) return;
 
   const firestore = db || initializeFirebase().firestore;
@@ -160,13 +182,26 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
     }
   };
 
-  return addDoc(collection(firestore, 'mail'), emailData);
+  // Attach the PDF invoice when provided. The Trigger Email extension forwards
+  // `message.attachments` to nodemailer, which accepts base64-encoded content.
+  if (payload.invoicePdfBase64) {
+    emailData.message.attachments = [
+      {
+        filename: payload.invoiceFileName || `Invoice-${orderRef.replace('#', '')}.pdf`,
+        content: payload.invoicePdfBase64,
+        encoding: 'base64',
+        contentType: 'application/pdf',
+      },
+    ];
+  }
+
+  return queueMail(firestore, emailData);
 }
 
 /**
  * Queues an automated status update email.
  */
-export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, db?: Firestore) {
+export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, db?: AnyFirestore) {
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
@@ -188,13 +223,13 @@ export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, d
     }
   };
 
-  return addDoc(collection(firestore, 'mail'), emailData);
+  return queueMail(firestore, emailData);
 }
 
 /**
  * Queues an internal admin notification for new orders.
  */
-export async function sendAdminOrderNotification(payload: OrderConfirmationPayload, db?: Firestore) {
+export async function sendAdminOrderNotification(payload: OrderConfirmationPayload, db?: AnyFirestore) {
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
@@ -267,13 +302,13 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
     }
   };
 
-  return addDoc(collection(firestore, 'mail'), emailData);
+  return queueMail(firestore, emailData);
 }
 
 /**
  * Queues a "Thank You" acknowledgment for an inquiry.
  */
-export async function sendInquiryAcknowledgmentEmail(payload: InquiryPayload, db?: Firestore) {
+export async function sendInquiryAcknowledgmentEmail(payload: InquiryPayload, db?: AnyFirestore) {
   if (!payload.to) return;
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
@@ -302,13 +337,13 @@ export async function sendInquiryAcknowledgmentEmail(payload: InquiryPayload, db
     }
   };
 
-  return addDoc(collection(firestore, 'mail'), emailData);
+  return queueMail(firestore, emailData);
 }
 
 /**
  * Queues an internal notification for new inquiries.
  */
-export async function sendAdminInquiryNotification(payload: InquiryPayload, db?: Firestore) {
+export async function sendAdminInquiryNotification(payload: InquiryPayload, db?: AnyFirestore) {
   if (!payload.to) return;
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
@@ -333,5 +368,5 @@ export async function sendAdminInquiryNotification(payload: InquiryPayload, db?:
     }
   };
 
-  return addDoc(collection(firestore, 'mail'), emailData);
+  return queueMail(firestore, emailData);
 }

@@ -3,9 +3,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { collection, serverTimestamp, doc } from "firebase/firestore";
-import { addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,8 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { sendInquiryAcknowledgmentEmail, sendAdminInquiryNotification } from "@/services/email-service";
-import type { SiteSettings } from "@/lib/types";
+import { submitInquiry } from "@/lib/submit-inquiry";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
@@ -35,11 +31,7 @@ interface ConsultationFormProps {
 }
 
 export function ConsultationForm({ service, onSuccess }: ConsultationFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
-
-  const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
-  const { data: settings } = useDoc<SiteSettings>(settingsRef);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -53,44 +45,20 @@ export function ConsultationForm({ service, onSuccess }: ConsultationFormProps) 
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const requestsCollection = collection(firestore, 'consultationRequests');
-    const serviceType = `Consultation: ${values.service}`;
-    
-    addDocumentNonBlocking(requestsCollection, {
-      ...values,
-      submissionDate: serverTimestamp(),
-    });
-
-    // Attempt to parse email from contactDetail if it looks like one
-    const customerEmail = values.contactDetail.includes('@') ? values.contactDetail : undefined;
-
-    // 1. Customer acknowledgment (only if we have an email)
-    if (customerEmail) {
-        sendInquiryAcknowledgmentEmail({
-            to: customerEmail,
-            customerName: values.name,
-            service: serviceType,
-            storeName: settings?.storeName,
-            fromEmail: settings?.senderEmail,
-        }, firestore);
+    try {
+      await submitInquiry('consultation', values);
+      toast({
+        title: "Request Sent!",
+        description: "Thank you. Frits will be in touch with you shortly.",
+      });
+      onSuccess();
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Could not send your request",
+        description: "Please try again, or reach us on WhatsApp.",
+      });
     }
-
-    // 2. Admin notification
-    sendAdminInquiryNotification({
-        to: settings?.contactEmail || 'admin@workingongrass.co.za',
-        customerName: values.name,
-        customerEmail: values.contactDetail,
-        service: serviceType,
-        message: values.needs,
-        storeName: settings?.storeName,
-        fromEmail: settings?.senderEmail,
-    }, firestore);
-
-    toast({
-      title: "Request Sent!",
-      description: "Thank you. Frits will be in touch with you shortly.",
-    });
-    onSuccess();
   }
 
   return (

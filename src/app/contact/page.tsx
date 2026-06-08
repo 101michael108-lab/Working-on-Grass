@@ -21,12 +21,9 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/hooks/use-toast"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useFirestore, addDocumentNonBlocking, useDoc, useMemoFirebase } from "@/firebase"
-import { collection, serverTimestamp, doc } from "firebase/firestore"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { services } from "@/lib/static-data"
-import { sendInquiryAcknowledgmentEmail, sendAdminInquiryNotification } from "@/services/email-service"
-import type { SiteSettings } from "@/lib/types"
+import { submitInquiry } from "@/lib/submit-inquiry"
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -47,12 +44,8 @@ const formSchema = z.object({
 
 function ContactForm() {
   const { toast } = useToast()
-  const firestore = useFirestore()
   const searchParams = useSearchParams()
   const serviceQuery = searchParams.get('service')
-
-  const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
-  const { data: settings } = useDoc<SiteSettings>(settingsRef);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -73,38 +66,20 @@ function ContactForm() {
   }, [serviceQuery, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const contactFormCollection = collection(firestore, 'contactFormEntries');
-    
-    addDocumentNonBlocking(contactFormCollection, {
-      ...values,
-      submissionDate: serverTimestamp(),
-    });
-
-    // 1. Send customer acknowledgment
-    sendInquiryAcknowledgmentEmail({
-        to: values.email,
-        customerName: values.name,
-        service: values.serviceInterestedIn,
-        storeName: settings?.storeName,
-        fromEmail: settings?.senderEmail,
-    }, firestore);
-
-    // 2. Send admin notification
-    sendAdminInquiryNotification({
-        to: settings?.contactEmail || 'admin@workingongrass.co.za',
-        customerName: values.name,
-        customerEmail: values.email,
-        service: values.serviceInterestedIn,
-        message: values.message,
-        storeName: settings?.storeName,
-        fromEmail: settings?.senderEmail,
-    }, firestore);
-
-    toast({
-      title: "Message sent",
-      description: "Frits will be in touch soon — usually within 1 business day.",
-    })
-    form.reset()
+    try {
+      await submitInquiry('contact', values);
+      toast({
+        title: "Message sent",
+        description: "Frits will be in touch soon — usually within 1 business day.",
+      })
+      form.reset()
+    } catch {
+      toast({
+        variant: "destructive",
+        title: "Could not send message",
+        description: "Please try again, or reach us on WhatsApp.",
+      })
+    }
   }
 
   return (

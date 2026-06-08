@@ -7,10 +7,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Copy, Check } from "lucide-react";
 import React, { useState } from "react";
+import { InvoiceActions } from "@/components/invoice-actions";
 
 export default function SuccessContent() {
   const searchParams = useSearchParams();
   const orderId = searchParams.get('orderId');
+  const uid = searchParams.get('uid');
+  const invoiceToken = searchParams.get('t');
   const [copied, setCopied] = useState(false);
 
   const copyToClipboard = () => {
@@ -34,18 +37,18 @@ export default function SuccessContent() {
         </CardHeader>
         <CardContent className="space-y-6">
           <p>
-            Your order has been received and is now being processed. 
-            You will receive an email confirmation shortly.
+            Your order has been received and is now being processed.
+            You will receive an email confirmation with your invoice attached shortly.
           </p>
           {orderId && (
             <div className="text-sm text-muted-foreground bg-secondary/50 p-4 rounded-md border-2 border-dashed">
               <p className="uppercase tracking-widest text-[10px] font-bold mb-2">Order ID for Tracking</p>
               <div className="flex items-center justify-center gap-3">
                 <code className="font-mono text-base font-bold text-foreground">{orderId}</code>
-                <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="h-8 w-8 p-0" 
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 w-8 p-0"
                     onClick={copyToClipboard}
                     title="Copy Order ID"
                 >
@@ -54,9 +57,21 @@ export default function SuccessContent() {
               </div>
             </div>
           )}
+          {(invoiceToken || (orderId && uid)) && (
+            <div className="rounded-md border bg-card p-4">
+              <p className="text-sm font-medium mb-3">Your invoice is ready</p>
+              <InvoiceActions
+                orderId={orderId ?? undefined}
+                uid={uid ?? undefined}
+                token={invoiceToken ?? undefined}
+                className="justify-center"
+              />
+            </div>
+          )}
           <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild className="w-full sm:w-auto">
-              <Link href="/dashboard/orders">View My Orders</Link>
+            <Button asChild variant="secondary" className="w-full sm:w-auto">
+              {/* Track Order works for guests (Order ID + email); the dashboard requires an account. */}
+              <Link href="/track-order">Track Your Order</Link>
             </Button>
             <Button asChild variant="outline" className="w-full sm:w-auto">
               <Link href="/shop">Continue Shopping</Link>

@@ -1,9 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import { signInvoiceToken } from '@/lib/invoice-token';
+import { enforceRateLimit } from '@/lib/rate-limit';
 import type { Order } from '@/lib/types';
 
 /** Server-side order lookup — avoids public Firestore read rules. */
 export async function POST(req: NextRequest) {
+  const limited = enforceRateLimit(req, 'track-order', 10, 60_000);
+  if (limited) return limited;
+
   try {
     const { orderId, email } = await req.json();
 
@@ -38,7 +43,10 @@ export async function POST(req: NextRequest) {
       items: data.items,
     };
 
-    return NextResponse.json({ order });
+    // Short-lived token so the invoice link from this result expires.
+    const invoiceToken = signInvoiceToken(match.id, data.userId, 60 * 60 * 1000);
+
+    return NextResponse.json({ order, invoiceToken });
   } catch (error) {
     console.error('Track order API error:', error);
     return NextResponse.json({ error: 'Unable to fetch order.' }, { status: 500 });

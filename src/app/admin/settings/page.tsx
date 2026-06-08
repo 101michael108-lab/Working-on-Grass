@@ -21,12 +21,14 @@ export default function AdminSettingsPage() {
   const { toast } = useToast();
   
   const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
+  const publicSettingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'public'), [firestore]);
   const { data: settings, isLoading } = useDoc<SiteSettings>(settingsRef);
 
   const [formData, setFormData] = React.useState<SiteSettings>({
     storeName: "Working on Grass",
     contactEmail: "admin@workingongrass.co.za",
     senderEmail: "",
+    vatNumber: "",
     shippingFee: 150,
     payfastMerchantId: "",
     payfastMerchantKey: "",
@@ -41,6 +43,7 @@ export default function AdminSettingsPage() {
         storeName: settings.storeName || "Working on Grass",
         contactEmail: settings.contactEmail || "admin@workingongrass.co.za",
         senderEmail: settings.senderEmail || "",
+        vatNumber: settings.vatNumber || "",
         shippingFee: settings.shippingFee || 150,
         payfastMerchantId: settings.payfastMerchantId || "",
         payfastMerchantKey: settings.payfastMerchantKey || "",
@@ -51,6 +54,13 @@ export default function AdminSettingsPage() {
 
   const handleSave = () => {
     setDocumentNonBlocking(settingsRef, formData, { merge: true });
+    // Mirror non-sensitive display fields to the public doc the storefront reads
+    // (merchant credentials stay in the admin-only config doc).
+    setDocumentNonBlocking(
+      publicSettingsRef,
+      { storeName: formData.storeName, shippingFee: formData.shippingFee },
+      { merge: true }
+    );
     toast({ title: "Settings Saved" });
   };
 
@@ -108,6 +118,11 @@ export default function AdminSettingsPage() {
                     <p className="text-[10px] text-muted-foreground italic">Optional. Leave blank to use the default from your Firebase Console.</p>
                 </div>
                 <div className="space-y-2"><Label>Shipping Fee (R)</Label><Input type="number" value={formData.shippingFee} onChange={(e) => setFormData(p => ({ ...p, shippingFee: Number(e.target.value) }))}/></div>
+                <div className="space-y-2">
+                    <Label>VAT Number</Label>
+                    <Input value={formData.vatNumber} placeholder="e.g. 4123456789" onChange={(e) => setFormData(p => ({ ...p, vatNumber: e.target.value }))}/>
+                    <p className="text-[10px] text-muted-foreground italic">Optional. When set, invoices become a compliant TAX INVOICE (prices include 15% VAT).</p>
+                </div>
             </div>
             
             <Separator />

@@ -23,12 +23,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useUser, useFirestore, useAuth, useDoc, useMemoFirebase } from "@/firebase";
-import { collection, serverTimestamp, doc, getDoc, addDoc, setDoc } from "firebase/firestore";
+import { serverTimestamp, doc, setDoc } from "firebase/firestore";
 import { useState, useRef, useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
-import type { SiteSettings, Product } from "@/lib/types";
+import type { SiteSettings } from "@/lib/types";
 import { AlertCircle, ShieldCheck } from "lucide-react";
-import { getPayfastProcessUrl, isPayfastLiveMode } from "@/lib/payfast-mode";
 import {
   calculateOrderShipping,
   cartUsesProductShippingOverride,
@@ -49,7 +48,7 @@ const formSchema = z.object({
 });
 
 export default function CheckoutPage() {
-  const { cartItems, clearCart } = useCart();
+  const { cartItems, clearCart, isHydrated } = useCart();
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useUser();
@@ -57,20 +56,20 @@ export default function CheckoutPage() {
   const firestore = useFirestore();
   const [isProcessing, setIsProcessing] = useState(false);
   const [payfastConfig, setPayfastConfig] = useState<Record<string, string> | null>(null);
+  const [payfastUrl, setPayfastUrl] = useState('');
   const payfastFormRef = useRef<HTMLFormElement>(null);
 
-  // Fetch settings from Firestore
-  const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
-  const { data: settings } = useDoc<SiteSettings>(settingsRef);
-  
+  // Public display fields only (shipping estimate). Authoritative pricing is
+  // computed server-side in /api/checkout/create-order.
+  const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'public'), [firestore]);
+  const { data: settings } = useDoc<Pick<SiteSettings, 'storeName' | 'shippingFee'>>(settingsRef);
+
   const globalShippingFee = settings?.shippingFee ?? 150;
   const shippingFee = calculateOrderShipping(cartItems, globalShippingFee);
   const hasShippingOverride = cartUsesProductShippingOverride(
     cartItems,
     globalShippingFee
   );
-  const payfastUrl = getPayfastProcessUrl(settings);
-  const isLivePayfast = isPayfastLiveMode(settings);
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + item.product.price * item.quantity,
@@ -113,152 +112,81 @@ export default function CheckoutPage() {
   async function onSubmit(values: z.infer<typeof formSchema>) {
     setIsProcessing(true);
 
-    // 1. Final Inventory Check
-    try {
-        for (const item of cartItems) {
-            const prodSnap = await getDoc(doc(firestore, 'products', item.product.id));
-            if (prodSnap.exists()) {
-                const currentStock = prodSnap.data().stock || 0;
-                if (currentStock < item.quantity) {
-                    toast({
-                        variant: "destructive",
-                        title: "Stock mismatch",
-                        description: `Sorry, ${item.product.name} just sold out or has insufficient stock. Please update your cart.`
-                    });
-                    setIsProcessing(false);
-                    return;
-                }
-            }
-        }
-    } catch (e) {
-        console.error("Stock check failed", e);
-    }
-
+    // Ensure the buyer has an identity (anonymous for guests) so the order can
+    // be owned and retrieved later. Pricing/totals are computed server-side.
     let effectiveUser = user;
-    
-    // 2. Handle Guest Auth
     if (!effectiveUser) {
-        try {
-            const userCredential = await signInAnonymously(auth);
-            effectiveUser = userCredential.user;
-            const userDocRef = doc(firestore, 'users', effectiveUser.uid);
-            const userData = {
-                id: effectiveUser.uid,
-                email: values.email,
-                displayName: `${values.firstName} ${values.lastName}`,
-                role: 'user',
-                createdAt: serverTimestamp(),
-                updatedAt: serverTimestamp(),
-            };
-            await setDoc(userDocRef, userData);
-        } catch (error) {
-            toast({ variant: "destructive", title: "Could not create guest session." });
-            setIsProcessing(false);
-            return;
-        }
+      try {
+        const userCredential = await signInAnonymously(auth);
+        effectiveUser = userCredential.user;
+        await setDoc(doc(firestore, 'users', effectiveUser.uid), {
+          id: effectiveUser.uid,
+          email: values.email,
+          displayName: `${values.firstName} ${values.lastName}`,
+          role: 'user',
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      } catch (error) {
+        toast({ variant: "destructive", title: "Could not start a guest session." });
+        setIsProcessing(false);
+        return;
+      }
     }
 
-    // 3. Create Order
-    const totalAmount = subtotal + shippingFee;
-    const ordersCollection = collection(firestore, 'users', effectiveUser.uid, 'orders');
-
-    const orderData = {
-      userId: effectiveUser.uid,
-      orderDate: serverTimestamp(),
-      totalAmount: totalAmount,
-      status: 'Pending',
-      shippingFee,
-      shippingInfo: {
-          email: values.email,
-          firstName: values.firstName,
-          lastName: values.lastName,
-          phone: values.phone,
-          address: values.address,
-          city: values.city,
-          postalCode: values.postalCode,
-          country: values.country,
-      },
-      items: cartItems.map(item => ({
-        productId: item.product.id,
-        name: item.product.name,
-        quantity: item.quantity,
-        price: item.product.price
-      }))
-    };
-
     try {
-      const docRef = await addDoc(ordersCollection, orderData);
-      const origin = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      
-      const sandboxMerchantId = process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_ID || "";
-      const sandboxMerchantKey = process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_KEY || "";
-      const merchantId = isLivePayfast
-        ? (settings?.payfastMerchantId?.trim() || "")
-        : sandboxMerchantId.trim();
-      const merchantKey = isLivePayfast
-        ? (settings?.payfastMerchantKey?.trim() || "")
-        : sandboxMerchantKey.trim();
-
-      if (!merchantId || !merchantKey) {
-        toast({
-          variant: "destructive",
-          title: "PayFast not configured",
-          description: isLivePayfast
-            ? "Add your live Merchant ID and Key in Admin → Settings and enable Live mode."
-            : "Add NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_ID and KEY to .env.local for local checkout.",
-        });
-        setIsProcessing(false);
-        return;
-      }
-
-      const payfastData = {
-        merchant_id: merchantId,
-        merchant_key: merchantKey,
-        return_url: new URL(`/checkout/success?orderId=${docRef.id}`, origin).href,
-        cancel_url: new URL('/cart', origin).href,
-        notify_url: new URL('/api/payfast-itn', origin).href,
-        name_first: values.firstName,
-        name_last: values.lastName,
-        email_address: values.email,
-        m_payment_id: docRef.id,
-        amount: totalAmount.toFixed(2),
-        item_name: `${settings?.storeName || 'Working on Grass'} - Order #${docRef.id.substring(0, 8)}`,
-        custom_str1: effectiveUser.uid,
-      };
-
-      // Get server-side signature (includes passphrase without exposing it to the client)
-      const sigRes = await fetch('/api/payfast-signature', {
+      const idToken = await effectiveUser.getIdToken();
+      const res = await fetch('/api/checkout/create-order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ payfastData, isLiveMode: isLivePayfast }),
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          items: cartItems.map((item) => ({
+            productId: item.product.id,
+            quantity: item.quantity,
+          })),
+          shippingInfo: {
+            email: values.email,
+            firstName: values.firstName,
+            lastName: values.lastName,
+            phone: values.phone,
+            address: values.address,
+            city: values.city,
+            postalCode: values.postalCode,
+            country: values.country,
+          },
+        }),
       });
-      const sigBody = await sigRes.json();
 
-      if (!sigRes.ok || !sigBody.signature) {
+      const data = await res.json();
+      if (!res.ok) {
         toast({
           variant: "destructive",
-          title: "Payment setup failed",
-          description:
-            sigBody.error ||
-            "Could not generate PayFast signature. Check App Hosting PAYFAST_PASSPHRASE matches your PayFast dashboard.",
+          title: "Checkout problem",
+          description: data?.error || "Could not start payment. Please try again.",
         });
         setIsProcessing(false);
         return;
       }
 
-      setPayfastConfig({ ...payfastData, signature: sigBody.signature });
+      setPayfastUrl(data.payfastUrl);
+      setPayfastConfig(data.payfastData);
       clearCart();
     } catch (error: any) {
-       toast({ variant: "destructive", title: "Uh oh!", description: error.message });
-       setIsProcessing(false);
+      toast({ variant: "destructive", title: "Uh oh!", description: error?.message || "Checkout failed." });
+      setIsProcessing(false);
     }
   }
 
   useEffect(() => {
-    if (cartItems.length === 0 && !payfastConfig) {
+    // Wait for the cart to hydrate from localStorage before deciding it's empty,
+    // otherwise a returning buyer with a full cart gets bounced to /shop on load.
+    if (isHydrated && cartItems.length === 0 && !payfastConfig) {
       router.replace('/shop');
     }
-  }, [cartItems.length, payfastConfig, router]);
+  }, [isHydrated, cartItems.length, payfastConfig, router]);
   
   if (payfastConfig) {
     return (

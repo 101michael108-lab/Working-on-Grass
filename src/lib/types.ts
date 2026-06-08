@@ -143,6 +143,8 @@ export type SiteSettings = {
   storeName: string;
   contactEmail: string;
   senderEmail?: string;
+  /** VAT registration number — when set, invoices render as a compliant TAX INVOICE. */
+  vatNumber?: string;
   shippingFee: number;
   payfastMerchantId: string;
   payfastMerchantKey: string;
