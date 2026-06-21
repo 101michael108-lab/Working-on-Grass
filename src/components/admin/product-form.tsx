@@ -291,8 +291,9 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField name="price" control={form.control} render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price (R)</FormLabel>
+                    <FormLabel>Price (R, incl. VAT)</FormLabel>
                     <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
+                    <p className="text-[10px] text-muted-foreground italic">Enter the final price the customer pays. VAT (15%) is already included — it is not added on at checkout.</p>
                     <FormMessage />
                   </FormItem>
                 )} />

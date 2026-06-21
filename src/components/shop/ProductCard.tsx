@@ -71,9 +71,16 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Footer */}
       <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 border-t border-border">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-xl font-bold font-headline text-accent">
-            R{product.price.toFixed(2)}
-          </p>
+          <div className="flex flex-col">
+            <p className="text-xl font-bold font-headline text-accent leading-none">
+              R{product.price.toFixed(2)}
+            </p>
+            {product.price > 0 && (
+              <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mt-1">
+                Incl. VAT
+              </span>
+            )}
+          </div>
           <Button
             size="sm"
             className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
