@@ -47,6 +47,11 @@ interface OrderConfirmationPayload {
   invoicePdfBase64?: string;
   /** Filename for the attached invoice (e.g. "Invoice-AB12CD34.pdf"). */
   invoiceFileName?: string;
+  /**
+   * Extra PDF attachments (e.g. product guides) included alongside the invoice.
+   * Each `content` is base64-encoded.
+   */
+  extraAttachments?: Array<{ filename: string; content: string }>;
 }
 
 interface StatusUpdatePayload {
@@ -182,17 +187,27 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
     }
   };
 
-  // Attach the PDF invoice when provided. The Trigger Email extension forwards
-  // `message.attachments` to nodemailer, which accepts base64-encoded content.
+  // Attach the PDF invoice and any product guides. The Trigger Email extension
+  // forwards `message.attachments` to nodemailer, which accepts base64 content.
+  const attachments: Array<Record<string, unknown>> = [];
   if (payload.invoicePdfBase64) {
-    emailData.message.attachments = [
-      {
-        filename: payload.invoiceFileName || `Invoice-${orderRef.replace('#', '')}.pdf`,
-        content: payload.invoicePdfBase64,
-        encoding: 'base64',
-        contentType: 'application/pdf',
-      },
-    ];
+    attachments.push({
+      filename: payload.invoiceFileName || `Invoice-${orderRef.replace('#', '')}.pdf`,
+      content: payload.invoicePdfBase64,
+      encoding: 'base64',
+      contentType: 'application/pdf',
+    });
+  }
+  for (const guide of payload.extraAttachments ?? []) {
+    attachments.push({
+      filename: guide.filename,
+      content: guide.content,
+      encoding: 'base64',
+      contentType: 'application/pdf',
+    });
+  }
+  if (attachments.length > 0) {
+    emailData.message.attachments = attachments;
   }
 
   return queueMail(firestore, emailData);

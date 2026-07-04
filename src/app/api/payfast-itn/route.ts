@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
+import type { Firestore as AdminFirestore } from 'firebase-admin/firestore';
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/services/email-service';
 import { generateInvoicePdf, invoiceFileName } from '@/lib/invoice';
 import type { SiteSettings } from '@/lib/types';
@@ -11,6 +12,60 @@ import {
 import { getPayfastPassphrase } from '@/lib/payfast-config';
 
 const PROCESSED_STATUSES = new Set(['Processing', 'Shipped', 'Fulfilled', 'Delivered']);
+
+/** Skip any single guide larger than this to avoid the email being rejected. */
+const MAX_GUIDE_BYTES = 15 * 1024 * 1024; // 15 MB
+
+type GuideAttachment = { filename: string; content: string };
+
+/**
+ * For each distinct product in the order, look up its optional PDF guide and
+ * download it as a base64 attachment. Never throws — a guide that is missing,
+ * too large, or fails to download is simply skipped so the confirmation email
+ * still goes out.
+ */
+async function collectGuideAttachments(
+  db: AdminFirestore,
+  items: Array<{ productId?: string }>
+): Promise<GuideAttachment[]> {
+  const productIds = [...new Set(items.map((it) => it.productId).filter(Boolean))] as string[];
+  if (productIds.length === 0) return [];
+
+  const attachments: GuideAttachment[] = [];
+  const seenUrls = new Set<string>();
+
+  await Promise.all(
+    productIds.map(async (productId) => {
+      try {
+        const snap = await db.collection('products').doc(productId).get();
+        if (!snap.exists) return;
+        const data = snap.data() as { guideUrl?: string; guideName?: string; name?: string };
+        const url = data.guideUrl;
+        if (!url || seenUrls.has(url)) return;
+        seenUrls.add(url);
+
+        const res = await fetch(url);
+        if (!res.ok) {
+          console.error(`PayFast ITN: guide download failed for ${productId} (${res.status}).`);
+          return;
+        }
+        const bytes = Buffer.from(await res.arrayBuffer());
+        if (bytes.length > MAX_GUIDE_BYTES) {
+          console.warn(`PayFast ITN: guide for ${productId} exceeds size cap — skipping.`);
+          return;
+        }
+
+        const base = (data.guideName || data.name || 'Guide').replace(/[^\w.\- ]+/g, '').trim() || 'Guide';
+        const filename = base.toLowerCase().endsWith('.pdf') ? base : `${base}.pdf`;
+        attachments.push({ filename, content: bytes.toString('base64') });
+      } catch (e) {
+        console.error(`PayFast ITN: guide attachment error for ${productId}:`, e);
+      }
+    })
+  );
+
+  return attachments;
+}
 
 export async function POST(req: NextRequest) {
   console.log('PayFast ITN: Received request.');
@@ -157,6 +212,15 @@ export async function POST(req: NextRequest) {
         console.error('PayFast ITN: Invoice PDF generation failed (sending email without it):', e);
       }
 
+      // Collect any PDF guides attached to the purchased products so they are
+      // emailed to the customer alongside the invoice.
+      let guideAttachments: GuideAttachment[] = [];
+      try {
+        guideAttachments = await collectGuideAttachments(db, orderData.items || []);
+      } catch (e) {
+        console.error('PayFast ITN: Guide collection failed (sending email without guides):', e);
+      }
+
       try {
         // Queue emails via the Admin SDK (the `mail` collection is no longer
         // client-writable).
@@ -173,6 +237,7 @@ export async function POST(req: NextRequest) {
             fromEmail: settings?.senderEmail,
             invoicePdfBase64,
             invoiceFileName: invoicePdfName,
+            extraAttachments: guideAttachments,
           },
           db
         );

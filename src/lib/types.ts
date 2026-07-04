@@ -37,6 +37,11 @@ export type Product = {
   sku?: string;
   brand?: string;
 
+  /** Optional PDF guide emailed to the customer when this product is purchased. */
+  guideUrl?: string;
+  /** Display filename for the attached guide (e.g. "Grazing-Guide.pdf"). */
+  guideName?: string;
+
   /** Which optional page sections are active. Replaces the old layout enum. */
   enabledSections?: EnabledSections;
 

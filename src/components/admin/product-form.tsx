@@ -6,8 +6,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import * as z from "zod";
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
-import { useFirestore } from "@/firebase";
+import { useFirestore, useStorage } from "@/firebase";
 import { collection, doc, deleteField } from "firebase/firestore";
+import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { setDocumentNonBlocking, addDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -24,11 +25,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import type { Product, EnabledSections, MediaLibraryItem } from "@/lib/types";
 import { ProductImageSelector } from './product-image-selector';
 import Image from 'next/image';
 import {
-  ImagePlus, XCircle, PlusCircle, Trash, ChevronDown,
+  ImagePlus, XCircle, PlusCircle, Trash, ChevronDown, FileText, UploadCloud,
   BookOpen, Users, Wrench, MapPin, Table2, Quote, Sparkles, AlertTriangle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -169,9 +171,13 @@ interface ProductFormProps {
 
 export function ProductForm({ product, onSuccess }: ProductFormProps) {
   const firestore = useFirestore();
+  const storage = useStorage();
   const { toast } = useToast();
   const [isImageSelectorOpen, setImageSelectorOpen] = React.useState(false);
   const [images, setImages] = React.useState<string[]>(product?.images || []);
+  const [guideUrl, setGuideUrl] = React.useState<string | undefined>(product?.guideUrl);
+  const [guideName, setGuideName] = React.useState<string | undefined>(product?.guideName);
+  const [guideProgress, setGuideProgress] = React.useState<number | null>(null);
 
   // Which accordion panels are currently open (independent of enabled state)
   const [openPanels, setOpenPanels] = React.useState<string[]>(() =>
@@ -244,6 +250,14 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       productData.shippingFee = deleteField();
     }
 
+    if (guideUrl) {
+      productData.guideUrl = guideUrl;
+      productData.guideName = guideName ?? null;
+    } else if (product) {
+      productData.guideUrl = deleteField();
+      productData.guideName = deleteField();
+    }
+
     if (product) {
       const ref = doc(firestore, 'products', product.id);
       setDocumentNonBlocking(ref, productData, { merge: true });
@@ -264,6 +278,44 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
   const handleRemoveImage = (url: string) => {
     setImages(prev => prev.filter(img => img !== url));
+  };
+
+  const handleGuideSelected = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = ''; // allow re-selecting the same file after a removal
+    if (!file) return;
+    if (file.type !== 'application/pdf') {
+      toast({ variant: 'destructive', title: 'PDF only', description: 'The guide must be a PDF file.' });
+      return;
+    }
+
+    const fileName = `${new Date().getTime()}-${file.name}`;
+    const storageRef = ref(storage, `productGuides/${fileName}`);
+    const uploadTask = uploadBytesResumable(storageRef, file);
+    setGuideProgress(0);
+
+    uploadTask.on(
+      'state_changed',
+      (snapshot) => setGuideProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100),
+      (error) => {
+        console.error('Guide upload failed:', error);
+        toast({ variant: 'destructive', title: 'Upload failed', description: error.message });
+        setGuideProgress(null);
+      },
+      () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+          setGuideUrl(url);
+          setGuideName(file.name);
+          setGuideProgress(null);
+          toast({ title: 'Guide attached', description: file.name });
+        });
+      }
+    );
+  };
+
+  const handleRemoveGuide = () => {
+    setGuideUrl(undefined);
+    setGuideName(undefined);
   };
 
   const enabledSections = form.watch("enabledSections");
@@ -421,6 +473,44 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                   <span className="text-xs mt-1">Add</span>
                 </button>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* ── Digital Guide (emailed on purchase) ──────────────────── */}
+          <Card>
+            <CardContent className="pt-5 space-y-3">
+              <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                Digital Guide <span className="font-normal normal-case tracking-normal">— PDF emailed to the buyer after purchase</span>
+              </p>
+
+              {guideUrl ? (
+                <div className="flex items-center gap-3 rounded-md border bg-muted/20 px-3 py-2.5">
+                  <FileText className="h-5 w-5 shrink-0 text-primary" />
+                  <a
+                    href={guideUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 min-w-0 truncate text-sm font-medium hover:underline"
+                  >
+                    {guideName || 'Attached guide (PDF)'}
+                  </a>
+                  <Button type="button" variant="ghost" size="icon" onClick={handleRemoveGuide}>
+                    <XCircle className="h-4 w-4" />
+                  </Button>
+                </div>
+              ) : guideProgress !== null ? (
+                <div className="space-y-2">
+                  <Progress value={guideProgress} className="w-full" />
+                  <p className="text-xs text-muted-foreground">Uploading… {Math.round(guideProgress)}%</p>
+                </div>
+              ) : (
+                <label className="flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed py-6 text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <UploadCloud className="h-6 w-6" />
+                  <span className="text-sm">Upload PDF guide</span>
+                  <span className="text-xs">Attached automatically to this product's order confirmation email</span>
+                  <input type="file" accept="application/pdf" className="hidden" onChange={handleGuideSelected} />
+                </label>
+              )}
             </CardContent>
           </Card>
 
