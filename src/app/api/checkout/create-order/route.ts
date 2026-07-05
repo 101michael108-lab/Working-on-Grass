@@ -6,6 +6,7 @@ import { getPayfastPassphrase, isSandboxMerchantId } from '@/lib/payfast-config'
 import { calculateOrderShipping } from '@/lib/shipping';
 import { signInvoiceToken } from '@/lib/invoice-token';
 import { enforceRateLimit } from '@/lib/rate-limit';
+import { ORDER_NUMBER_START } from '@/lib/order-number';
 import type { Product, SiteSettings } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -107,12 +108,24 @@ export async function POST(req: NextRequest) {
     );
     const total = Math.round((subtotal + shipping) * 100) / 100;
 
-    // 4. Persist the order (authoritative data) with the Admin SDK.
+    // 4. Allocate a sequential, human-friendly order number atomically. Running
+    // this in a transaction on a single counter doc serialises concurrent
+    // checkouts so every order gets a distinct number.
+    const counterRef = db.collection('counters').doc('orders');
+    const orderNumber = await db.runTransaction(async (tx) => {
+      const snap = await tx.get(counterRef);
+      const next = snap.exists ? Number(snap.data()!.next) : ORDER_NUMBER_START;
+      tx.set(counterRef, { next: next + 1 }, { merge: true });
+      return next;
+    });
+
+    // 5. Persist the order (authoritative data) with the Admin SDK.
     const storeName = settings?.storeName || 'Working on Grass';
     const orderRef = db.collection('users').doc(uid).collection('orders').doc();
     const orderId = orderRef.id;
     await orderRef.set({
       userId: uid,
+      orderNumber,
       orderDate: FieldValue.serverTimestamp(),
       totalAmount: total,
       status: 'Pending',
@@ -121,7 +134,7 @@ export async function POST(req: NextRequest) {
       items: lines.map((l) => ({ productId: l.productId, name: l.name, quantity: l.quantity, price: l.price })),
     });
 
-    // 5. Resolve PayFast credentials server-side and build the signed form.
+    // 6. Resolve PayFast credentials server-side and build the signed form.
     const base = (process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin).replace(/\/$/, '');
     let host = '';
     try { host = new URL(base).hostname; } catch { /* ignore */ }
@@ -144,8 +157,8 @@ export async function POST(req: NextRequest) {
     // raw ids when no token secret is configured).
     const invoiceToken = signInvoiceToken(orderId, uid);
     const successQuery = invoiceToken
-      ? `orderId=${orderId}&t=${encodeURIComponent(invoiceToken)}`
-      : `orderId=${orderId}&uid=${uid}`;
+      ? `orderId=${orderId}&t=${encodeURIComponent(invoiceToken)}&n=${orderNumber}`
+      : `orderId=${orderId}&uid=${uid}&n=${orderNumber}`;
 
     const payfastData: Record<string, string> = {
       merchant_id: merchantId,

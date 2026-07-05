@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Search, Package, MapPin, CheckCircle2, Truck, Clock, AlertTriangle, Copy, Check } from "lucide-react";
 import type { Order } from "@/lib/types";
+import { formatOrderRef } from "@/lib/order-number";
 import { Breadcrumbs } from "@/components/breadcrumbs";
 import { InvoiceActions } from "@/components/invoice-actions";
 
@@ -69,7 +70,7 @@ export default function TrackOrderPage() {
 
     const copyOrderId = () => {
         if (!order) return;
-        navigator.clipboard.writeText(order.id);
+        navigator.clipboard.writeText(order.orderNumber != null ? String(order.orderNumber) : order.id);
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     }
@@ -82,7 +83,7 @@ export default function TrackOrderPage() {
                 <div className="text-center mb-12">
                     <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">Track Your Order</h1>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Enter your Order ID and the email address used during checkout to view your current status.
+                        Enter your order number and the email address used during checkout to view your current status.
                     </p>
                 </div>
 
@@ -95,11 +96,11 @@ export default function TrackOrderPage() {
                         <CardContent className="pt-6">
                             <form onSubmit={handleTrack} className="space-y-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="orderId">Order ID</Label>
-                                    <Input 
-                                        id="orderId" 
-                                        placeholder="e.g. EEa3GLuf..." 
-                                        value={orderId} 
+                                    <Label htmlFor="orderId">Order Number</Label>
+                                    <Input
+                                        id="orderId"
+                                        placeholder="e.g. 1001"
+                                        value={orderId}
                                         onChange={(e) => setOrderId(e.target.value)}
                                         required
                                     />
@@ -159,9 +160,9 @@ export default function TrackOrderPage() {
                                 </CardHeader>
                                 <CardContent className="pt-6 space-y-4">
                                     <div className="flex justify-between items-center py-2 border-b">
-                                        <span className="text-muted-foreground">Order ID</span>
+                                        <span className="text-muted-foreground">Order Number</span>
                                         <div className="flex items-center gap-2">
-                                            <span className="font-mono text-xs">{order.id}</span>
+                                            <span className="font-mono text-sm font-bold">{formatOrderRef(order)}</span>
                                             <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyOrderId}>
                                                 {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
                                             </Button>

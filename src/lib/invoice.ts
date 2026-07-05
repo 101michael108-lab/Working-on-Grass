@@ -8,9 +8,12 @@
  */
 
 import { PDFDocument, StandardFonts, rgb, type PDFFont, type PDFPage } from 'pdf-lib';
+import { orderNumberLabel } from '@/lib/order-number';
 
 export interface InvoiceInput {
   orderId: string;
+  /** Sequential customer-facing number; falls back to the short doc id when absent. */
+  orderNumber?: number;
   orderDate?: Date | string | number | { toDate: () => Date } | { seconds: number };
   status?: string;
   items: Array<{ name: string; quantity: number; price: number }>;
@@ -79,10 +82,6 @@ function rands(n: number): string {
   return `R ${grouped}.${dec}`;
 }
 
-function shortRef(orderId: string): string {
-  return orderId.substring(0, 8).toUpperCase();
-}
-
 /**
  * pdf-lib's standard fonts can only encode WinAnsi (CP1252) and throw on
  * anything else. Customer-entered names/addresses and product names may contain
@@ -102,8 +101,8 @@ function sanitize(input?: string): string {
 }
 
 /** Suggested download filename for an order's invoice. */
-export function invoiceFileName(orderId: string): string {
-  return `Invoice-${shortRef(orderId)}.pdf`;
+export function invoiceFileName(orderId: string, orderNumber?: number): string {
+  return `Invoice-${orderNumberLabel(orderNumber, orderId)}.pdf`;
 }
 
 /** Truncate text with an ellipsis so it fits within maxWidth at the given size. */
@@ -131,8 +130,10 @@ export async function generateInvoicePdf(input: InvoiceInput): Promise<Uint8Arra
   const shipping = input.shippingFee ?? Math.max(0, total - subtotal);
   const vat = total - total / (1 + VAT_RATE);
 
+  const invoiceNo = orderNumberLabel(input.orderNumber, input.orderId);
+
   const pdf = await PDFDocument.create();
-  pdf.setTitle(`Invoice ${shortRef(input.orderId)}`);
+  pdf.setTitle(`Invoice ${invoiceNo}`);
   pdf.setProducer(storeName);
   pdf.setCreator(storeName);
 
@@ -156,7 +157,7 @@ export async function generateInvoicePdf(input: InvoiceInput): Promise<Uint8Arra
 
   // --- Meta (right) + Bill To (left) ---
   const metaRows: Array<[string, string]> = [
-    ['Invoice No', `INV-${shortRef(input.orderId)}`],
+    ['Invoice No', `INV-${invoiceNo}`],
     ['Date', formatDate(input.orderDate)],
   ];
   if (input.status) metaRows.push(['Status', sanitize(input.status)]);
@@ -168,9 +169,6 @@ export async function generateInvoicePdf(input: InvoiceInput): Promise<Uint8Arra
     textRight(value, RIGHT, metaY, 10, font, INK);
     metaY -= 16;
   }
-  // Full order id (used by Track Order) in small print.
-  textRight('ORDER ID', RIGHT - 150, metaY, 8, bold, MUTED);
-  textRight(input.orderId, RIGHT, metaY, 8, font, MUTED);
 
   // Bill To
   text('BILL TO', MARGIN, y, 8, bold, MUTED);

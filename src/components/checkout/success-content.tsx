@@ -14,11 +14,14 @@ export default function SuccessContent() {
   const orderId = searchParams.get('orderId');
   const uid = searchParams.get('uid');
   const invoiceToken = searchParams.get('t');
+  const orderNumber = searchParams.get('n');
   const [copied, setCopied] = useState(false);
 
+  const trackingRef = orderNumber || orderId;
+
   const copyToClipboard = () => {
-    if (!orderId) return;
-    navigator.clipboard.writeText(orderId);
+    if (!trackingRef) return;
+    navigator.clipboard.writeText(trackingRef);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -40,17 +43,19 @@ export default function SuccessContent() {
             Your order has been received and is now being processed.
             You will receive an email confirmation with your invoice attached shortly.
           </p>
-          {orderId && (
+          {trackingRef && (
             <div className="text-sm text-muted-foreground bg-secondary/50 p-4 rounded-md border-2 border-dashed">
-              <p className="uppercase tracking-widest text-[10px] font-bold mb-2">Order ID for Tracking</p>
+              <p className="uppercase tracking-widest text-[10px] font-bold mb-2">Order Number for Tracking</p>
               <div className="flex items-center justify-center gap-3">
-                <code className="font-mono text-base font-bold text-foreground">{orderId}</code>
+                <code className="font-mono text-lg font-bold text-foreground">
+                  {orderNumber ? `#${orderNumber}` : orderId}
+                </code>
                 <Button
                     variant="ghost"
                     size="sm"
                     className="h-8 w-8 p-0"
                     onClick={copyToClipboard}
-                    title="Copy Order ID"
+                    title="Copy order number"
                 >
                     {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
                 </Button>

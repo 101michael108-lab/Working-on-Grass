@@ -63,6 +63,7 @@ export async function GET(req: NextRequest) {
 
     const pdfBytes = await generateInvoicePdf({
       orderId,
+      orderNumber: data.orderNumber,
       orderDate: data.orderDate,
       status: data.status,
       items: data.items || [],
@@ -78,7 +79,7 @@ export async function GET(req: NextRequest) {
       status: 200,
       headers: {
         'Content-Type': 'application/pdf',
-        'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename="${invoiceFileName(orderId)}"`,
+        'Content-Disposition': `${download ? 'attachment' : 'inline'}; filename="${invoiceFileName(orderId, data.orderNumber)}"`,
         'Cache-Control': 'private, no-store',
         // Don't leak the capability URL (orderId+uid) via the Referer header.
         'Referrer-Policy': 'no-referrer',

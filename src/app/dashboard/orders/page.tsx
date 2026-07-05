@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Eye, Package, MapPin } from "lucide-react";
 import type { Order } from "@/lib/types";
+import { formatOrderRef } from "@/lib/order-number";
 import { InvoiceActions } from "@/components/invoice-actions";
 
 const getStatusVariant = (status: Order['status']): "secondary" | "default" | "success" | "destructive" | "outline" => {
@@ -71,7 +72,7 @@ export default function UserOrdersPage() {
                                 {orders.map(order => (
                                     <TableRow key={order.id}>
                                         <TableCell>{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString() : 'N/A'}</TableCell>
-                                        <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}...</TableCell>
+                                        <TableCell className="font-mono text-xs font-bold">{formatOrderRef(order as Order)}</TableCell>
                                         <TableCell>
                                             <Badge variant={getStatusVariant(order.status)}>{order.status}</Badge>
                                         </TableCell>
@@ -92,7 +93,7 @@ export default function UserOrdersPage() {
             <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
                 <DialogContent className="max-w-2xl">
                     <DialogHeader>
-                        <DialogTitle>Order Details: #{selectedOrder?.id.substring(0, 8)}</DialogTitle>
+                        <DialogTitle>Order Details: {selectedOrder ? formatOrderRef(selectedOrder) : ''}</DialogTitle>
                         <DialogDescription>
                             Placed on {selectedOrder?.orderDate ? new Date(selectedOrder.orderDate.toDate()).toLocaleString() : 'N/A'}
                         </DialogDescription>

@@ -6,6 +6,7 @@ import { initializeFirebase } from '@/firebase';
 import { collection, addDoc, Firestore } from 'firebase/firestore';
 import type { Firestore as AdminFirestore } from 'firebase-admin/firestore';
 import { getSiteUrl } from '@/lib/site-url';
+import { formatOrderRef } from '@/lib/order-number';
 
 /** Either the client Firestore or the Admin Firestore (server routes). */
 type AnyFirestore = Firestore | AdminFirestore;
@@ -27,6 +28,8 @@ async function queueMail(db: AnyFirestore, emailData: Record<string, unknown>) {
 interface OrderConfirmationPayload {
   to: string;
   orderId: string;
+  /** Sequential customer-facing number; falls back to the short id when absent. */
+  orderNumber?: number;
   orderDate?: Date | string;
   customerName: string;
   totalAmount: number;
@@ -57,6 +60,7 @@ interface OrderConfirmationPayload {
 interface StatusUpdatePayload {
   to: string;
   orderId: string;
+  orderNumber?: number;
   customerName: string;
   newStatus: string;
   storeName?: string;
@@ -98,7 +102,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
 
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
-  const orderRef = `#${payload.orderId.substring(0, 8).toUpperCase()}`;
+  const orderRef = formatOrderRef({ orderNumber: payload.orderNumber, id: payload.orderId });
   const orderDate = payload.orderDate
     ? new Date(payload.orderDate as any).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' })
     : new Date().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -225,12 +229,12 @@ export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, d
     to: payload.to,
     ...(from && { from }),
     message: {
-      subject: `Order Update: #${payload.orderId.substring(0, 8)} is ${payload.newStatus} | ${storeName}`,
+      subject: `Order Update: ${formatOrderRef({ orderNumber: payload.orderNumber, id: payload.orderId })} is ${payload.newStatus} | ${storeName}`,
       html: `
         <div style="font-family: sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 30px;">
           <h2 style="color: #1a3a1a;">Your order status has changed</h2>
           <p>Hello ${payload.customerName},</p>
-          <p>The status of your order <strong>#${payload.orderId.substring(0, 8)}</strong> has been updated to: <strong>${payload.newStatus}</strong></p>
+          <p>The status of your order <strong>${formatOrderRef({ orderNumber: payload.orderNumber, id: payload.orderId })}</strong> has been updated to: <strong>${payload.newStatus}</strong></p>
           <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;" />
           <p style="font-size: 12px; color: #94a3b8; text-align: center;">${storeName} | Modimolle, Limpopo</p>
         </div>
@@ -248,7 +252,7 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
-  const orderRef = `#${payload.orderId.substring(0, 8).toUpperCase()}`;
+  const orderRef = formatOrderRef({ orderNumber: payload.orderNumber, id: payload.orderId });
   const orderDate = payload.orderDate
     ? new Date(payload.orderDate as any).toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' })
     : new Date().toLocaleDateString('en-ZA', { year: 'numeric', month: 'long', day: 'numeric' });

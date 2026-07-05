@@ -196,6 +196,7 @@ export async function POST(req: NextRequest) {
       try {
         const pdfBytes = await generateInvoicePdf({
           orderId,
+          orderNumber: orderData.orderNumber,
           orderDate: orderData.orderDate,
           status: 'Processing',
           items: orderData.items || [],
@@ -207,7 +208,7 @@ export async function POST(req: NextRequest) {
           vatNumber: settings?.vatNumber,
         });
         invoicePdfBase64 = Buffer.from(pdfBytes).toString('base64');
-        invoicePdfName = invoiceFileName(orderId);
+        invoicePdfName = invoiceFileName(orderId, orderData.orderNumber);
       } catch (e) {
         console.error('PayFast ITN: Invoice PDF generation failed (sending email without it):', e);
       }
@@ -228,6 +229,7 @@ export async function POST(req: NextRequest) {
           {
             to: orderData.shippingInfo.email,
             orderId,
+            orderNumber: orderData.orderNumber,
             orderDate: new Date(),
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,
@@ -246,6 +248,7 @@ export async function POST(req: NextRequest) {
           {
             to: settings?.contactEmail || 'admin@workingongrass.co.za',
             orderId,
+            orderNumber: orderData.orderNumber,
             orderDate: new Date(),
             customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
             totalAmount: orderData.totalAmount,

@@ -84,6 +84,8 @@ export type OrderItem = {
 
 export type Order = {
   id: string;
+  /** Sequential, human-friendly number shown to customers (e.g. 1001). */
+  orderNumber?: number;
   userId: string;
   orderDate: any; // Firestore Timestamp
   totalAmount: number;

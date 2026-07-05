@@ -22,6 +22,7 @@ import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, Trash2, Send } from "lucide-react";
 import type { Order, User, SiteSettings } from "@/lib/types";
+import { formatOrderRef } from "@/lib/order-number";
 import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from "@/services/email-service";
 
 const statusOptions = ['Pending', 'Processing', 'Shipped', 'Fulfilled', 'Delivered', 'Cancelled'] as const;
@@ -76,6 +77,7 @@ export default function AdminOrdersPage() {
                 sendOrderStatusUpdateEmail({
                     to: order.shippingInfo.email,
                     orderId: orderId,
+                    orderNumber: order.orderNumber,
                     customerName: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
                     newStatus: newStatus,
                     storeName: settings?.storeName,
@@ -108,6 +110,7 @@ export default function AdminOrdersPage() {
             await sendOrderConfirmationEmail({
                 to: order.shippingInfo.email,
                 orderId: order.id,
+                orderNumber: order.orderNumber,
                 customerName: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
                 totalAmount: order.totalAmount,
                 items: order.items,
@@ -132,7 +135,7 @@ export default function AdminOrdersPage() {
                             <TableBody>
                                 {orders.map(order => (
                                     <TableRow key={order.id}>
-                                        <TableCell className="font-mono text-xs">{order.id.substring(0, 8)}</TableCell>
+                                        <TableCell className="font-mono text-xs font-bold">{formatOrderRef(order)}</TableCell>
                                         <TableCell>{order.customerName}</TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-2">
@@ -166,7 +169,7 @@ export default function AdminOrdersPage() {
 
             <Dialog open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
                 <DialogContent className="max-w-2xl">
-                    <DialogHeader><DialogTitle>Order #{selectedOrder?.id.substring(0, 8)}</DialogTitle></DialogHeader>
+                    <DialogHeader><DialogTitle>Order {selectedOrder ? formatOrderRef(selectedOrder) : ''}</DialogTitle></DialogHeader>
                     {selectedOrder && (
                         <div className="space-y-6 py-4">
                             <div className="grid grid-cols-2 gap-8">
