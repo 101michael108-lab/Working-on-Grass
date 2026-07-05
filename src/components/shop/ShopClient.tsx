@@ -1,129 +1,149 @@
-
 "use client";
 
-import React, { useState, useMemo, useEffect } from 'react';
-import ShopSidebar from '@/components/shop/ShopSidebar';
-import ProductGrid from '@/components/shop/ProductGrid';
-import { Input } from '@/components/ui/input';
-import { Search } from 'lucide-react';
-import type { Product } from '@/lib/types';
-import { useSearchParams } from 'next/navigation';
-import { cn } from '@/lib/utils';
+import React, { useState, useMemo, useEffect } from "react";
+import { Search } from "lucide-react";
+import type { Product } from "@/lib/types";
+import { useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { cn } from "@/lib/utils";
+import ProductCard from "@/components/shop/ProductCard";
+
+const ALL = "All products";
 
 export default function ShopClient({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get('category');
-  
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-  
-  // Sync URL param to state
+  const categoryParam = searchParams.get("category");
+
+  const [activeCat, setActiveCat] = useState<string>(ALL);
+  const [searchTerm, setSearchTerm] = useState("");
+
   useEffect(() => {
-    if (categoryParam) {
-      setSelectedCategories([categoryParam]);
-    }
+    if (categoryParam) setActiveCat(categoryParam);
   }, [categoryParam]);
 
-  const allCategories = useMemo(() => {
-    // Only physical products are sold in the shop.
-    // Seed enquiries go to /seeds, courses are handled by ALUT separately.
-    const order = ["Measurement & Tools", "Books & Field Guides"];
-    const productCategories = [...new Set(products.map(p => p.category))];
-    return order.filter(cat => productCategories.includes(cat));
+  // Category list with counts, in a stable, sensible order.
+  const categories = useMemo(() => {
+    const order = ["Measurement & Tools", "Books & Field Guides", "Seeds & Pasture Products", "Online Courses"];
+    const present = [...new Set(products.map((p) => p.category))];
+    const ordered = order.filter((c) => present.includes(c));
+    const extras = present.filter((c) => !order.includes(c));
+    const names = [ALL, ...ordered, ...extras];
+    return names.map((name) => ({
+      name,
+      count: name === ALL ? products.length : products.filter((p) => p.category === name).length,
+    }));
   }, [products]);
 
-  const maxPrice = useMemo(() => {
-    const prices = products.map(p => p.price).filter(p => p > 0);
-    return prices.length > 0 ? Math.ceil(Math.max(...prices)) : 1000;
-  }, [products]);
-
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, maxPrice]);
-
-  useEffect(() => {
-    setPriceRange([0, maxPrice]);
-  }, [maxPrice]);
-
-
-  const { filteredProducts, totalFilteredProducts } = useMemo(() => {
-    const filtered = products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                           product.description.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory = selectedCategories.length === 0 || selectedCategories.includes(product.category);
-      
-      // In-depth inquiry products (old layout) don't have a direct buy price; all others do
-      const isInquiryOnly = product.layout === 'in-depth' && !product.enabledSections;
-      const matchesPrice = isInquiryOnly || product.price === 0 || (product.price >= priceRange[0] && product.price <= priceRange[1]);
-
-      return matchesSearch && matchesCategory && matchesPrice;
+  const filtered = useMemo(() => {
+    const q = searchTerm.trim().toLowerCase();
+    return products.filter((p) => {
+      const matchesCat = activeCat === ALL || p.category === activeCat;
+      const matchesSearch =
+        !q || p.name.toLowerCase().includes(q) || (p.description || "").toLowerCase().includes(q);
+      return matchesCat && matchesSearch;
     });
+  }, [products, activeCat, searchTerm]);
 
-    return { filteredProducts: filtered, totalFilteredProducts: filtered.length };
-  }, [searchTerm, selectedCategories, priceRange, products]);
+  const pad = (n: number) => String(n).padStart(2, "0");
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategories(prev =>
-      prev.includes(category)
-        ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
-  };
-  
   return (
-    <div className="grid lg:grid-cols-4 gap-8 xl:gap-12">
-      <aside className="hidden lg:block lg:col-span-1">
-          <div className="sticky top-24">
-            <ShopSidebar
-                categories={allCategories}
-                selectedCategories={selectedCategories}
-                onCategoryChange={handleCategoryChange}
-                priceRange={priceRange}
-                onPriceChange={setPriceRange}
-                maxPrice={maxPrice}
-            />
+    <div className="grid grid-cols-1 gap-11 min-[940px]:grid-cols-[210px_1fr]">
+      {/* Sidebar (desktop) */}
+      <aside className="hidden min-[940px]:block">
+        <div className="sticky top-24">
+          <div className="mb-4 border-b border-line pb-3 font-body text-[11px] font-bold uppercase tracking-[0.16em] text-body-faint">
+            Categories
           </div>
+          <div className="flex flex-col">
+            {categories.map((c) => {
+              const active = activeCat === c.name;
+              return (
+                <button
+                  key={c.name}
+                  onClick={() => setActiveCat(c.name)}
+                  className={cn(
+                    "mb-1.5 flex items-center justify-between gap-2.5 rounded-[3px] border px-3.5 py-2.5 text-left font-body text-[13.5px] transition-colors",
+                    active
+                      ? "border-forest bg-forest font-semibold text-ondark-bright"
+                      : "border-line font-medium text-body-soft hover:border-forest"
+                  )}
+                >
+                  <span>{c.name}</span>
+                  <span className="font-mono text-[11px] opacity-60">{pad(c.count)}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="mt-8 border border-line bg-cream-band p-5">
+            <div className="mb-1.5 font-headline text-[16px] font-semibold text-ink">Need advice first?</div>
+            <p className="m-0 mb-3.5 text-[12.5px] leading-[1.5] text-body-soft">
+              Not sure which resource fits your land? Ask Frits.
+            </p>
+            <Link
+              href="/contact"
+              className="border-b border-forest pb-0.5 text-[12.5px] font-semibold text-forest no-underline"
+            >
+              Get in touch →
+            </Link>
+          </div>
+        </div>
       </aside>
 
-      <main className="lg:col-span-3">
-        {/* Mobile category chips — visible only below lg breakpoint */}
-        {allCategories.length > 0 && (
-          <div className="flex gap-2 flex-wrap mb-4 lg:hidden">
-            {allCategories.map(cat => (
+      {/* Main */}
+      <main>
+        {/* Mobile category chips */}
+        <div className="mb-5 flex flex-wrap gap-2 min-[940px]:hidden">
+          {categories.map((c) => {
+            const active = activeCat === c.name;
+            return (
               <button
-                key={cat}
-                onClick={() => handleCategoryChange(cat)}
+                key={c.name}
+                onClick={() => setActiveCat(c.name)}
                 className={cn(
-                  "text-sm px-3 py-1.5 rounded-full border font-medium transition-colors",
-                  selectedCategories.includes(cat)
-                    ? "bg-primary text-primary-foreground border-primary"
-                    : "bg-background text-muted-foreground border-border hover:border-primary hover:text-foreground"
+                  "rounded-[3px] border px-3 py-1.5 text-[13px] font-medium transition-colors",
+                  active
+                    ? "border-forest bg-forest text-ondark-bright"
+                    : "border-line text-body-soft hover:border-forest"
                 )}
               >
-                {cat}
+                {c.name}
               </button>
-            ))}
-          </div>
-        )}
-        <div className="mb-8 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input
+            );
+          })}
+        </div>
+
+        <div className="mb-[26px] flex items-center justify-between gap-4 border-b border-line pb-4">
+          <span className="font-headline text-[22px] font-semibold text-ink">{activeCat}</span>
+          <span className="whitespace-nowrap font-mono text-[12px] text-body-faint">
+            {filtered.length} {filtered.length === 1 ? "item" : "items"}
+          </span>
+        </div>
+
+        {/* Search */}
+        <div className="relative mb-6">
+          <Search className="pointer-events-none absolute left-3.5 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-body-faint" />
+          <input
             type="text"
-            placeholder="Search by name or type..."
-            className="w-full pl-10"
+            placeholder="Search by name or type…"
             value={searchTerm}
-            onChange={e => setSearchTerm(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full rounded-[3px] border border-line-strong bg-cream-card py-3 pl-11 pr-4 font-body text-[14px] text-ink outline-none placeholder:text-body-faint focus:border-forest"
           />
         </div>
 
-         <div>
-            {totalFilteredProducts > 0 ? (
-                <ProductGrid products={filteredProducts} />
-            ) : (
-                <div className="text-center py-20">
-                    <h3 className="text-xl font-semibold font-headline">No Products Found</h3>
-                    <p className="text-muted-foreground mt-2">Try adjusting your search or filter criteria.</p>
-                </div>
-            )}
-        </div>
+        {filtered.length > 0 ? (
+          <div className="grid grid-cols-1 gap-6 min-[560px]:grid-cols-2 min-[880px]:grid-cols-3">
+            {filtered.map((p) => (
+              <ProductCard key={p.id} product={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="border border-dashed border-line py-20 text-center">
+            <h3 className="font-headline text-[20px] font-semibold text-ink">No products found</h3>
+            <p className="mt-2 text-[14px] text-body-soft">Try adjusting your search or category.</p>
+          </div>
+        )}
       </main>
     </div>
   );

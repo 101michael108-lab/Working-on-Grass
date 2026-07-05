@@ -1,71 +1,79 @@
-
 "use client";
 
-"use client";
-
-import ShopClient from '@/components/shop/ShopClient';
+import ShopClient from "@/components/shop/ShopClient";
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from 'firebase/firestore';
-import type { Product } from '@/lib/types';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Breadcrumbs } from '@/components/breadcrumbs';
-import { Suspense } from 'react';
-import Link from 'next/link';
-import { Sprout } from 'lucide-react';
+import { collection, query, orderBy } from "firebase/firestore";
+import type { Product } from "@/lib/types";
+import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
+import { Container } from "@/components/redesign/ui";
+
+function SeedIcon({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" className={className}>
+      <path d="M7 20h10M10 20c5.5-2.5.42-8.5-1-11-1.42 2.5-6.5 8.5-1 11M12 9v11" />
+    </svg>
+  );
+}
 
 export default function ShopPage() {
   const firestore = useFirestore();
-  const productsQuery = useMemoFirebase(() => query(collection(firestore, 'products'), orderBy('name')), [firestore]);
-  const { data: products, isLoading } = useCollection<Omit<Product, 'id'>>(productsQuery);
-
-  const LoadingSkeleton = () => (
-     <div className="grid lg:grid-cols-4 gap-8 xl:gap-12">
-        <aside className="lg:col-span-1">
-             <div className="sticky top-24">
-                <Skeleton className="h-[300px] w-full rounded-lg" />
-            </div>
-        </aside>
-        <main className="lg:col-span-3">
-            <Skeleton className="h-10 w-full mb-8" />
-            <div className="space-y-16">
-                 <div>
-                    <Skeleton className="h-8 w-1/3 mb-6 pb-2" />
-                    <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-8">
-                        {[...Array(3)].map((_, i) => (
-                            <Skeleton key={i} className="h-[450px] w-full rounded-lg" />
-                        ))}
-                    </div>
-                </div>
-            </div>
-        </main>
-    </div>
+  const productsQuery = useMemoFirebase(
+    () => query(collection(firestore, "products"), orderBy("name")),
+    [firestore]
   );
+  const { data: products, isLoading } = useCollection<Omit<Product, "id">>(productsQuery);
 
   return (
-    <div className="container py-12 md:py-16">
-       <Breadcrumbs items={[{ label: "Shop" }]} />
-       <div className="mb-8 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline text-foreground">Books & Field Instruments</h1>
-        <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Books and field tools by Frits van Oudtshoorn, developed from 30 years of hands-on veld work.
-        </p>
-      </div>
-      {/* Seed enquiry notice */}
-      <div className="mb-10 flex flex-col sm:flex-row items-center justify-between gap-4 bg-secondary/50 border-2 border-dashed border-primary/20 rounded-lg px-6 py-4">
-        <div className="flex items-center gap-3">
-          <Sprout className="h-5 w-5 text-primary shrink-0" />
-          <p className="text-sm text-muted-foreground">
-            <strong className="text-foreground">Looking for grass seed?</strong>{" "}
-            Seed is not listed in the shop. Frits formulates custom mixes per farm and situation.
+    <div className="bg-cream">
+      {/* Header band */}
+      <section className="border-b border-line bg-cream-band">
+        <Container className="pb-[46px] pt-[52px]">
+          <div className="mb-3.5 font-mono text-[12px] text-gold-deep">Home / Shop</div>
+          <h1 className="m-0 font-headline text-[clamp(32px,4vw,50px)] font-medium tracking-[-0.02em] text-ink">
+            The Catalogue
+          </h1>
+          <p className="mt-4 max-w-[560px] text-[16px] leading-[1.6] text-body">
+            Books and field instruments by Frits van Oudtshoorn, developed across thirty years of
+            hands-on veld work, every item field-tested and recommended.
           </p>
+        </Container>
+      </section>
+
+      {/* Seed notice */}
+      <Container>
+        <div className="flex items-center justify-between gap-5 border-b border-line py-5 max-[720px]:flex-col max-[720px]:items-start">
+          <div className="flex items-center gap-3.5">
+            <SeedIcon className="shrink-0 text-forest" />
+            <p className="m-0 text-[13.5px] text-body-soft">
+              <strong className="text-ink">Looking for grass seed?</strong> Seed isn&rsquo;t listed,
+              Frits formulates custom mixes per farm and situation.
+            </p>
+          </div>
+          <Link
+            href="/seeds"
+            className="whitespace-nowrap border-b border-forest pb-0.5 text-[13px] font-semibold text-forest no-underline"
+          >
+            Request a seed quote →
+          </Link>
         </div>
-        <Link href="/seeds" className="text-sm font-bold text-primary hover:underline whitespace-nowrap shrink-0">
-          Request a Seed Quote →
-        </Link>
-      </div>
-      <Suspense fallback={<LoadingSkeleton />}>
-        {isLoading ? <LoadingSkeleton /> : <ShopClient products={products || []} />}
-      </Suspense>
+      </Container>
+
+      {/* Body */}
+      <Container className="pb-[clamp(56px,7vw,90px)] pt-[34px]">
+        {isLoading ? (
+          <div className="grid gap-11 min-[940px]:grid-cols-[210px_1fr]">
+            <Skeleton className="hidden h-[280px] min-[940px]:block" />
+            <div className="grid grid-cols-1 gap-6 min-[560px]:grid-cols-2 min-[880px]:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <Skeleton key={i} className="h-[420px]" />
+              ))}
+            </div>
+          </div>
+        ) : (
+          <ShopClient products={products || []} />
+        )}
+      </Container>
     </div>
   );
 }
