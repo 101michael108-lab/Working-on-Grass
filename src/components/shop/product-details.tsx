@@ -1,9 +1,7 @@
-
 "use client";
 
-import React from 'react';
-import type { Product } from '@/lib/types';
-import ProductPage from './product-layouts/ProductPage';
+import type { Product } from "@/lib/types";
+import ProductDetail from "@/components/shop/product-detail";
 
 interface ProductPageClientProps {
   product: Product;
@@ -13,7 +11,7 @@ interface ProductPageClientProps {
 
 export default function ProductPageClient({ product, relatedProducts, isLoadingRelated }: ProductPageClientProps) {
   return (
-    <ProductPage
+    <ProductDetail
       product={product}
       relatedProducts={relatedProducts}
       isLoadingRelated={isLoadingRelated}
