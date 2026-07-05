@@ -1,4 +1,5 @@
 'use client';
+import type { MouseEvent } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
@@ -26,13 +27,18 @@ export default function ProductCard({ product }: { product: Product }) {
   const img = product.images?.[0];
   const teaser = getTeaser(product.description);
 
+  // Keep Add working above the stretched card link.
+  const handleAdd = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isOutOfStock) addToCart(product, 1);
+  };
+
   return (
-    <div className="flex flex-col border border-line bg-cream-card shadow-lifted transition-shadow duration-300 animate-wog-fade hover:shadow-lifted-lg">
-      {/* Image */}
-      <Link
-        href={url}
-        prefetch={false}
-        className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-line no-underline ${img ? "bg-white shadow-sunken" : ""}`}
+    <div className="group relative flex flex-col border border-line bg-cream-card shadow-lifted transition-[box-shadow,border-color] duration-200 animate-wog-fade hover:border-line-strong hover:shadow-lifted-lg">
+      {/* Image (whole card is clickable via the stretched title link) */}
+      <div
+        className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-line ${img ? 'bg-white shadow-sunken' : ''}`}
         style={img ? undefined : hatchCream}
       >
         {img ? (
@@ -41,7 +47,7 @@ export default function ProductCard({ product }: { product: Product }) {
             alt={product.name}
             fill
             sizes="(min-width:940px) 33vw, (min-width:640px) 50vw, 100vw"
-            className={`object-contain p-5 transition-transform duration-500 hover:scale-[1.03] ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
+            className={`object-contain p-5 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
           />
         ) : (
           <span className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-[#A2A492]">
@@ -49,28 +55,30 @@ export default function ProductCard({ product }: { product: Product }) {
           </span>
         )}
         {isOutOfStock ? (
-          <span className="absolute right-3 top-3 rounded-[2px] border border-gold-border bg-gold-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-gold-text">
+          <span className="absolute right-3 top-3 z-[1] rounded-[2px] border border-gold-border bg-gold-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-gold-text">
             Sold out
           </span>
         ) : product.isDigital ? (
-          <span className="absolute right-3 top-3 rounded-[2px] border border-gold-border bg-gold-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-gold-text">
+          <span className="absolute right-3 top-3 z-[1] rounded-[2px] border border-gold-border bg-gold-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-gold-text">
             Digital
           </span>
         ) : null}
-      </Link>
+      </div>
 
       {/* Body */}
       <div className="flex flex-grow flex-col p-5">
         <span className="mb-2 font-body text-[10.5px] font-semibold uppercase tracking-[0.14em] text-body-faint">
           {product.category}
         </span>
-        <Link
-          href={url}
-          prefetch={false}
-          className="mb-2 font-headline text-[20px] font-semibold leading-tight text-ink no-underline transition-colors hover:text-forest"
-        >
-          {product.name}
-        </Link>
+        <h3 className="mb-2 font-headline text-[20px] font-semibold leading-tight text-ink">
+          <Link
+            href={url}
+            prefetch={false}
+            className="text-ink no-underline transition-colors after:absolute after:inset-0 after:content-[''] group-hover:text-forest"
+          >
+            {product.name}
+          </Link>
+        </h3>
         {teaser && (
           <p className="mb-5 line-clamp-3 flex-grow text-[13.5px] leading-[1.55] text-body-soft">{teaser}</p>
         )}
@@ -83,9 +91,9 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
           <button
             type="button"
-            onClick={() => addToCart(product, 1)}
+            onClick={handleAdd}
             disabled={isOutOfStock}
-            className="inline-flex items-center gap-1.5 rounded-[3px] bg-forest px-4 py-2.5 font-body text-[13px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-50"
+            className="relative z-[1] inline-flex items-center gap-1.5 rounded-[3px] bg-forest px-4 py-2.5 font-body text-[13px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
             <ShoppingCart className="h-[15px] w-[15px]" strokeWidth={1.8} />
             {isOutOfStock ? 'Sold out' : 'Add'}

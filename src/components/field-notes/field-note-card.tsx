@@ -7,10 +7,9 @@ import { hatchCream } from "@/components/redesign/ui";
 export function FieldNoteCard({ note }: { note: LoadedFieldNote }) {
   const href = `/field-notes/${note.slug}`;
   return (
-    <article className="flex flex-col border border-line bg-cream-card shadow-lifted transition-shadow duration-300 animate-wog-fade hover:shadow-lifted-lg">
-      <Link
-        href={href}
-        className="relative flex aspect-[16/10] items-center justify-center overflow-hidden border-b border-line no-underline"
+    <article className="group relative flex flex-col border border-line bg-cream-card shadow-lifted transition-[box-shadow,border-color] duration-200 animate-wog-fade hover:border-line-strong hover:shadow-lifted-lg">
+      <div
+        className="relative flex aspect-[16/10] items-center justify-center overflow-hidden border-b border-line"
         style={note.coverImageUrl ? undefined : hatchCream}
       >
         {note.coverImageUrl ? (
@@ -18,11 +17,13 @@ export function FieldNoteCard({ note }: { note: LoadedFieldNote }) {
         ) : (
           <span className="font-body text-[10.5px] font-semibold uppercase tracking-[0.12em] text-[#A2A492]">Field note</span>
         )}
-      </Link>
+      </div>
       <div className="flex flex-grow flex-col p-[22px]">
         <span className="mb-2.5 font-body text-[10.5px] font-semibold uppercase tracking-[0.14em] text-body-faint">{note.category}</span>
         <h3 className="mb-2.5 font-headline text-[20px] font-semibold leading-[1.22] text-ink">
-          <Link href={href} className="text-ink no-underline transition-colors hover:text-forest">{note.title}</Link>
+          <Link href={href} className="text-ink no-underline transition-colors after:absolute after:inset-0 after:content-[''] group-hover:text-forest">
+            {note.title}
+          </Link>
         </h3>
         <p className="mb-[18px] line-clamp-3 flex-grow text-[13.5px] leading-[1.55] text-body-soft">{note.deck}</p>
         <div className="flex items-center gap-2 border-t border-cream-line pt-3.5 text-[11.5px] text-body-faint">

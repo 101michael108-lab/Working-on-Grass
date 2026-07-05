@@ -128,10 +128,10 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       boxShadow: {
-        // Warm, ink-tinted elevation tokens (subtle by design).
-        lifted: '0 1px 2px rgba(27,42,30,0.04), 0 3px 10px rgba(27,42,30,0.05)',
-        'lifted-lg': '0 4px 10px rgba(27,42,30,0.07), 0 16px 32px rgba(27,42,30,0.10)',
-        sunken: 'inset 0 1px 3px rgba(27,42,30,0.06)',
+        // Warm, ink-tinted elevation tokens — deliberately restrained.
+        lifted: '0 1px 2px rgba(27,42,30,0.03), 0 1px 3px rgba(27,42,30,0.03)',
+        'lifted-lg': '0 2px 5px rgba(27,42,30,0.04), 0 6px 16px rgba(27,42,30,0.05)',
+        sunken: 'inset 0 1px 2px rgba(27,42,30,0.045)',
       },
       keyframes: {
         'accordion-down': {
