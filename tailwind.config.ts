@@ -24,11 +24,11 @@ export default {
       colors: {
         /* ── Redesign exact-hex tokens (for hand-built storefront components) ── */
         cream: {
-          DEFAULT: '#F4F1E9',
-          card: '#FDFBF5',
-          panel: '#FBFAF4',
-          band: '#F0ECE0',
-          line: '#EBE5D7',
+          DEFAULT: '#F8F6EF',
+          card: '#FEFDFA',
+          panel: '#FCFBF6',
+          band: '#F3F0E8',
+          line: '#ECE7DB',
         },
         ink: '#1B2A1E',
         forest: {
@@ -126,6 +126,12 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        // Warm, ink-tinted elevation tokens (subtle by design).
+        lifted: '0 1px 2px rgba(27,42,30,0.04), 0 3px 10px rgba(27,42,30,0.05)',
+        'lifted-lg': '0 4px 10px rgba(27,42,30,0.07), 0 16px 32px rgba(27,42,30,0.10)',
+        sunken: 'inset 0 1px 3px rgba(27,42,30,0.06)',
       },
       keyframes: {
         'accordion-down': {

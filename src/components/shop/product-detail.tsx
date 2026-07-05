@@ -83,7 +83,7 @@ export default function ProductDetail({
       <Container className="grid grid-cols-1 items-start gap-14 pb-[clamp(40px,5vw,64px)] pt-[clamp(32px,4vw,56px)] min-[880px]:grid-cols-[1.15fr_0.85fr]">
         {/* Gallery */}
         <div>
-          <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[4px] border border-line" style={images.length ? undefined : hatchCream}>
+          <div className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[4px] border border-line ${images.length ? "bg-white shadow-sunken" : ""}`} style={images.length ? undefined : hatchCream}>
             {images.length ? (
               <Image src={images[active] ?? images[0]} alt={product.name} fill sizes="(min-width:880px) 60vw, 100vw" priority className="object-contain p-6" />
             ) : (
@@ -96,7 +96,7 @@ export default function ProductDetail({
                 <button
                   key={i}
                   onClick={() => setActive(i)}
-                  className={`relative aspect-square overflow-hidden rounded-[3px] border-2 ${i === active ? "border-forest" : "border-line"}`}
+                  className={`relative aspect-square overflow-hidden rounded-[3px] border-2 bg-white ${i === active ? "border-forest" : "border-line"}`}
                 >
                   <Image src={src} alt={`${product.name} view ${i + 1}`} fill sizes="120px" className="object-contain p-1.5" />
                 </button>

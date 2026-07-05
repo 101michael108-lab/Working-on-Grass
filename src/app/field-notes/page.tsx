@@ -81,7 +81,7 @@ export default async function FieldNotesHub({
           {/* Featured */}
           {featured && (
             <Container className="pb-2 pt-[clamp(40px,5vw,56px)]">
-              <div className="grid grid-cols-1 border border-line bg-cream-card min-[860px]:grid-cols-[1.1fr_0.9fr]">
+              <div className="grid grid-cols-1 border border-line bg-cream-card shadow-lifted min-[860px]:grid-cols-[1.1fr_0.9fr]">
                 <Link
                   href={`/field-notes/${featured.slug}`}
                   className="relative flex min-h-[300px] items-end justify-center overflow-hidden border-line no-underline min-[860px]:min-h-[340px] min-[860px]:border-r"

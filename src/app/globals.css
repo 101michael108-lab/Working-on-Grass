@@ -5,8 +5,8 @@
 @layer base {
   :root {
     /* ── Redesign palette: warm cream canvas · deep forest greens · gold accent ── */
-    --background: 43 33% 93%;         /* #F4F1E9  page cream */
-    --surface: 44 33% 91%;            /* #F0ECE0  alternating band */
+    --background: 44 36% 96%;         /* #F8F6EF  light cream */
+    --surface: 44 30% 93%;            /* #F3F0E8  alternating band */
     --foreground: 130 22% 13%;        /* #1B2A1E  ink */
     --card: 45 45% 98%;               /* #FDFBF5  card cream */
     --card-foreground: 130 22% 13%;
@@ -14,7 +14,7 @@
     --popover-foreground: 130 22% 13%;
     --primary: 133 24% 24%;           /* #2E4A34  forest green */
     --primary-foreground: 44 43% 95%; /* #F7F4EC  warm off-white */
-    --secondary: 44 33% 91%;          /* #F0ECE0 */
+    --secondary: 44 30% 93%;          /* #F3F0E8 */
     --secondary-foreground: 130 20% 18%;
     --muted: 42 30% 88%;              /* #EBE5D7 */
     --muted-foreground: 147 7% 35%;   /* #55605A  soft body */

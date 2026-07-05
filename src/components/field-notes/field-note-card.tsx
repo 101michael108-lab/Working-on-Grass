@@ -7,7 +7,7 @@ import { hatchCream } from "@/components/redesign/ui";
 export function FieldNoteCard({ note }: { note: LoadedFieldNote }) {
   const href = `/field-notes/${note.slug}`;
   return (
-    <article className="flex flex-col border border-line bg-cream-card animate-wog-fade">
+    <article className="flex flex-col border border-line bg-cream-card shadow-lifted transition-shadow duration-300 animate-wog-fade hover:shadow-lifted-lg">
       <Link
         href={href}
         className="relative flex aspect-[16/10] items-center justify-center overflow-hidden border-b border-line no-underline"

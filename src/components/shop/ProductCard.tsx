@@ -27,12 +27,12 @@ export default function ProductCard({ product }: { product: Product }) {
   const teaser = getTeaser(product.description);
 
   return (
-    <div className="flex flex-col border border-line bg-cream-card animate-wog-fade">
+    <div className="flex flex-col border border-line bg-cream-card shadow-lifted transition-shadow duration-300 animate-wog-fade hover:shadow-lifted-lg">
       {/* Image */}
       <Link
         href={url}
         prefetch={false}
-        className="relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-line no-underline"
+        className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-line no-underline ${img ? "bg-white shadow-sunken" : ""}`}
         style={img ? undefined : hatchCream}
       >
         {img ? (

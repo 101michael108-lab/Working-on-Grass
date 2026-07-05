@@ -194,7 +194,7 @@ export default function Home() {
       <Container className="py-[clamp(56px,7vw,90px)]">
         <SectionHead center eyebrow="Where to begin" title="How can we help you?" className="mb-11" />
         <div className="grid grid-cols-1 gap-[26px] min-[720px]:grid-cols-2">
-          <div className="flex flex-col border border-line bg-cream-card p-[clamp(28px,4vw,44px)]">
+          <div className="flex flex-col border border-line bg-cream-card p-[clamp(28px,4vw,44px)] shadow-lifted">
             <div className="mb-[22px] flex h-11 w-11 items-center justify-center rounded-[3px] bg-cream-band">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2E4A34" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10M10 20c5.5-2.5.42-8.5-1-11-1.42 2.5-6.5 8.5-1 11M12 9v11" /></svg>
             </div>
@@ -214,7 +214,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="flex flex-col border border-line bg-cream-card p-[clamp(28px,4vw,44px)]">
+          <div className="flex flex-col border border-line bg-cream-card p-[clamp(28px,4vw,44px)] shadow-lifted">
             <div className="mb-[22px] flex h-11 w-11 items-center justify-center rounded-[3px] bg-cream-band">
               <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2E4A34" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" /></svg>
             </div>
