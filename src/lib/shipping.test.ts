@@ -36,4 +36,36 @@ describe('shipping', () => {
     ).toBe(true);
     expect(cartUsesProductShippingOverride([{ product: {} }], 150)).toBe(false);
   });
+
+  it('charges no shipping for a digital product, ignoring any override', () => {
+    expect(getProductShippingFee({ isDigital: true }, 150)).toBe(0);
+    expect(getProductShippingFee({ isDigital: true, shippingFee: 200 }, 150)).toBe(0);
+  });
+
+  it('an all-digital cart ships free', () => {
+    expect(
+      calculateOrderShipping(
+        [{ product: { isDigital: true } }, { product: { isDigital: true } }],
+        150
+      )
+    ).toBe(0);
+  });
+
+  it('a mixed cart still charges shipping for the physical items', () => {
+    expect(
+      calculateOrderShipping(
+        [{ product: { isDigital: true } }, { product: {} }],
+        150
+      )
+    ).toBe(150);
+  });
+
+  it('does not treat a digital item as a custom product rate', () => {
+    expect(
+      cartUsesProductShippingOverride(
+        [{ product: { isDigital: true } }, { product: {} }],
+        150
+      )
+    ).toBe(false);
+  });
 });

@@ -55,6 +55,7 @@ const formSchema = z.object({
   price: z.coerce.number().nonnegative(),
   stock: z.coerce.number().int().nonnegative(),
   shippingFee: z.union([z.literal(''), z.coerce.number().nonnegative()]).optional(),
+  isDigital: z.boolean().default(false),
   category: z.string().min(2, "Category is required"),
   sku: z.string().optional(),
   brand: z.string().optional(),
@@ -195,6 +196,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       stock: product?.stock ?? 0,
       shippingFee:
         product?.shippingFee != null ? product.shippingFee : '',
+      isDigital: product?.isDigital ?? false,
       category: product?.category ?? "Measurement & Tools",
       sku: product?.sku ?? "",
       brand: product?.brand ?? "",
@@ -244,7 +246,10 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       features: values.features?.map(f => f.text) ?? [],
     };
 
-    if (shippingFeeInput !== '' && shippingFeeInput != null) {
+    if (values.isDigital) {
+      // Digital products never ship — drop any override so it can't linger.
+      if (product) productData.shippingFee = deleteField();
+    } else if (shippingFeeInput !== '' && shippingFeeInput != null) {
       productData.shippingFee = Number(shippingFeeInput);
     } else if (product) {
       productData.shippingFee = deleteField();
@@ -319,6 +324,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   };
 
   const enabledSections = form.watch("enabledSections");
+  const isDigital = form.watch("isDigital");
 
   return (
     <>
@@ -357,35 +363,51 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                   </FormItem>
                 )} />
               </div>
-              <FormField name="shippingFee" control={form.control} render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Shipping fee override (R)</FormLabel>
+              <FormField name="isDigital" control={form.control} render={({ field }) => (
+                <FormItem className="flex items-center justify-between rounded-md border p-3">
+                  <div className="space-y-0.5 pr-4">
+                    <FormLabel>Digital product</FormLabel>
+                    <p className="text-xs text-muted-foreground">
+                      No shipping is ever charged for this item (e.g. a PDF, e-book, or online course).
+                    </p>
+                  </div>
                   <FormControl>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      placeholder="Leave empty to use store default from Settings"
-                      name={field.name}
-                      ref={field.ref}
-                      onBlur={field.onBlur}
-                      value={
-                        field.value === '' || field.value === undefined
-                          ? ''
-                          : field.value
-                      }
-                      onChange={(e) => {
-                        const raw = e.target.value;
-                        field.onChange(raw === '' ? '' : Number(raw));
-                      }}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   </FormControl>
-                  <p className="text-xs text-muted-foreground">
-                    Optional. When set, checkout uses this instead of the global shipping fee for orders containing this product.
-                  </p>
-                  <FormMessage />
                 </FormItem>
               )} />
+
+              {!isDigital && (
+                <FormField name="shippingFee" control={form.control} render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Shipping fee override (R)</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        placeholder="Leave empty to use store default from Settings"
+                        name={field.name}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        value={
+                          field.value === '' || field.value === undefined
+                            ? ''
+                            : field.value
+                        }
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          field.onChange(raw === '' ? '' : Number(raw));
+                        }}
+                      />
+                    </FormControl>
+                    <p className="text-xs text-muted-foreground">
+                      Optional. When set, checkout uses this instead of the global shipping fee for orders containing this product.
+                    </p>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              )}
               <FormField name="category" control={form.control} render={({ field }) => (
                   <FormItem>
                     <FormLabel>Category</FormLabel>

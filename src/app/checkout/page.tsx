@@ -315,7 +315,11 @@ export default function CheckoutPage() {
                 </div>
                 <div className="flex justify-between text-muted-foreground text-sm">
                   <span>
-                    {hasShippingOverride ? "Shipping (product rate)" : "Flat rate shipping"}
+                    {shippingFee === 0
+                      ? "Shipping (free — digital)"
+                      : hasShippingOverride
+                      ? "Shipping (product rate)"
+                      : "Flat rate shipping"}
                   </span>
                   <span>R{shippingFee.toFixed(2)}</span>
                 </div>

@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
     const settings = settingsSnap.exists ? (settingsSnap.data() as SiteSettings) : null;
 
     // 3. Re-price every line from the authoritative products collection + check stock.
-    const lines: Array<{ productId: string; name: string; price: number; quantity: number; shippingFee?: number }> = [];
+    const lines: Array<{ productId: string; name: string; price: number; quantity: number; shippingFee?: number; isDigital?: boolean }> = [];
     for (const item of items) {
       const snap = await db.collection('products').doc(item.productId).get();
       if (!snap.exists) {
@@ -96,13 +96,13 @@ export async function POST(req: NextRequest) {
           { status: 409 }
         );
       }
-      lines.push({ productId: item.productId, name: p.name, price, quantity: item.quantity, shippingFee: p.shippingFee });
+      lines.push({ productId: item.productId, name: p.name, price, quantity: item.quantity, shippingFee: p.shippingFee, isDigital: p.isDigital });
     }
 
     const subtotal = lines.reduce((sum, l) => sum + l.price * l.quantity, 0);
     const globalShippingFee = settings?.shippingFee ?? 150;
     const shipping = calculateOrderShipping(
-      lines.map((l) => ({ product: { shippingFee: l.shippingFee } })),
+      lines.map((l) => ({ product: { shippingFee: l.shippingFee, isDigital: l.isDigital } })),
       globalShippingFee
     );
     const total = Math.round((subtotal + shipping) * 100) / 100;

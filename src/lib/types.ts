@@ -30,6 +30,8 @@ export type Product = {
   stock: number;
   /** When set, overrides the store-wide shipping fee from Settings for this product. */
   shippingFee?: number;
+  /** Digital product (e.g. PDF, online course) — never charged shipping. */
+  isDigital?: boolean;
   description: string;      // Short description / tagline (shown in header)
   longDescription?: string; // Full editorial body text
   category: string;
