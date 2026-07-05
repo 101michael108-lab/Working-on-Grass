@@ -46,15 +46,19 @@ interface OrderConfirmationPayload {
   };
   storeName?: string;
   fromEmail?: string;
-  /** Base64-encoded PDF invoice, attached to the email when present. */
-  invoicePdfBase64?: string;
-  /** Filename for the attached invoice (e.g. "Invoice-AB12CD34.pdf"). */
+  /**
+   * URL the invoice PDF is fetched from and attached. We attach by URL (not
+   * inline bytes) so the Firestore `mail` doc stays tiny — Firestore rejects
+   * large/complex nested payloads, and nodemailer fetches the URL at send time.
+   */
+  invoiceUrl?: string;
+  /** Filename for the attached invoice (e.g. "Invoice-1001.pdf"). */
   invoiceFileName?: string;
   /**
-   * Extra PDF attachments (e.g. product guides) included alongside the invoice.
-   * Each `content` is base64-encoded.
+   * Extra PDF attachments (e.g. product guides) alongside the invoice, each
+   * fetched from its `path` URL at send time.
    */
-  extraAttachments?: Array<{ filename: string; content: string }>;
+  extraAttachments?: Array<{ filename: string; path: string }>;
 }
 
 interface StatusUpdatePayload {
@@ -190,22 +194,22 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
     }
   };
 
-  // Attach the PDF invoice and any product guides. The Trigger Email extension
-  // forwards `message.attachments` to nodemailer, which accepts base64 content.
+  // Attach the invoice and any product guides by URL. The Trigger Email
+  // extension passes `message.attachments` to nodemailer, which fetches each
+  // `path` URL at send time — keeping the Firestore `mail` doc small (embedding
+  // the PDF bytes inline made Firestore reject the write).
   const attachments: Array<Record<string, unknown>> = [];
-  if (payload.invoicePdfBase64) {
+  if (payload.invoiceUrl) {
     attachments.push({
       filename: payload.invoiceFileName || `Invoice-${orderRef.replace('#', '')}.pdf`,
-      content: payload.invoicePdfBase64,
-      encoding: 'base64',
+      path: payload.invoiceUrl,
       contentType: 'application/pdf',
     });
   }
   for (const guide of payload.extraAttachments ?? []) {
     attachments.push({
       filename: guide.filename,
-      content: guide.content,
-      encoding: 'base64',
+      path: guide.path,
       contentType: 'application/pdf',
     });
   }

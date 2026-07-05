@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
 import type { Firestore as AdminFirestore } from 'firebase-admin/firestore';
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/services/email-service';
-import { generateInvoicePdf, invoiceFileName } from '@/lib/invoice';
+import { invoiceFileName } from '@/lib/invoice';
+import { signInvoiceToken } from '@/lib/invoice-token';
+import { getSiteUrl } from '@/lib/site-url';
 import type { SiteSettings } from '@/lib/types';
 import {
   confirmItnWithPayfast,
@@ -13,16 +15,12 @@ import { getPayfastPassphrase } from '@/lib/payfast-config';
 
 const PROCESSED_STATUSES = new Set(['Processing', 'Shipped', 'Fulfilled', 'Delivered']);
 
-/** Skip any single guide larger than this to avoid the email being rejected. */
-const MAX_GUIDE_BYTES = 15 * 1024 * 1024; // 15 MB
-
-type GuideAttachment = { filename: string; content: string };
+type GuideAttachment = { filename: string; path: string };
 
 /**
- * For each distinct product in the order, look up its optional PDF guide and
- * download it as a base64 attachment. Never throws — a guide that is missing,
- * too large, or fails to download is simply skipped so the confirmation email
- * still goes out.
+ * For each distinct product in the order, resolve its optional PDF guide to a
+ * URL attachment (nodemailer fetches the URL at send time). Never throws — a
+ * missing guide is simply skipped so the confirmation email still goes out.
  */
 async function collectGuideAttachments(
   db: AdminFirestore,
@@ -44,20 +42,9 @@ async function collectGuideAttachments(
         if (!url || seenUrls.has(url)) return;
         seenUrls.add(url);
 
-        const res = await fetch(url);
-        if (!res.ok) {
-          console.error(`PayFast ITN: guide download failed for ${productId} (${res.status}).`);
-          return;
-        }
-        const bytes = Buffer.from(await res.arrayBuffer());
-        if (bytes.length > MAX_GUIDE_BYTES) {
-          console.warn(`PayFast ITN: guide for ${productId} exceeds size cap — skipping.`);
-          return;
-        }
-
         const base = (data.guideName || data.name || 'Guide').replace(/[^\w.\- ]+/g, '').trim() || 'Guide';
         const filename = base.toLowerCase().endsWith('.pdf') ? base : `${base}.pdf`;
-        attachments.push({ filename, content: bytes.toString('base64') });
+        attachments.push({ filename, path: url });
       } catch (e) {
         console.error(`PayFast ITN: guide attachment error for ${productId}:`, e);
       }
@@ -189,29 +176,14 @@ export async function POST(req: NextRequest) {
 
     {
 
-      // Generate the PDF invoice for the email attachment. Never let a PDF
-      // failure block the confirmation email — fall back to no attachment.
-      let invoicePdfBase64: string | undefined;
-      let invoicePdfName: string | undefined;
-      try {
-        const pdfBytes = await generateInvoicePdf({
-          orderId,
-          orderNumber: orderData.orderNumber,
-          orderDate: orderData.orderDate,
-          status: 'Processing',
-          items: orderData.items || [],
-          shippingFee: orderData.shippingFee,
-          totalAmount: orderData.totalAmount,
-          shippingInfo: orderData.shippingInfo,
-          storeName: settings?.storeName,
-          storeEmail: settings?.senderEmail || settings?.contactEmail,
-          vatNumber: settings?.vatNumber,
-        });
-        invoicePdfBase64 = Buffer.from(pdfBytes).toString('base64');
-        invoicePdfName = invoiceFileName(orderId, orderData.orderNumber);
-      } catch (e) {
-        console.error('PayFast ITN: Invoice PDF generation failed (sending email without it):', e);
-      }
+      // Attach the invoice by URL (nodemailer fetches it at send time) rather
+      // than embedding the PDF bytes in the Firestore `mail` doc — Firestore
+      // rejects large/complex inline payloads. The invoice API generates the
+      // PDF on demand, authorised by a signed token (or raw ids as a fallback).
+      const invoiceToken = signInvoiceToken(orderId, userId);
+      const invoiceUrl = invoiceToken
+        ? `${getSiteUrl()}/api/invoice?t=${encodeURIComponent(invoiceToken)}`
+        : `${getSiteUrl()}/api/invoice?orderId=${encodeURIComponent(orderId)}&uid=${encodeURIComponent(userId)}`;
 
       // Collect any PDF guides attached to the purchased products so they are
       // emailed to the customer alongside the invoice.
@@ -237,8 +209,8 @@ export async function POST(req: NextRequest) {
             shippingInfo: orderData.shippingInfo,
             storeName: settings?.storeName,
             fromEmail: settings?.senderEmail,
-            invoicePdfBase64,
-            invoiceFileName: invoicePdfName,
+            invoiceUrl,
+            invoiceFileName: invoiceFileName(orderId, orderData.orderNumber),
             extraAttachments: guideAttachments,
           },
           db
