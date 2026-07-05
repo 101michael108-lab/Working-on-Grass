@@ -24,6 +24,7 @@ import {
   Image as ImageIcon,
   MessageSquare,
   FileText,
+  Newspaper,
 } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -119,6 +120,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <NavLink href="/admin/products" icon={<Package />} tooltip="Products">Products</NavLink>
             <NavLink href="/admin/media" icon={<ImageIcon />} tooltip="Media">Media</NavLink>
             <NavLink href="/admin/resources" icon={<FileText />} tooltip="Resources">Resources</NavLink>
+            <NavLink href="/admin/field-notes" icon={<Newspaper />} tooltip="Field Notes">Field Notes</NavLink>
             <NavLink href="/admin/users" icon={<User />} tooltip="Users">Users</NavLink>
           </SidebarMenu>
         </SidebarContent>
