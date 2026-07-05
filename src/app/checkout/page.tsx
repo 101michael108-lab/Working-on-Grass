@@ -106,6 +106,7 @@ export default function CheckoutPage() {
 
   const form = useForm<Values>({
     resolver: zodResolver(formSchema),
+    shouldFocusError: false,
     defaultValues: {
       email: user?.email || "",
       firstName: user?.displayName?.split(" ")[0] || "",
@@ -200,6 +201,28 @@ export default function CheckoutPage() {
     }
   }
 
+  // On a failed submit, tell the buyer what to fix (react-hook-form focuses the
+  // first invalid field automatically) so they never click "Place order" and
+  // wonder why nothing happened.
+  function onInvalid(errors: Record<string, unknown>) {
+    setIsProcessing(false);
+    toast({
+      variant: "destructive",
+      title: "Almost there",
+      description: "Please complete the highlighted fields to place your order.",
+    });
+    if (typeof document === "undefined") return;
+    // Jump to the top-most invalid field so the buyer starts in the right place.
+    const el = Object.keys(errors)
+      .map((n) => document.querySelector<HTMLElement>(`[name="${n}"]`))
+      .filter((e): e is HTMLElement => !!e)
+      .sort((a, b) => a.getBoundingClientRect().top - b.getBoundingClientRect().top)[0];
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.focus({ preventScroll: true });
+    }
+  }
+
   useEffect(() => {
     if (isHydrated && cartItems.length === 0 && !payfastConfig) router.replace("/shop");
   }, [isHydrated, cartItems.length, payfastConfig, router]);
@@ -225,11 +248,11 @@ export default function CheckoutPage() {
 
   return (
     <div className="bg-cream">
-      <Container className="pb-[clamp(48px,6vw,80px)] pt-[clamp(40px,5vw,56px)]">
+      <Container className="pb-28 pt-[clamp(40px,5vw,56px)] min-[940px]:pb-[clamp(48px,6vw,80px)]">
         <div className="mb-3.5 font-mono text-[12px] text-gold-deep">Home / Cart / Checkout</div>
         <h1 className="m-0 mb-8 font-headline text-[clamp(30px,3.6vw,44px)] font-medium tracking-[-0.02em] text-ink">Checkout</h1>
 
-        <form onSubmit={form.handleSubmit(onSubmit)} className="grid grid-cols-1 items-start gap-11 min-[940px]:grid-cols-[1fr_340px]">
+        <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 items-start gap-11 min-[940px]:grid-cols-[1fr_340px]">
           {/* Left: details */}
           <div>
             {!user && (
@@ -307,16 +330,34 @@ export default function CheckoutPage() {
               <div className="mt-2 flex justify-between border-t border-line pt-3 text-[17px] font-bold text-ink"><span>Total</span><span>R{total.toFixed(2)}</span></div>
               <span className="text-[11px] text-body-faint">Incl. VAT</span>
             </div>
+            {/* Desktop CTA lives in the sticky summary; mobile uses the bar below. */}
+            <div className="hidden min-[940px]:block">
+              <button
+                type="submit"
+                disabled={isProcessing}
+                className="mt-5 h-[50px] w-full rounded-[3px] bg-forest font-body text-[14.5px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:opacity-60"
+              >
+                {isProcessing ? "Processing…" : "Place order"}
+              </button>
+              <div className="mt-3.5 flex items-center justify-center gap-2 text-[11.5px] text-body-faint">
+                <ShieldCheck className="h-3.5 w-3.5 text-forest" strokeWidth={1.6} /> Secure checkout with PayFast
+              </div>
+            </div>
+          </div>
+
+          {/* Persistent mobile place-order bar — always reachable, no hunting. */}
+          <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-line bg-cream-card px-[22px] py-3 shadow-[0_-2px_10px_rgba(27,42,30,0.06)] min-[940px]:hidden">
+            <div className="flex flex-col leading-tight">
+              <span className="text-[11px] text-body-faint">Total incl. VAT</span>
+              <span className="font-body text-[18px] font-bold text-ink">R{total.toFixed(2)}</span>
+            </div>
             <button
               type="submit"
               disabled={isProcessing}
-              className="mt-5 h-[50px] w-full rounded-[3px] bg-forest font-body text-[14.5px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:opacity-60"
+              className="h-[46px] w-[200px] rounded-[3px] bg-forest font-body text-[14.5px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:opacity-60"
             >
               {isProcessing ? "Processing…" : "Place order"}
             </button>
-            <div className="mt-3.5 flex items-center justify-center gap-2 text-[11.5px] text-body-faint">
-              <ShieldCheck className="h-3.5 w-3.5 text-forest" strokeWidth={1.6} /> Secure checkout with PayFast
-            </div>
           </div>
         </form>
       </Container>
