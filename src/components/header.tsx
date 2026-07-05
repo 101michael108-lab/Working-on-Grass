@@ -26,6 +26,7 @@ const navLinks = [
   { href: "/shop", label: "Shop" },
   { href: "/seeds", label: "Seeds" },
   { href: "/grassPro", label: "GrassPro" },
+  { href: "/field-notes", label: "Field Notes" },
   { href: "/resources", label: "Resources" },
 ];
 
@@ -55,7 +56,7 @@ export function Header() {
         <Logo variant="onDark" />
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-7 text-[13.5px] font-medium min-[940px]:flex">
+        <nav className="hidden items-center gap-[22px] text-[13.5px] font-medium min-[940px]:flex">
           {navLinks.map((link) => (
             <Link
               key={link.href}

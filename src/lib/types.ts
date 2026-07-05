@@ -135,6 +135,31 @@ export type MediaLibraryItem = {
     uploadedAt: any; // Firestore Timestamp
 };
 
+export type FieldNote = {
+  id: string;
+  /** URL slug, e.g. "how-to-calculate-grazing-capacity". */
+  slug: string;
+  title: string;
+  /** Short summary / standfirst shown under the title and in cards + meta description. */
+  deck: string;
+  category: string;
+  /** Optional feature image URL (media library or any https URL). */
+  coverImageUrl?: string;
+  /** Bulleted "Key takeaways" shown near the top of the article. */
+  takeaways?: string[];
+  /** Article body in markdown-lite: ## headings, paragraphs, - bullets, > quote, **bold**, [text](/url). */
+  body: string;
+  /** Optional pull quote. */
+  pullQuote?: string;
+  /** Optional product id to surface as "Referenced in this article". */
+  relatedProductId?: string;
+  /** Optional explicit reading time; computed from body when omitted. */
+  readMinutes?: number;
+  isPublished: boolean;
+  publishedAt: any; // Firestore Timestamp
+  updatedAt?: any;
+};
+
 export type Resource = {
   id: string;
   title: string;

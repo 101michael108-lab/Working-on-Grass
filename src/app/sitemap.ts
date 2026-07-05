@@ -2,6 +2,7 @@ import { MetadataRoute } from 'next';
 import { initializeFirebase } from '@/firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { slugify } from '@/lib/utils';
+import { getPublishedFieldNotes } from '@/lib/field-notes';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za';
@@ -19,6 +20,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }));
   } catch (error) {
     console.error("Sitemap: Failed to fetch products", error);
+  }
+
+  // Field Notes (editorial articles)
+  let fieldNoteEntries: MetadataRoute.Sitemap = [];
+  try {
+    const notes = await getPublishedFieldNotes();
+    fieldNoteEntries = notes.map((n) => ({
+      url: `${baseUrl}/field-notes/${n.slug}`,
+      lastModified: n.publishedAt,
+      changeFrequency: 'monthly',
+      priority: 0.6,
+    }));
+  } catch (error) {
+    console.error("Sitemap: Failed to fetch field notes", error);
   }
 
   const routes: MetadataRoute.Sitemap = [
@@ -65,6 +80,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     {
+      url: `${baseUrl}/field-notes`,
+      lastModified: new Date(),
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${baseUrl}/contact`,
       lastModified: new Date(),
       changeFrequency: 'monthly',
@@ -72,5 +93,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
-  return [...routes, ...productEntries];
+  return [...routes, ...productEntries, ...fieldNoteEntries];
 }

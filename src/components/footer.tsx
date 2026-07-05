@@ -10,6 +10,7 @@ const exploreLinks = [
   { href: "/consulting", label: "Consulting" },
   { href: "/shop", label: "Shop" },
   { href: "/seeds", label: "Seeds" },
+  { href: "/field-notes", label: "Field Notes" },
   { href: "/resources", label: "Resources" },
 ];
 

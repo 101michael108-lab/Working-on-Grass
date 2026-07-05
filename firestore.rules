@@ -98,6 +98,13 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Field Notes (editorial articles / SEO). Public read; written server-side
+    // (Admin SDK / seed script) or by admins.
+    match /fieldNotes/{noteId} {
+      allow get, list: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ------------------------------------------------------------------
     // Settings
     // ------------------------------------------------------------------

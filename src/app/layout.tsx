@@ -88,10 +88,14 @@ export default function RootLayout({
       latitude: -24.7,
       longitude: 28.4,
     },
-    areaServed: {
-      '@type': 'GeoCircle',
-      name: 'Southern Africa',
-    },
+    areaServed: [
+      { '@type': 'AdministrativeArea', name: 'Limpopo' },
+      { '@type': 'AdministrativeArea', name: 'Gauteng' },
+      { '@type': 'AdministrativeArea', name: 'North West' },
+      { '@type': 'AdministrativeArea', name: 'Mpumalanga' },
+      { '@type': 'AdministrativeArea', name: 'Free State' },
+      { '@type': 'Country', name: 'South Africa' },
+    ],
     priceRange: 'R-RRR',
     openingHours: 'Mo-Fr 08:00-17:00',
     contactPoint: {

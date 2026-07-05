@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "set-admin": "node --env-file=.env.local scripts/set-admin.mjs"
+    "set-admin": "node --env-file=.env.local scripts/set-admin.mjs",
+    "seed:field-notes": "node --env-file=.env.local scripts/seed-field-notes.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",
