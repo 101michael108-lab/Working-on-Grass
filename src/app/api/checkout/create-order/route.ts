@@ -73,6 +73,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: `Missing shipping details: ${missing.join(', ')}.` }, { status: 400 });
   }
 
+  // Optional buyer VAT number — shown on the invoice so VAT-registered
+  // customers can claim. Capped to a sane length; never required.
+  const buyerVat = String(body.shippingInfo?.vatNumber ?? '').trim().slice(0, 30);
+  if (buyerVat) shippingInfo.vatNumber = buyerVat;
+
   try {
     const db = getAdminFirestore();
     const settingsSnap = await db.collection('settings').doc('config').get();

@@ -42,6 +42,7 @@ const formSchema = z.object({
   city: z.string().min(2, "City is required"),
   postalCode: z.string().min(4, "Postal code is required"),
   country: z.string().min(2, "Country is required"),
+  vatNumber: z.string().optional(),
   agreeToTerms: z.boolean().refine((val) => val === true, {
     message: "You must agree to the terms and conditions",
   }),
@@ -87,6 +88,7 @@ export default function CheckoutPage() {
       city: "",
       postalCode: "",
       country: "South Africa",
+      vatNumber: "",
       agreeToTerms: false,
     },
   });
@@ -156,6 +158,7 @@ export default function CheckoutPage() {
             city: values.city,
             postalCode: values.postalCode,
             country: values.country,
+            vatNumber: values.vatNumber,
           },
         }),
       });
@@ -250,6 +253,15 @@ export default function CheckoutPage() {
                   <FormItem><FormLabel>Country</FormLabel><FormControl><Input {...field} /></FormControl><FormMessage /></FormItem>
                 )} />
               </div>
+
+              <FormField name="vatNumber" control={form.control} render={({ field }) => (
+                <FormItem>
+                  <FormLabel>VAT Number <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
+                  <FormControl><Input placeholder="e.g. 4123456789" {...field} /></FormControl>
+                  <FormDescription>If you're VAT-registered, add your number and it will appear on your invoice so you can claim the VAT.</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
               <div className="bg-muted/30 p-6 rounded-lg border-2 border-dashed space-y-4">
                   <FormField

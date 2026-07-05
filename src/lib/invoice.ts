@@ -30,6 +30,8 @@ export interface InvoiceInput {
     city?: string;
     postalCode?: string;
     country?: string;
+    /** Buyer's own VAT number, so a VAT-registered customer can claim. */
+    vatNumber?: string;
   };
   storeName?: string;
   /** Shown in the footer as the store contact address. */
@@ -182,6 +184,7 @@ export async function generateInvoicePdf(input: InvoiceInput): Promise<Uint8Arra
     sanitize(info.address),
     sanitize([info.city, info.postalCode].filter(Boolean).join(', ')),
     sanitize(info.country),
+    info.vatNumber ? sanitize(`VAT No: ${info.vatNumber}`) : '',
   ].filter((l) => l.length > 0);
   for (const line of billLines) {
     text(fit(line, 240, 10, font), MARGIN, billY, 10, line === name ? bold : font, line === name ? INK : MUTED);
