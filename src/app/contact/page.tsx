@@ -70,7 +70,7 @@ function ContactForm() {
       await submitInquiry('contact', values);
       toast({
         title: "Message sent",
-        description: "Frits will be in touch soon — usually within 1 business day.",
+        description: "Frits will be in touch soon, usually within 1 business day.",
       })
       form.reset()
     } catch {
@@ -198,7 +198,7 @@ export default function ContactPage() {
       <div className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Get in Touch</h1>
         <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-          Ask a question, request an assessment, or just describe what's going on with your land — Frits will respond personally.
+          Ask a question, request an assessment, or just describe what's going on with your land. Frits will respond personally.
         </p>
       </div>
 
@@ -236,7 +236,7 @@ export default function ContactPage() {
                             >
                               +27 78 228 0008
                             </a>
-                            <p className="text-xs text-muted-foreground mt-0.5">Frits van Oudtshoorn — tap to chat</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Frits van Oudtshoorn (tap to chat)</p>
                         </div>
                     </div>
                      <div className="flex items-start gap-4">

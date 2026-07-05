@@ -18,8 +18,8 @@ const translations: Record<string, Record<Language, string>> = {
     af: "Volhoubare Veldbeheer, Gelei deur Ondervinding",
   },
   "hero.subheadline": {
-    en: "30 years of hands-on rangeland and pasture expertise — available to your farm or reserve.",
-    af: "30 jaar praktiese weiding- en weidingkundige ondervinding — beskikbaar vir u plaas of reservaat.",
+    en: "30 years of hands-on rangeland and pasture expertise, available to your farm or reserve.",
+    af: "30 jaar praktiese weiding- en weidingkundige ondervinding, beskikbaar vir u plaas of reservaat.",
   },
   "hero.cta.whatsapp": {
     en: "WhatsApp Frits",
@@ -44,8 +44,8 @@ const translations: Record<string, Record<Language, string>> = {
     af: "Veldbeheer Konsultasie",
   },
   "consulting.subheadline": {
-    en: "30 years of hands-on grassland and veld expertise — available to your farm, game ranch, or reserve. Practical advice, not textbook theory.",
-    af: "30 jaar praktiese gras- en veldkundige ondervinding — beskikbaar vir u plaas, wildplaas of reservaat. Praktiese raad, nie teorieboeke nie.",
+    en: "30 years of hands-on grassland and veld expertise, available to your farm, game ranch, or reserve. Practical advice, not textbook theory.",
+    af: "30 jaar praktiese gras- en veldkundige ondervinding, beskikbaar vir u plaas, wildplaas of reservaat. Praktiese raad, nie teorieboeke nie.",
   },
   // Contact
   "contact.whatsapp.label": {

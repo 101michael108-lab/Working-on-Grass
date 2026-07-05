@@ -158,7 +158,7 @@ export default function Home() {
               </h2>
               <div className="mt-4">
                 <blockquote className="border-l-4 border-primary pl-4 italic font-body text-xl text-muted-foreground">
-                  "My goal is to bridge the gap between science and the farmer — sustainable land management builds resilient, profitable agricultural businesses for generations to come."
+                  "My goal is to bridge the gap between science and the farmer. Sustainable land management builds resilient, profitable agricultural businesses for generations to come."
                 </blockquote>
               </div>
               <p className="mt-5 max-w-[600px] text-muted-foreground md:text-lg/relaxed font-body">

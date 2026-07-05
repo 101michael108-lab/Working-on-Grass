@@ -99,21 +99,21 @@ const SECTIONS: {
   {
     key: "longDescription",
     label: "About This Product",
-    hint: "Full editorial body — paragraphs shown below the header",
+    hint: "Full editorial body: paragraphs shown below the header",
     icon: BookOpen,
     color: "text-primary",
   },
   {
     key: "whatsInside",
     label: "What's Inside",
-    hint: "Bullet-point highlights — great for books & guides",
+    hint: "Bullet-point highlights, great for books & guides",
     icon: BookOpen,
     color: "text-primary",
   },
   {
     key: "whoItsFor",
     label: "Who It's For",
-    hint: "Audience description — farmers, ecologists, students…",
+    hint: "Audience description: farmers, ecologists, students…",
     icon: Users,
     color: "text-accent",
   },
@@ -134,21 +134,21 @@ const SECTIONS: {
   {
     key: "specifications",
     label: "Technical Specifications",
-    hint: "Key/value spec table — material, dimensions, accuracy…",
+    hint: "Key/value spec table: material, dimensions, accuracy…",
     icon: Table2,
     color: "text-muted-foreground",
   },
   {
     key: "expertRecommendation",
     label: "Expert Recommendation",
-    hint: "Authority quote with attribution — creates trust",
+    hint: "Authority quote with attribution, creates trust",
     icon: Quote,
     color: "text-accent",
   },
   {
     key: "valueProposition",
     label: "Value Proposition",
-    hint: "Short bold callout banner — one compelling sentence",
+    hint: "Short bold callout banner, one compelling sentence",
     icon: Sparkles,
     color: "text-accent",
   },
@@ -351,7 +351,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                   <FormItem>
                     <FormLabel>Price (R, incl. VAT)</FormLabel>
                     <FormControl><Input type="number" step="0.01" {...field} /></FormControl>
-                    <p className="text-[10px] text-muted-foreground italic">Enter the final price the customer pays. VAT (15%) is already included — it is not added on at checkout.</p>
+                    <p className="text-[10px] text-muted-foreground italic">Enter the final price the customer pays. VAT (15%) is already included, so it is not added on at checkout.</p>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -452,7 +452,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                 <FormItem>
                   <FormLabel>
                     Tagline{" "}
-                    <span className="font-normal text-muted-foreground">— shown directly under the title and on product cards</span>
+                    <span className="font-normal text-muted-foreground">(shown directly under the title and on product cards)</span>
                   </FormLabel>
                   <FormControl>
                     <Textarea
@@ -502,7 +502,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           <Card>
             <CardContent className="pt-5 space-y-3">
               <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                Digital Guide <span className="font-normal normal-case tracking-normal">— PDF emailed to the buyer after purchase</span>
+                Digital Guide <span className="font-normal normal-case tracking-normal">(PDF emailed to the buyer after purchase)</span>
               </p>
 
               {guideUrl ? (
@@ -539,7 +539,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
           {/* ── Section Toggles ───────────────────────────────────────── */}
           <div>
             <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">
-              Page Sections — toggle on to show on product page
+              Page Sections: toggle on to show on product page
             </p>
 
             <AccordionPrimitive.Root
@@ -638,7 +638,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                               ))}
                               {featureFields.length === 0 && (
                                 <p className="text-xs text-muted-foreground text-center py-4 border border-dashed rounded-md">
-                                  No highlights yet — click Add Highlight above
+                                  No highlights yet. Click Add Highlight above
                                 </p>
                               )}
                             </div>
@@ -716,7 +716,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                               ))}
                               {specFields.length === 0 && (
                                 <p className="text-xs text-muted-foreground text-center py-4 border border-dashed rounded-md">
-                                  No rows yet — click Add Row above
+                                  No rows yet. Click Add Row above
                                 </p>
                               )}
                             </div>
@@ -753,7 +753,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                                 />
                               </FormControl>
                               <p className="text-xs text-muted-foreground mt-1">
-                                One bold callout sentence — shown as a full-width banner on the product page.
+                                One bold callout sentence, shown as a full-width banner on the product page.
                               </p>
                               <FormMessage />
                             </FormItem>

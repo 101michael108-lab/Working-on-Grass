@@ -304,7 +304,7 @@ export default function InDepthLayout({ product, relatedProducts, isLoadingRelat
               onClick={handleAddToCart}
             >
               <ShoppingCart className="mr-2 h-5 w-5" />
-              {added ? 'Added to Cart ✓' : isOutOfStock ? 'Currently Unavailable' : `Add to Cart — R${product.price.toFixed(2)}`}
+              {added ? 'Added to Cart ✓' : isOutOfStock ? 'Currently Unavailable' : `Add to Cart (R${product.price.toFixed(2)})`}
             </Button>
             <a
               href={waOrderUrl}

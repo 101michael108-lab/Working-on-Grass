@@ -67,7 +67,7 @@ export default function RootLayout({
     name: 'Working on Grass',
     url: 'https://workingongrass.co.za',
     logo: 'https://workingongrass.co.za/logo.png',
-    description: 'Veld management consulting, grass seed, books, field instruments, and the GrassPro grass identification app — by grassland ecologist Frits van Oudtshoorn.',
+    description: 'Veld management consulting, grass seed, books, field instruments, and the GrassPro grass identification app, by grassland ecologist Frits van Oudtshoorn.',
     telephone: '+27782280008',
     email: 'admin@workingongrass.co.za',
     address: {
@@ -115,7 +115,7 @@ export default function RootLayout({
       },
       alumniOf: {
         '@type': 'CollegeOrUniversity',
-        name: 'University (MSc Nature Conservation — Ecological Restoration)',
+        name: 'University (MSc Nature Conservation, Ecological Restoration)',
       },
       knowsAbout: [
         'Veld management',

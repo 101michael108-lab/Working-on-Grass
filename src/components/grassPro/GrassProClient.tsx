@@ -85,7 +85,7 @@ const accordionItems = [
     value: "gps-location",
     trigger: "6. GPS & Location",
     content:
-      "The location function allows you to set your current GPS position, select a location from the map, or use the whole of Southern Africa. When a location is selected, the app only considers grasses occurring in that area for identification — dramatically narrowing the species pool and improving identification accuracy.",
+      "The location function allows you to set your current GPS position, select a location from the map, or use the whole of Southern Africa. When a location is selected, the app only considers grasses occurring in that area for identification, dramatically narrowing the species pool and improving identification accuracy.",
   },
   {
     value: "settings",
@@ -168,7 +168,7 @@ export function GrassProClient() {
                 by Frits van Oudtshoorn &amp; SmartSearch Apps
               </p>
               <p className="mt-6 text-lg md:text-xl text-primary-foreground/80 font-body max-w-lg mx-auto lg:mx-0 leading-relaxed">
-                Identify any grass species in the field — with award-winning Smart Search,
+                Identify any grass species in the field, with award-winning Smart Search,
                 GPS-aware filtering, 2&nbsp;000+ diagnostic images, and full offline capability.
               </p>
 
@@ -250,12 +250,12 @@ export function GrassProClient() {
               </h2>
               <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-lg">
                 The award-winning Smart Search filters and ranks your species list as you
-                describe the plant — narrowing 390 species down to a handful of candidates fast.
+                describe the plant, narrowing 390 species down to a handful of candidates fast.
               </p>
               <ul className="mt-6 space-y-3">
                 {[
                   "Filter by plant height, leaf width, inflorescence type and more",
-                  "Ranked results — most likely match shown first",
+                  "Ranked results: most likely match shown first",
                   "Build custom lists by ecological group, grazing value, or uses",
                 ].map((point) => (
                   <li key={point} className="flex items-start gap-3">
@@ -288,7 +288,7 @@ export function GrassProClient() {
               </h2>
               <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-lg">
                 The app uses your GPS position to show only the grass species that occur in
-                your immediate area — making identification dramatically faster in the field.
+                your immediate area, making identification dramatically faster in the field.
               </p>
               <ul className="mt-6 space-y-3">
                 {[
@@ -320,13 +320,13 @@ export function GrassProClient() {
               </h2>
               <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-lg">
                 Every species comes with up to 10 diagnostic photos, a full written description,
-                grazing value, ecological notes, and a distribution map — all stored on your device.
+                grazing value, ecological notes, and a distribution map, all stored on your device.
               </p>
               <ul className="mt-6 space-y-3">
                 {[
                   "3–10 photos per species: whole plant, inflorescence, spikelets, leaves",
                   "Grazing value, ecological status, and weediness at a glance",
-                  "Fully offline — no signal needed anywhere in the field",
+                  "Fully offline: no signal needed anywhere in the field",
                 ].map((point) => (
                   <li key={point} className="flex items-start gap-3">
                     <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />

@@ -57,7 +57,7 @@ export default function AboutPage() {
             <div className="space-y-4 text-muted-foreground text-base">
               <h2 className="text-3xl font-bold text-foreground">Frits van Oudtshoorn</h2>
               <blockquote className="border-l-4 border-primary pl-4 italic font-body text-xl text-muted-foreground">
-                "My goal is to bridge the gap between science and the farmer — sustainable land management builds resilient, profitable agricultural businesses for generations to come."
+                "My goal is to bridge the gap between science and the farmer. Sustainable land management builds resilient, profitable agricultural businesses for generations to come."
               </blockquote>
               <p>
                 Frits grew up on a farm in Limpopo Province, South Africa, and has spent more than 30 years working as a rangeland and pasture consultant, training provider, and author. He holds a <strong className="text-foreground">Master's degree in Nature Conservation, specialising in Ecological Restoration</strong>, and grounds his work in both practical experience and sound scientific principles.
@@ -99,7 +99,7 @@ export default function AboutPage() {
         <div className="container text-center">
           <h2 className="text-3xl font-bold">Need expert guidance on your land or veld?</h2>
           <p className="mt-2 max-w-xl mx-auto text-muted-foreground">
-            WhatsApp Frits directly — he responds personally.
+            WhatsApp Frits directly. He responds personally.
           </p>
           <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
             <Button asChild size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white w-full sm:w-auto border-b-4 border-black/20">

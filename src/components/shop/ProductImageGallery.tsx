@@ -82,7 +82,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             <Image
               key={safeImages[selected]}
               src={safeImages[selected]}
-              alt={`${productName} — image ${selected + 1}`}
+              alt={`${productName}, image ${selected + 1}`}
               fill
               priority={selected === 0}
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -174,7 +174,7 @@ export function ProductImageGallery({ images, productName }: ProductImageGallery
             <Image
               key={lightboxIndex}
               src={safeImages[lightboxIndex]}
-              alt={`${productName} — image ${lightboxIndex + 1}`}
+              alt={`${productName}, image ${lightboxIndex + 1}`}
               fill
               sizes="90vw"
               className="object-contain"

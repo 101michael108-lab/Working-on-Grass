@@ -328,7 +328,7 @@ export default function CheckoutPage() {
                 <div className="flex justify-between text-muted-foreground text-sm">
                   <span>
                     {shippingFee === 0
-                      ? "Shipping (free — digital)"
+                      ? "Shipping (free, digital)"
                       : hasShippingOverride
                       ? "Shipping (product rate)"
                       : "Flat rate shipping"}

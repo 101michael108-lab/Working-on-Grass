@@ -87,7 +87,7 @@ export default function ResourcesClient() {
         <div className="text-center py-20 border-2 border-dashed border-primary/20 rounded-lg">
           <FileText className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
           <p className="text-muted-foreground font-medium">No resources available yet.</p>
-          <p className="text-sm text-muted-foreground mt-1">Check back soon — resources are being added.</p>
+          <p className="text-sm text-muted-foreground mt-1">Check back soon. Resources are being added.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

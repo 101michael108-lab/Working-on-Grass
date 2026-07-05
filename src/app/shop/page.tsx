@@ -47,7 +47,7 @@ export default function ShopPage() {
        <div className="mb-8 text-center">
         <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline text-foreground">Books & Field Instruments</h1>
         <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          Books and field tools by Frits van Oudtshoorn — developed from 30 years of hands-on veld work.
+          Books and field tools by Frits van Oudtshoorn, developed from 30 years of hands-on veld work.
         </p>
       </div>
       {/* Seed enquiry notice */}
@@ -56,7 +56,7 @@ export default function ShopPage() {
           <Sprout className="h-5 w-5 text-primary shrink-0" />
           <p className="text-sm text-muted-foreground">
             <strong className="text-foreground">Looking for grass seed?</strong>{" "}
-            Seed is not listed in the shop — Frits formulates custom mixes per farm and situation.
+            Seed is not listed in the shop. Frits formulates custom mixes per farm and situation.
           </p>
         </div>
         <Link href="/seeds" className="text-sm font-bold text-primary hover:underline whitespace-nowrap shrink-0">

@@ -435,7 +435,7 @@ export default function ProductPage({
                 onClick={handleAddToCart}
               >
                 <ShoppingCart className="mr-2 h-5 w-5" />
-                {added ? 'Added to Cart ✓' : isOutOfStock ? 'Currently Unavailable' : `Add to Cart — R${product.price.toFixed(2)}`}
+                {added ? 'Added to Cart ✓' : isOutOfStock ? 'Currently Unavailable' : `Add to Cart (R${product.price.toFixed(2)})`}
               </Button>
               <a
                 href={waOrderUrl}
@@ -475,7 +475,7 @@ export default function ProductPage({
                   Take it further with GrassPro
                 </h3>
                 <p className="text-muted-foreground text-sm mt-1 leading-relaxed">
-                  The GrassPro app covers the same 390 species with 1,400+ diagnostic images, GPS filtering, and Smart Search — built to use alongside this book. Free to download.
+                  The GrassPro app covers the same 390 species with 1,400+ diagnostic images, GPS filtering, and Smart Search, built to use alongside this book. Free to download.
                 </p>
               </div>
               <Link href="/grassPro" className="shrink-0">

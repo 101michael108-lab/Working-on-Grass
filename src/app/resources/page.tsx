@@ -5,7 +5,7 @@ import ResourcesClient from "./ResourcesClient";
 export const metadata: Metadata = {
   title: "Free Veld & Grassland Resources",
   description:
-    "Free downloadable guides, checklists, equations, and maps for veld and grassland management in Southern Africa — by Frits van Oudtshoorn.",
+    "Free downloadable guides, checklists, equations, and maps for veld and grassland management in Southern Africa, by Frits van Oudtshoorn.",
   alternates: { canonical: "/resources" },
 };
 
