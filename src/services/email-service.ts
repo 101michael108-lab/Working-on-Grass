@@ -44,6 +44,15 @@ interface OrderConfirmationPayload {
     postalCode: string;
     country: string;
   };
+  /** Separate billing address — present only when it differs from shipping. */
+  billingInfo?: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
   storeName?: string;
   fromEmail?: string;
   /**
@@ -119,6 +128,14 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
     <p style="margin: 2px 0;">${payload.shippingInfo.country}</p>
   ` : '<p style="margin:0;">Not provided</p>';
 
+  // Billing block — a distinct address when the buyer entered one, else "same".
+  const billingBlock = payload.billingInfo ? `
+    <p style="margin: 2px 0; font-weight: bold;">${payload.billingInfo.firstName} ${payload.billingInfo.lastName}</p>
+    <p style="margin: 2px 0;">${payload.billingInfo.address}</p>
+    <p style="margin: 2px 0;">${payload.billingInfo.city}, ${payload.billingInfo.postalCode}</p>
+    <p style="margin: 2px 0;">${payload.billingInfo.country}</p>
+  ` : '<p style="margin:0; color:#94a3b8;">Same as shipping address</p>';
+
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
@@ -177,7 +194,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
                 <td style="vertical-align: top; width: 50%; padding-left: 10px;">
                   <div style="background-color: #f9fafb; border-radius: 6px; padding: 14px;">
                     <p style="margin: 0 0 8px 0; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #6b7280;">Billing Address</p>
-                    ${addressBlock}
+                    ${billingBlock}
                   </div>
                 </td>
               </tr>

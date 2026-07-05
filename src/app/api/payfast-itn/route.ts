@@ -207,6 +207,7 @@ export async function POST(req: NextRequest) {
             totalAmount: orderData.totalAmount,
             items: orderData.items,
             shippingInfo: orderData.shippingInfo,
+            billingInfo: orderData.billingInfo,
             storeName: settings?.storeName,
             fromEmail: settings?.senderEmail,
             invoiceUrl,

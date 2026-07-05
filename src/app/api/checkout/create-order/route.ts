@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 2. Parse + validate input.
-  let body: { items?: IncomingItem[]; shippingInfo?: Record<string, string> };
+  let body: { items?: IncomingItem[]; shippingInfo?: Record<string, string>; billingInfo?: Record<string, string> };
   try {
     body = await req.json();
   } catch {
@@ -77,6 +77,17 @@ export async function POST(req: NextRequest) {
   // customers can claim. Capped to a sane length; never required.
   const buyerVat = String(body.shippingInfo?.vatNumber ?? '').trim().slice(0, 30);
   if (buyerVat) shippingInfo.vatNumber = buyerVat;
+
+  // Optional separate billing address — stored only when meaningfully filled
+  // (i.e. the buyer said it differs from shipping and gave an address).
+  const BILLING_FIELDS = ['firstName', 'lastName', 'address', 'city', 'postalCode', 'country'] as const;
+  let billingInfo: Record<string, string> | undefined;
+  const rawBilling = body.billingInfo;
+  if (rawBilling && typeof rawBilling === 'object') {
+    const b: Record<string, string> = {};
+    for (const f of BILLING_FIELDS) b[f] = String(rawBilling[f] ?? '').trim();
+    if (b.address && b.city) billingInfo = b;
+  }
 
   try {
     const db = getAdminFirestore();
@@ -136,6 +147,7 @@ export async function POST(req: NextRequest) {
       status: 'Pending',
       shippingFee: shipping,
       shippingInfo,
+      ...(billingInfo ? { billingInfo } : {}),
       items: lines.map((l) => ({ productId: l.productId, name: l.name, quantity: l.quantity, price: l.price })),
     });
 

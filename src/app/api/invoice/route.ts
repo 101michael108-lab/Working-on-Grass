@@ -70,6 +70,7 @@ export async function GET(req: NextRequest) {
       shippingFee: data.shippingFee,
       totalAmount: data.totalAmount,
       shippingInfo: data.shippingInfo,
+      billingInfo: data.billingInfo,
       storeName: settings?.storeName,
       storeEmail: settings?.senderEmail || settings?.contactEmail,
       vatNumber: settings?.vatNumber,

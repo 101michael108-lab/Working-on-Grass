@@ -93,6 +93,15 @@ export type Order = {
   /** Shipping charged for this order (after product overrides). */
   shippingFee?: number;
   shippingInfo: any;
+  /** Separate billing address, present only when it differs from shipping. */
+  billingInfo?: {
+    firstName: string;
+    lastName: string;
+    address: string;
+    city: string;
+    postalCode: string;
+    country: string;
+  };
   items: OrderItem[];
 };
 

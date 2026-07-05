@@ -33,6 +33,15 @@ export interface InvoiceInput {
     /** Buyer's own VAT number, so a VAT-registered customer can claim. */
     vatNumber?: string;
   };
+  /** Separate billing address — when present, the Bill To uses it. */
+  billingInfo?: {
+    firstName?: string;
+    lastName?: string;
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    country?: string;
+  };
   storeName?: string;
   /** Shown in the footer as the store contact address. */
   storeEmail?: string;
@@ -172,19 +181,24 @@ export async function generateInvoicePdf(input: InvoiceInput): Promise<Uint8Arra
     metaY -= 16;
   }
 
-  // Bill To
+  // Bill To — the billing address when it differs, else the shipping address.
+  // Contact email and buyer VAT always come from the shipping/contact details.
   text('BILL TO', MARGIN, y, 8, bold, MUTED);
   let billY = y - 16;
-  const info = input.shippingInfo || {};
-  const name = sanitize([info.firstName, info.lastName].filter(Boolean).join(' ').trim());
+  const ship = input.shippingInfo || {};
+  const bill = input.billingInfo;
+  const addr = bill || ship;
+  const name = sanitize(
+    [bill?.firstName ?? ship.firstName, bill?.lastName ?? ship.lastName].filter(Boolean).join(' ').trim()
+  );
   const billLines = [
     name,
-    sanitize(info.email),
-    sanitize(info.phone),
-    sanitize(info.address),
-    sanitize([info.city, info.postalCode].filter(Boolean).join(', ')),
-    sanitize(info.country),
-    info.vatNumber ? sanitize(`VAT No: ${info.vatNumber}`) : '',
+    sanitize(ship.email),
+    sanitize(bill ? '' : ship.phone),
+    sanitize(addr.address),
+    sanitize([addr.city, addr.postalCode].filter(Boolean).join(', ')),
+    sanitize(addr.country),
+    ship.vatNumber ? sanitize(`VAT No: ${ship.vatNumber}`) : '',
   ].filter((l) => l.length > 0);
   for (const line of billLines) {
     text(fit(line, 240, 10, font), MARGIN, billY, 10, line === name ? bold : font, line === name ? INK : MUTED);
