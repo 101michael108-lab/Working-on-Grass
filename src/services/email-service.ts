@@ -179,8 +179,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
               </tr>
             </table>
 
-            <p style="margin-top: 24px; font-size: 14px; color: #64748b;">We will notify you by email once your parcel is with the courier.</p>
-            <p style="font-size: 14px; color: #64748b;">Regards,<br/><strong>The ${storeName} Team</strong></p>
+            <p style="margin-top: 24px; font-size: 14px; color: #64748b;">Regards,<br/><strong>The ${storeName} Team</strong></p>
           </div>
           <div style="background-color: #f8fafc; padding: 16px; text-align: center; font-size: 12px; color: #94a3b8; border-top: 1px solid #eee;">
             ${storeName} &bull; Modimolle, Limpopo, South Africa
