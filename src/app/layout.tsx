@@ -12,9 +12,14 @@ import { WhatsAppButton } from "@/components/whatsapp-button";
 import { LanguageProvider } from "@/context/language-context";
 import { initializeFirebase } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
+import { Spectral, Archivo, JetBrains_Mono } from "next/font/google";
+
+const spectral = Spectral({ subsets: ["latin"], weight: ["400", "500", "600", "700"], style: ["normal", "italic"], variable: "--font-headline", display: "swap" });
+const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body", display: "swap" });
+const jetbrainsMono = JetBrains_Mono({ subsets: ["latin"], weight: ["400", "500"], variable: "--font-mono", display: "swap" });
 
 export const viewport: Viewport = {
-  themeColor: "#1a3a1a", // Deep Forest Green matching the brand's primary identity
+  themeColor: "#223A28", // Deep forest green — matches the redesigned header
 };
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -133,11 +138,8 @@ export default function RootLayout({
   };
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={cn(spectral.variable, archivo.variable, jetbrainsMono.variable)} suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Alegreya:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}

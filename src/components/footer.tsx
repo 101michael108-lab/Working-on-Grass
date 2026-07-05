@@ -1,90 +1,92 @@
-
 "use client";
 
-import { Logo } from "@/components/logo";
 import Link from "next/link";
-import { Mail, Phone, Search } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import { BrandMark } from "@/components/logo";
+import { Search } from "lucide-react";
+
+const exploreLinks = [
+  { href: "/about", label: "About" },
+  { href: "/consulting", label: "Consulting" },
+  { href: "/shop", label: "Shop" },
+  { href: "/seeds", label: "Seeds" },
+  { href: "/resources", label: "Resources" },
+];
 
 export function Footer() {
   const pathname = usePathname();
-  const isAdminPage = pathname?.startsWith('/admin');
-
-  if (isAdminPage) return null;
+  if (pathname?.startsWith("/admin")) return null;
 
   return (
-    <footer className="w-full bg-surface border-t border-border">
-      <div className="container py-10 px-4 md:px-6">
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
-          <div className="space-y-4">
-            <Logo />
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              Sustainable & Regenerative Land Use Advisory since 2003. Led by grassland ecologist Frits van Oudtshoorn.
-            </p>
-            <div className="pt-2">
-                <Button asChild variant="outline" size="sm" className="border-2 border-primary/20">
-                    <Link href="/track-order">
-                        <Search className="mr-2 h-3 w-3" /> Track My Order
-                    </Link>
-                </Button>
+    <footer className="bg-forest-bark border-t border-[rgba(237,239,232,0.1)] text-ondark-soft">
+      <div className="mx-auto grid max-w-[1240px] gap-10 px-[22px] pb-8 pt-14 min-[940px]:px-10 max-[720px]:grid-cols-2 max-[480px]:grid-cols-1 min-[721px]:grid-cols-[1.4fr_1fr_1fr_1fr]">
+        {/* Brand */}
+        <div>
+          <div className="mb-4 flex items-center gap-3">
+            <BrandMark className="h-[30px] w-auto text-gold" />
+            <span className="font-headline text-[18px] font-semibold text-[#F4F5EF]">Working on Grass</span>
+          </div>
+          <p className="mb-[18px] max-w-[280px] text-[13px] leading-relaxed text-ondark-mute">
+            Sustainable &amp; regenerative land-use advisory since 2003. Led by grassland ecologist Frits van Oudtshoorn.
+          </p>
+          <Link
+            href="/track-order"
+            className="inline-flex items-center gap-2 rounded-[3px] border border-[rgba(237,239,232,0.25)] px-[15px] py-[9px] text-[12.5px] font-semibold text-[#EDEFE8] no-underline transition-colors hover:bg-[rgba(237,239,232,0.06)]"
+          >
+            <Search className="h-3.5 w-3.5" /> Track my order
+          </Link>
+        </div>
+
+        {/* Contact */}
+        <div>
+          <div className="mb-4 font-body text-[11px] font-bold uppercase tracking-[0.16em] text-ondark-faint">Contact</div>
+          <div className="flex flex-col gap-3 text-[13px] leading-snug text-ondark-mute">
+            <div>
+              <span className="block text-[12px] font-semibold text-[#EDEFE8]">Office support</span>
+              <a href="tel:+27718661331" className="font-mono text-[12.5px] text-ondark-mute no-underline hover:text-[#EDEFE8]">+27 71 866 1331</a>
+            </div>
+            <div>
+              <span className="block text-[12px] font-semibold text-[#EDEFE8]">Frits van Oudtshoorn</span>
+              <a href="tel:+27782280008" className="font-mono text-[12.5px] text-ondark-mute no-underline hover:text-[#EDEFE8]">+27 78 228 0008</a>
+            </div>
+            <div>
+              <span className="block text-[12px] font-semibold text-[#EDEFE8]">Email</span>
+              <a href="mailto:admin@workingongrass.co.za" className="text-ondark-mute no-underline hover:text-[#EDEFE8]">admin@workingongrass.co.za</a>
             </div>
           </div>
-          <div className="space-y-2">
-            <h4 className="font-bold font-headline text-lg text-primary">Contact Info</h4>
-            <ul className="space-y-3 text-sm">
-              <li className="flex items-start gap-2">
-                <Phone className="h-4 w-4 mt-0.5 text-accent" />
-                <div>
-                    <span className="block font-semibold">Office Support</span>
-                    <a href="tel:+27718661331" className="text-muted-foreground hover:text-primary transition-colors">+27 71 866 1331</a>
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <Phone className="h-4 w-4 mt-0.5 text-accent" />
-                <div>
-                    <span className="block font-semibold">Frits van Oudtshoorn</span>
-                    <a href="tel:+27782280008" className="text-muted-foreground hover:text-primary transition-colors">+27 78 228 0008</a>
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <Mail className="h-4 w-4 mt-0.5 text-accent" />
-                <div>
-                    <span className="block font-semibold">Email</span>
-                    <a href="mailto:admin@workingongrass.co.za" className="text-muted-foreground hover:text-primary transition-colors">admin@workingongrass.co.za</a>
-                </div>
-              </li>
-            </ul>
-          </div>
-          <div className="space-y-2">
-            <h4 className="font-bold font-headline text-lg text-primary">Location</h4>
-            <div className="text-sm text-muted-foreground space-y-1">
-              <p className="font-semibold text-foreground">Working on Grass HQ</p>
-              <p>Modimolle, Limpopo</p>
-              <p>0510, South Africa</p>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <h4 className="font-bold font-headline text-lg text-primary">Quick Links</h4>
-            <ul className="grid grid-cols-2 lg:grid-cols-1 gap-2 text-sm text-muted-foreground">
-                <li><Link href="/about" className="hover:text-primary transition-colors">About</Link></li>
-                <li><Link href="/consulting" className="hover:text-primary transition-colors">Consulting</Link></li>
-                <li><Link href="/shop" className="hover:text-primary transition-colors">Shop</Link></li>
-                <li><Link href="/seeds" className="hover:text-primary transition-colors">Seeds</Link></li>
-                <li><Link href="/resources" className="hover:text-primary transition-colors">Resources</Link></li>
-                <li><Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link></li>
-                <li><Link href="/terms" className="hover:text-primary transition-colors">Terms & Conditions</Link></li>
-                <li><Link href="/login" className="hover:text-primary transition-colors">Account Login</Link></li>
-            </ul>
+        </div>
+
+        {/* Location */}
+        <div>
+          <div className="mb-4 font-body text-[11px] font-bold uppercase tracking-[0.16em] text-ondark-faint">Location</div>
+          <div className="text-[13px] leading-[1.7] text-ondark-mute">
+            <span className="font-semibold text-[#EDEFE8]">Working on Grass HQ</span><br />
+            Modimolle, Limpopo<br />
+            0510, South Africa
           </div>
         </div>
-        <div className="mt-12 pt-8 border-t border-primary/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-          <p>© {new Date().getFullYear()} Working on Grass. All rights reserved.</p>
-          <div className="flex gap-6">
-              <span>Secure Payments by PayFast</span>
-              <span>Nationwide Delivery</span>
+
+        {/* Explore */}
+        <div>
+          <div className="mb-4 font-body text-[11px] font-bold uppercase tracking-[0.16em] text-ondark-faint">Explore</div>
+          <div className="flex flex-col gap-[9px] text-[13px]">
+            {exploreLinks.map((l) => (
+              <Link key={l.href} href={l.href} className="text-ondark-mute no-underline transition-colors hover:text-[#EDEFE8]">
+                {l.label}
+              </Link>
+            ))}
           </div>
         </div>
+      </div>
+
+      <div className="mx-auto flex max-w-[1240px] items-center justify-between gap-3 border-t border-[rgba(237,239,232,0.1)] px-[22px] py-[22px] text-[11.5px] text-ondark-faint min-[940px]:px-10 max-[720px]:flex-col max-[720px]:items-start">
+        <span>© {new Date().getFullYear()} Working on Grass. All rights reserved.</span>
+        <span className="flex flex-wrap gap-6">
+          <Link href="/privacy" className="text-ondark-faint no-underline hover:text-ondark-soft">Privacy</Link>
+          <Link href="/terms" className="text-ondark-faint no-underline hover:text-ondark-soft">Terms</Link>
+          <span>Secure payments by PayFast</span>
+          <span>Nationwide delivery</span>
+        </span>
       </div>
     </footer>
   );

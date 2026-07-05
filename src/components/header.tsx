@@ -3,17 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React from "react";
-import { Menu, ShoppingCart, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, ShoppingCart, LogOut, LayoutDashboard } from "lucide-react";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-  SheetClose,
-  SheetHeader,
-} from "@/components/ui/sheet";
-import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useCart } from "@/context/cart-context";
 import { useUser, useAuth } from "@/firebase";
@@ -30,169 +21,83 @@ import {
 import { UserAvatar } from "@/components/user-avatar";
 
 const navLinks = [
-  { href: "/about", label: "About" },
+  { href: "/", label: "Home" },
   { href: "/consulting", label: "Consulting" },
   { href: "/shop", label: "Shop" },
   { href: "/seeds", label: "Seeds" },
   { href: "/grassPro", label: "GrassPro" },
   { href: "/resources", label: "Resources" },
-  { href: "/contact", label: "Contact" },
 ];
 
 export function Header() {
   const pathname = usePathname();
+  const [menuOpen, setMenuOpen] = React.useState(false);
   const { cartItems } = useCart();
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
   const { user } = useUser();
   const auth = useAuth();
   const isAdmin = useIsAdmin();
 
-  const isAdminPage = pathname?.startsWith('/admin');
-
+  const isAdminPage = pathname?.startsWith("/admin");
   if (isAdminPage) return null;
 
-  const NavLink = ({ href, label }: { href: string; label: string }) => (
-    <Link
-      href={href}
-      className={cn(
-        "transition-colors hover:text-foreground/80",
-        pathname === href ? "text-foreground font-semibold" : "text-foreground/60"
-      )}
-      prefetch={false}
-    >
-      {label}
-    </Link>
-  );
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname?.startsWith(href);
+
+  const handleSignOut = async () => {
+    if (user) await clearAdminSession(user);
+    await signOut(auth);
+  };
 
   return (
-    <header className={cn("sticky top-0 z-50 w-full border-b bg-background")}>
-      <div className="container flex h-16 items-center justify-between">
-        
-        {/* Left Group */}
-        <div className="flex items-center gap-4">
-          {/* Mobile Menu (Sheet) */}
-          <div className="md:hidden">
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon">
-                  <Menu className="h-6 w-6" />
-                  <span className="sr-only">Toggle navigation menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[300px] p-0">
-                <SheetHeader className="border-b p-4">
-                  <SheetClose asChild>
-                      <Logo />
-                  </SheetClose>
-                </SheetHeader>
-                <div className="flex h-full flex-col justify-between">
-                    <nav className="grid gap-2 p-4 text-lg font-medium">
-                    {navLinks.map((link) => (
-                        <SheetClose asChild key={link.href}>
-                        <Link
-                            href={link.href}
-                            className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 transition-all",
-                            pathname === link.href
-                                ? "bg-muted text-primary font-semibold"
-                                : "text-muted-foreground hover:text-primary",
-                            )}
-                            prefetch={false}
-                        >
-                            {link.label}
-                        </Link>
-                        </SheetClose>
-                    ))}
-                    </nav>
-                    <div className="mt-auto p-4 border-t">
-                    {user ? (
-                        <div className="grid gap-2 text-base font-medium">
-                            <div className="flex items-center gap-3 rounded-lg px-3 py-2">
-                            <UserAvatar user={user} className="h-9 w-9" />
-                            <div className="flex flex-col">
-                                <span className="text-sm font-semibold">{user.displayName || 'User'}</span>
-                                <span className="text-xs text-muted-foreground">{user.email}</span>
-                            </div>
-                            </div>
-                            <Separator className="my-2"/>
-                            <SheetClose asChild>
-                            <Link
-                                href={isAdmin ? "/admin" : "/dashboard"}
-                                className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary"
-                            >
-                                <LayoutDashboard className="h-5 w-5" />
-                                {isAdmin ? "Admin dashboard" : "Dashboard"}
-                            </Link>
-                            </SheetClose>
-                            <Button onClick={async () => { if (user) await clearAdminSession(user); await signOut(auth); }} variant="ghost" className="flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:text-primary justify-start w-full text-left font-normal h-auto">
-                                <LogOut className="h-5 w-5" />
-                                <span>Log out</span>
-                            </Button>
-                        </div>
-                    ) : (
-                        <div className="grid gap-2">
-                        <SheetClose asChild>
-                            <Button className="w-full" asChild>
-                                <Link href="/login">Log in</Link>
-                            </Button>
-                        </SheetClose>
-                        <SheetClose asChild>
-                            <Button variant="outline" className="w-full" asChild>
-                                <Link href="/signup">Sign up</Link>
-                            </Button>
-                        </SheetClose>
-                        </div>
-                    )}
-                    </div>
-                </div>
-              </SheetContent>
-            </Sheet>
-          </div>
-          
-          <div className="hidden md:flex items-center gap-6">
-            <Logo />
-            <nav className="flex items-center space-x-6 text-sm font-medium">
-              {navLinks.map((link) => (
-                  <NavLink key={link.href} {...link} />
-              ))}
-            </nav>
-          </div>
+    <header className="sticky top-0 z-50 w-full bg-forest-dark border-b border-[rgba(237,239,232,0.12)]">
+      <div className="mx-auto flex h-[72px] max-w-[1240px] items-center justify-between gap-6 px-[22px] min-[940px]:px-10">
+        <Logo variant="onDark" />
 
-           <div className="md:hidden">
-              <Logo />
-           </div>
-
-        </div>
-
-        {/* Right Group */}
-        <div className="flex items-center space-x-2">
-          {/* Cart Icon */}
-          <Button variant="ghost" size="icon" asChild>
-            <Link href="/cart">
-              <div className="relative">
-                <ShoppingCart className="h-5 w-5" />
-                {cartItemCount > 0 && (
-                  <span className="absolute -top-2 -right-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-primary-foreground">
-                    {cartItemCount}
-                  </span>
-                )}
-              </div>
-              <span className="sr-only">Shopping Cart</span>
+        {/* Desktop nav */}
+        <nav className="hidden items-center gap-7 text-[13.5px] font-medium min-[940px]:flex">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              prefetch={false}
+              className={cn(
+                "no-underline transition-colors hover:text-white",
+                isActive(link.href) ? "text-white" : "text-ondark-sage"
+              )}
+            >
+              {link.label}
             </Link>
-          </Button>
-          
-          {/* User Authentication Status */}
+          ))}
+        </nav>
+
+        {/* Right cluster */}
+        <div className="flex items-center gap-3.5">
+          <Link
+            href="/cart"
+            prefetch={false}
+            aria-label="Shopping cart"
+            className="relative flex items-center text-[#EDEFE8] transition-opacity hover:opacity-80"
+          >
+            <ShoppingCart className="h-[21px] w-[21px]" strokeWidth={1.6} />
+            {cartItemCount > 0 && (
+              <span className="absolute -right-2.5 -top-2 flex h-[17px] min-w-[17px] items-center justify-center rounded-full bg-gold px-1 text-[10px] font-bold text-forest-dark">
+                {cartItemCount}
+              </span>
+            )}
+          </Link>
+
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full p-0">
+                <button className="relative h-8 w-8 rounded-full">
                   <UserAvatar user={user} className="h-8 w-8" />
-                </Button>
+                </button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <DropdownMenuItem disabled>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+                    <p className="text-sm font-medium leading-none">{user.displayName || "User"}</p>
                     <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
                   </div>
                 </DropdownMenuItem>
@@ -204,25 +109,69 @@ export function Header() {
                   </DropdownMenuItem>
                 </Link>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={async () => { if (user) await clearAdminSession(user); await signOut(auth); }}>
+                <DropdownMenuItem onClick={handleSignOut}>
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <div className="hidden sm:flex items-center gap-2">
-              <Button variant="ghost" size="sm" asChild>
-                <Link href="/signup">Sign up</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/login">Log in</Link>
-              </Button>
+            <Link
+              href="/login"
+              prefetch={false}
+              className="hidden rounded-[3px] border border-[rgba(237,239,232,0.3)] px-4 py-2 text-[13px] font-semibold text-[#EDEFE8] no-underline transition-colors hover:bg-[rgba(237,239,232,0.08)] min-[940px]:inline-flex"
+            >
+              Log in
+            </Link>
+          )}
+
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            aria-label="Toggle menu"
+            className="flex items-center justify-center p-1 text-[#EDEFE8] min-[940px]:hidden"
+          >
+            {menuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" strokeWidth={1.8} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile drawer */}
+      {menuOpen && (
+        <div className="flex flex-col gap-0.5 border-t border-[rgba(237,239,232,0.12)] px-[22px] pb-5 pt-3 min-[940px]:hidden">
+          {navLinks.map((link, i) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              prefetch={false}
+              onClick={() => setMenuOpen(false)}
+              className={cn(
+                "px-1.5 py-[11px] text-[15px] font-medium no-underline",
+                i < navLinks.length - 1 && "border-b border-[rgba(237,239,232,0.1)]",
+                isActive(link.href) ? "text-[#EDEFE8]" : "text-ondark-sage"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+          {user ? (
+            <button
+              onClick={() => { setMenuOpen(false); handleSignOut(); }}
+              className="mt-3 rounded-[3px] border border-[rgba(237,239,232,0.25)] py-3 text-center text-[14px] font-semibold text-[#EDEFE8]"
+            >
+              Log out
+            </button>
+          ) : (
+            <div className="mt-3 flex flex-col gap-2">
+              <Link href="/login" prefetch={false} onClick={() => setMenuOpen(false)} className="rounded-[3px] bg-gold py-3 text-center text-[14px] font-semibold text-forest-dark no-underline">
+                Log in
+              </Link>
+              <Link href="/signup" prefetch={false} onClick={() => setMenuOpen(false)} className="rounded-[3px] border border-[rgba(237,239,232,0.25)] py-3 text-center text-[14px] font-semibold text-[#EDEFE8] no-underline">
+                Sign up
+              </Link>
             </div>
           )}
         </div>
-      </div>
+      )}
     </header>
   );
 }
-

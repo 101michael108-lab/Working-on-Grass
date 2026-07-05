@@ -16,11 +16,56 @@ export default {
     },
     extend: {
       fontFamily: {
-        body: ['PT Sans', 'sans-serif'],
-        headline: ['Alegreya', 'serif'],
-        code: ['monospace'],
+        body: ['var(--font-body)', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        headline: ['var(--font-headline)', 'Georgia', 'serif'],
+        mono: ['var(--font-mono)', 'ui-monospace', 'monospace'],
+        code: ['var(--font-mono)', 'monospace'],
       },
       colors: {
+        /* ── Redesign exact-hex tokens (for hand-built storefront components) ── */
+        cream: {
+          DEFAULT: '#F4F1E9',
+          card: '#FDFBF5',
+          panel: '#FBFAF4',
+          band: '#F0ECE0',
+          line: '#EBE5D7',
+        },
+        ink: '#1B2A1E',
+        forest: {
+          DEFAULT: '#2E4A34',
+          dark: '#223A28',
+          bark: '#1D2E22',
+        },
+        gold: {
+          DEFAULT: '#D9B25A',
+          deep: '#A9791F',
+          text: '#8A6A17',
+          bg: '#FBF3DF',
+          border: '#E3C877',
+        },
+        line: {
+          DEFAULT: '#DED8C9',
+          strong: '#CFC8B7',
+        },
+        body: {
+          DEFAULT: '#4A544D',
+          soft: '#55605A',
+          mute: '#6B7268',
+          faint: '#8C9484',
+        },
+        ondark: {
+          DEFAULT: '#EDE9DD',
+          bright: '#F7F4EC',
+          soft: '#BFC6BA',
+          mute: '#9BA79B',
+          faint: '#7E8C7F',
+          sage: '#A7B5A6',
+        },
+        stock: {
+          DEFAULT: '#3E8E4F',
+          bg: '#EAF1E7',
+          border: '#BFD6BD',
+        },
         background: 'hsl(var(--background))',
         surface: 'hsl(var(--surface))',
         foreground: 'hsl(var(--foreground))',
