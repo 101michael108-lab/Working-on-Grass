@@ -28,7 +28,7 @@ export function Footer() {
             <span className="font-headline text-[18px] font-semibold text-[#F4F5EF]">Working on Grass</span>
           </div>
           <p className="mb-[18px] max-w-[280px] text-[13px] leading-relaxed text-ondark-mute">
-            Sustainable &amp; regenerative land-use advisory since 2003. Led by grassland ecologist Frits van Oudtshoorn.
+            Sustainable &amp; regenerative land-use advisory since 2008. Led by grassland ecologist Frits van Oudtshoorn.
           </p>
           <Link
             href="/track-order"

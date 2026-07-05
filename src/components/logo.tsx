@@ -17,7 +17,7 @@ export function BrandMark({ className }: { className?: string }) {
 interface LogoProps {
   /** "onDark" = light wordmark for the green header/footer; "onLight" = ink wordmark. */
   variant?: 'onDark' | 'onLight';
-  /** Show the "Veld & Pasture · Est. 2003" eyebrow under the name. */
+  /** Show the "Veld & Pasture · Est. 2008" eyebrow under the name. */
   eyebrow?: boolean;
   className?: string;
 }
@@ -42,7 +42,7 @@ export function Logo({ variant = 'onDark', eyebrow = true, className }: LogoProp
         </span>
         {eyebrow && (
           <span className="mt-1 font-body text-[9px] font-semibold uppercase tracking-[0.2em] text-gold">
-            Veld &amp; Pasture · Est. 2003
+            Veld &amp; Pasture · Est. 2008
           </span>
         )}
       </span>
