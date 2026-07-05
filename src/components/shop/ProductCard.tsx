@@ -1,20 +1,18 @@
-
 'use client';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { ShoppingCart, AlertCircle, ArrowRight } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
-import { Badge } from '@/components/ui/badge';
 import { productUrl } from '@/lib/utils';
+import { hatchCream } from '@/components/redesign/ui';
 
-// Pull the first plain-text paragraph — skip bullet lines
-function getDescriptionTeaser(description: string): string {
+// First plain-text paragraph — skip bullet lines.
+function getTeaser(description: string): string {
   if (!description) return '';
   const firstPlain = description
     .split('\n')
-    .find(l => {
+    .find((l) => {
       const t = l.trim();
       return t.length > 0 && !t.startsWith('•') && !t.startsWith('-') && !t.startsWith('*');
     });
@@ -24,81 +22,76 @@ function getDescriptionTeaser(description: string): string {
 export default function ProductCard({ product }: { product: Product }) {
   const { addToCart } = useCart();
   const isOutOfStock = (product.stock ?? 0) <= 0;
-  const teaser = getDescriptionTeaser(product.description);
+  const url = productUrl(product);
+  const img = product.images?.[0];
+  const teaser = getTeaser(product.description);
 
   return (
-    <div className="group relative flex flex-col overflow-hidden rounded-lg border-2 border-border bg-card hover:border-primary/40 hover:shadow-lg hover:-translate-y-1 transition-all duration-200 h-full">
-
-      {isOutOfStock && (
-        <Badge variant="destructive" className="absolute top-3 right-3 z-10 font-bold shadow">
-          <AlertCircle className="h-3 w-3 mr-1" /> Out of Stock
-        </Badge>
-      )}
-
-      {/* Image — 4:3, object-contain so full product is always visible */}
-      <Link href={productUrl(product)} className="block overflow-hidden border-b border-border bg-white">
-        <div className="relative aspect-[4/3] flex items-center justify-center p-4 sm:p-6">
+    <div className="flex flex-col border border-line bg-cream-card animate-wog-fade">
+      {/* Image */}
+      <Link
+        href={url}
+        prefetch={false}
+        className="relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-line no-underline"
+        style={img ? undefined : hatchCream}
+      >
+        {img ? (
           <Image
-            src={product.images?.[0] || `https://picsum.photos/seed/${product.id}/400/300`}
+            src={img}
             alt={product.name}
             fill
-            sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 50vw"
-            className={`object-contain transition-transform duration-500 group-hover:scale-[1.03] ${isOutOfStock ? 'grayscale opacity-60' : ''}`}
+            sizes="(min-width:940px) 33vw, (min-width:640px) 50vw, 100vw"
+            className={`object-contain p-5 transition-transform duration-500 hover:scale-[1.03] ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
           />
-        </div>
+        ) : (
+          <span className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-[#A2A492]">
+            {product.category}
+          </span>
+        )}
+        {isOutOfStock ? (
+          <span className="absolute right-3 top-3 rounded-[2px] border border-gold-border bg-gold-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-gold-text">
+            Sold out
+          </span>
+        ) : product.isDigital ? (
+          <span className="absolute right-3 top-3 rounded-[2px] border border-gold-border bg-gold-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-gold-text">
+            Digital
+          </span>
+        ) : null}
       </Link>
 
       {/* Body */}
-      <div className="flex flex-col flex-grow p-4 sm:p-5 gap-2">
-        <Link
-          href={`/shop?category=${encodeURIComponent(product.category)}`}
-          className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground hover:text-primary transition-colors w-fit"
-        >
+      <div className="flex flex-grow flex-col p-5">
+        <span className="mb-2 font-body text-[10.5px] font-semibold uppercase tracking-[0.14em] text-body-faint">
           {product.category}
-        </Link>
-        <Link href={productUrl(product)} className="block">
-          <h3 className="font-headline text-lg sm:text-xl leading-tight line-clamp-2 group-hover:text-primary transition-colors">
-            {product.name}
-          </h3>
+        </span>
+        <Link
+          href={url}
+          prefetch={false}
+          className="mb-2 font-headline text-[20px] font-semibold leading-tight text-ink no-underline transition-colors hover:text-forest"
+        >
+          {product.name}
         </Link>
         {teaser && (
-          <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed flex-grow">
-            {teaser}
-          </p>
+          <p className="mb-5 line-clamp-3 flex-grow text-[13.5px] leading-[1.55] text-body-soft">{teaser}</p>
         )}
-      </div>
-
-      {/* Footer */}
-      <div className="px-4 sm:px-5 pb-4 sm:pb-5 pt-3 border-t border-border">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center justify-between border-t border-cream-line pt-4">
           <div className="flex flex-col">
-            <p className="text-xl font-bold font-headline text-accent leading-none">
-              R{product.price.toFixed(2)}
-            </p>
+            <span className="font-body text-[19px] font-bold leading-none text-ink">R{product.price.toFixed(2)}</span>
             {product.price > 0 && (
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground mt-1">
-                Incl. VAT
-              </span>
+              <span className="mt-1 text-[9.5px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
             )}
           </div>
-          <Button
-            size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 shrink-0"
+          <button
+            type="button"
+            onClick={() => addToCart(product, 1)}
             disabled={isOutOfStock}
-            onClick={(e) => { e.preventDefault(); addToCart(product, 1); }}
+            className="inline-flex items-center gap-1.5 rounded-[3px] bg-forest px-4 py-2.5 font-body text-[13px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <ShoppingCart className="h-4 w-4 sm:mr-2" />
-            <span className="hidden sm:inline">{isOutOfStock ? 'Sold Out' : 'Add to Cart'}</span>
-          </Button>
+            <ShoppingCart className="h-[15px] w-[15px]" strokeWidth={1.8} />
+            {isOutOfStock ? 'Sold out' : 'Add'}
+          </button>
         </div>
-        <Link
-          href={productUrl(product)}
-          className="mt-2 inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
-        >
-          View details <ArrowRight className="h-3 w-3" />
-        </Link>
       </div>
-
     </div>
   );
 }

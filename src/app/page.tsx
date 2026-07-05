@@ -1,325 +1,240 @@
-
 "use client";
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  ArrowRight,
-  Leaf,
-  BookOpen,
-  Globe,
-  Award,
-  Camera,
-  CheckCircle2,
-  ShoppingBag,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { useMedia } from "@/context/media-context";
-import { useLanguage } from "@/context/language-context";
-
 import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query, limit, orderBy } from "firebase/firestore";
 import type { Product } from "@/lib/types";
 import ProductCard from "@/components/shop/ProductCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import {
+  Container,
+  Eyebrow,
+  SectionHead,
+  InlineArrowLink,
+  ctaPrimary,
+  ctaOutline,
+  ctaLight,
+  hatchCream,
+  hatchDark,
+} from "@/components/redesign/ui";
+
+const WA_CONSULT =
+  "https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation.";
 
 export default function Home() {
   const { getImage } = useMedia();
-  const { t } = useLanguage();
-  const heroImage = getImage('hero');
-  const aboutImage = getImage('about-frits');
-  const appPromoImage = getImage('grass-app-promo');
-
-  const trustPillars = [
-    { icon: Award,    text: "30+ years of hands-on field experience" },
-    { icon: BookOpen, text: "Author · Veld Management – Principles and Practices" },
-    { icon: Globe,    text: "Registered Barenbrug SA Seed Agent" },
-  ];
+  const heroImage = getImage("hero");
+  const aboutImage = getImage("about-frits");
 
   const firestore = useFirestore();
-
-  const shopPreviewQuery = useMemoFirebase(
-    () => query(collection(firestore, 'products'), orderBy('name'), limit(3)),
+  const featuredQuery = useMemoFirebase(
+    () => query(collection(firestore, "products"), orderBy("name"), limit(3)),
     [firestore]
   );
-  const { data: shopPreviewProducts, isLoading } = useCollection<Omit<Product, 'id'>>(shopPreviewQuery);
+  const { data: featured, isLoading } = useCollection<Omit<Product, "id">>(featuredQuery);
 
   return (
-    <div className="flex flex-col min-h-[100dvh]">
-
-      {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <section className="relative w-full">
-        <div className="absolute inset-0">
-          {heroImage ? (
-            <Image
-              src={heroImage.imageUrl}
-              alt={heroImage.description || "Vast green fields of South African veld under a clear blue sky"}
-              fill
-              priority
-              className="object-cover"
-              data-ai-hint={heroImage.imageHint}
-            />
-          ) : (
-            <div className="w-full h-full bg-secondary animate-pulse" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/50 to-black/15" />
-        </div>
-
-        <div className="relative z-10 container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl py-20 sm:py-32 lg:py-40 text-center sm:text-left">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white font-headline drop-shadow-md">
-              {t("hero.headline")}
+    <div className="bg-cream">
+      {/* ── HERO ─────────────────────────────────────────────── */}
+      <Container>
+        <div className="grid grid-cols-1 border-b border-line min-[940px]:grid-cols-[1.05fr_0.95fr]">
+          <div className="flex flex-col justify-center py-[52px] min-[940px]:py-20 min-[940px]:pr-14">
+            <Eyebrow tone="green" rule className="mb-6">
+              Grassland ecology · Southern Africa
+            </Eyebrow>
+            <h1 className="m-0 font-headline text-[clamp(38px,4.4vw,62px)] font-medium leading-[1.05] tracking-[-0.02em] text-ink">
+              The trusted authority on{" "}
+              <span className="italic text-forest">veld &amp; pasture</span> management.
             </h1>
-            <p className="mt-4 max-w-2xl text-lg md:text-xl text-white/85 font-body mx-auto sm:mx-0 drop-shadow">
-              {t("hero.subheadline")}
+            <p className="mt-6 max-w-[500px] text-[17px] leading-[1.65] text-body">
+              Thirty years of veld assessments, rehabilitation and grazing science, put to work in
+              the books, instruments and counsel that South African farmers, reserves and
+              rehabilitation teams rely on. Led by ecologist Frits van Oudtshoorn.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row items-center justify-center sm:justify-start gap-3">
-              <Button asChild size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white w-full sm:w-auto shadow-lg border-b-4 border-black/20">
-                <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation." target="_blank" rel="noopener noreferrer">
-                  <WhatsAppIcon className="mr-2 h-5 w-5 shrink-0" /> WhatsApp Frits
+            <div className="mt-9 flex flex-wrap items-center gap-3">
+              <Link href="/shop" className={ctaPrimary}>
+                Browse the shop
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href="/consulting" className={ctaOutline}>
+                Request a consultation
+              </Link>
+            </div>
+            <div className="mt-5 flex items-center gap-2 text-[13px] text-body-soft">
+              <WhatsAppIcon className="h-4 w-4 text-[#4a8f5f]" />
+              <span>
+                or WhatsApp Frits directly ·{" "}
+                <a href={WA_CONSULT} target="_blank" rel="noopener noreferrer" className="font-mono text-body no-underline hover:text-forest">
+                  +27 78 228 0008
                 </a>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-white/60 text-white bg-white/10 hover:bg-white/20 hover:text-white hover:border-white/80 backdrop-blur-sm">
-                <Link href="/shop">Explore the Shop</Link>
-              </Button>
+              </span>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* ── Trust Strip ──────────────────────────────────────────────── */}
-      <section className="bg-muted/40 border-b">
-        <div className="container px-4 md:px-6 py-0">
-          <div className="flex flex-wrap items-center justify-center">
-            {trustPillars.map((pillar, index) => (
-              <div key={index} className={`flex items-center gap-2.5 px-7 py-4${index > 0 ? ' border-l border-border' : ''}`}>
-                <pillar.icon className="w-4 h-4 text-primary shrink-0" />
-                <span className="text-sm font-semibold text-foreground whitespace-nowrap">{pillar.text}</span>
-              </div>
-            ))}
+          <div
+            className="relative flex min-h-[300px] items-end justify-center overflow-hidden border-line min-[940px]:min-h-[520px] min-[940px]:border-l"
+            style={heroImage ? undefined : hatchCream}
+          >
+            {heroImage ? (
+              <Image
+                src={heroImage.imageUrl}
+                alt={heroImage.description || "Open veld under a clear South African sky"}
+                fill
+                priority
+                sizes="(min-width:940px) 47vw, 100vw"
+                className="object-cover"
+              />
+            ) : (
+              <span className="mb-10 rounded-[2px] border border-line-strong bg-[rgba(244,241,233,0.75)] px-[15px] py-2 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8C9484]">
+                Field photo — open veld
+              </span>
+            )}
           </div>
         </div>
+      </Container>
+
+      {/* ── CREDENTIALS STRIP ────────────────────────────────── */}
+      <section className="border-b border-line bg-cream-band">
+        <Container className="grid grid-cols-1 max-[720px]:gap-0 min-[721px]:grid-cols-3">
+          {[
+            ["30", "yr", "Hands-on veld assessment & fieldwork"],
+            ["390", "", "Grass species documented across Southern Africa"],
+            ["2", "", "Standard-reference books authored & in print"],
+          ].map(([num, unit, label], i) => (
+            <div
+              key={i}
+              className={`flex items-center gap-4 py-[26px] ${i > 0 ? "min-[721px]:border-l min-[721px]:border-line min-[721px]:pl-[30px]" : ""} ${i < 2 ? "min-[721px]:pr-[30px]" : ""} max-[720px]:border-t max-[720px]:border-line max-[720px]:first:border-t-0`}
+            >
+              <span className="font-headline text-[34px] font-semibold leading-none text-forest">
+                {num}
+                {unit && <span className="text-[17px]">{unit}</span>}
+              </span>
+              <span className="text-[13.5px] font-medium leading-[1.45] text-body-soft">{label}</span>
+            </div>
+          ))}
+        </Container>
       </section>
 
-      {/* ── From the Shop ────────────────────────────────────────────── */}
-      <section className="w-full py-16 md:py-24 bg-background">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col items-center justify-center space-y-3 text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter font-headline">From the Shop</h2>
-            <p className="max-w-2xl text-muted-foreground md:text-lg">
-              Books, field instruments, and resources built from 30 years on the land.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-[repeat(auto-fit,minmax(260px,1fr))] gap-4 sm:gap-6">
-            {isLoading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-[380px] rounded-lg" />
-                ))
-              : shopPreviewProducts?.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))
-            }
-          </div>
-
-          <div className="mt-10 text-center">
-            <Button asChild variant="outline" className="border-2 border-primary/60 hover:border-primary hover:bg-primary hover:text-primary-foreground font-bold transition-colors">
-              <Link href="/shop">Browse the Full Shop <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-          </div>
+      {/* ── FROM THE SHOP ────────────────────────────────────── */}
+      <Container className="pb-10 pt-[clamp(56px,7vw,90px)]">
+        <div className="mb-11 flex items-end justify-between gap-5 border-b border-line pb-[22px]">
+          <SectionHead eyebrow="The Catalogue" title="Books & field instruments" />
+          <InlineArrowLink href="/shop">View all</InlineArrowLink>
         </div>
-      </section>
+        <div className="grid grid-cols-1 gap-[26px] min-[560px]:grid-cols-2 min-[880px]:grid-cols-3">
+          {isLoading
+            ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[420px]" />)
+            : featured?.map((p) => <ProductCard key={p.id} product={p as Product} />)}
+        </div>
+      </Container>
 
-      {/* ── About Frits ──────────────────────────────────────────────── */}
-      <section id="about" className="w-full py-16 md:py-24 bg-surface">
-        <div className="container px-4 md:px-6">
-          <div className="flex flex-col sm:flex-row gap-8 items-start">
-            <div className="shrink-0">
+      {/* ── MEET FRITS (dark band) ───────────────────────────── */}
+      <section className="mt-[60px] border-t border-line bg-forest-bark text-ondark">
+        <Container>
+          <div className="grid grid-cols-1 min-[940px]:grid-cols-[0.85fr_1.15fr]">
+            <div
+              className="relative flex min-h-[340px] items-end justify-center overflow-hidden min-[940px]:min-h-[520px] min-[940px]:border-r min-[940px]:border-[rgba(237,239,232,0.14)]"
+              style={aboutImage ? undefined : hatchDark}
+            >
               {aboutImage ? (
                 <Image
                   src={aboutImage.imageUrl}
-                  alt={aboutImage.description}
-                  width={200}
-                  height={200}
-                  className="rounded-lg object-cover aspect-square shadow-lg border-4 border-white"
-                  data-ai-hint={aboutImage.imageHint}
+                  alt={aboutImage.description || "Frits van Oudtshoorn"}
+                  fill
+                  sizes="(min-width:940px) 40vw, 100vw"
+                  className="object-cover"
                 />
               ) : (
-                <Skeleton className="w-[200px] h-[200px] rounded-lg" />
+                <span className="mb-10 rounded-[2px] border border-[rgba(237,239,232,0.2)] px-[15px] py-2 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8AA08B]">
+                  Portrait — Frits van Oudtshoorn
+                </span>
               )}
             </div>
-            <div className="text-left">
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">
-                Meet Frits van Oudtshoorn
-              </h2>
-              <div className="mt-4">
-                <blockquote className="border-l-4 border-primary pl-4 italic font-body text-xl text-muted-foreground">
-                  "My goal is to bridge the gap between science and the farmer. Sustainable land management builds resilient, profitable agricultural businesses for generations to come."
-                </blockquote>
+            <div className="flex flex-col justify-center py-14 min-[940px]:py-20 min-[940px]:pl-16">
+              <div className="mb-[22px] font-body text-[11px] font-bold uppercase tracking-[0.18em] text-gold">
+                The Author
               </div>
-              <p className="mt-5 max-w-[600px] text-muted-foreground md:text-lg/relaxed font-body">
-                Frits has spent 30 years conducting veld assessments, rehabilitation projects, and grazing capacity studies across Southern Africa. He is the author of <em>Guide to Grasses of Southern Africa</em> and <em>Veld Management &ndash; Principles and Practices</em>, and a registered Barenbrug seed agent.
+              <blockquote className="m-0 mb-7 font-headline text-[clamp(22px,2.4vw,29px)] font-normal italic leading-[1.42] tracking-[-0.01em] text-ondark-bright">
+                &ldquo;My goal is to bridge the gap between science and the farmer, because
+                sustainable land builds resilient, profitable businesses for generations.&rdquo;
+              </blockquote>
+              <p className="m-0 max-w-[560px] text-[15.5px] leading-[1.7] text-ondark-soft">
+                Frits van Oudtshoorn has spent three decades on veld assessments, rehabilitation
+                projects and grazing-capacity studies across Southern Africa. He is the author of the{" "}
+                <span className="font-medium text-ondark">Guide to Grasses of Southern Africa</span>{" "}
+                and{" "}
+                <span className="font-medium text-ondark">Veld Management: Principles &amp; Practices</span>,
+                and a registered Barenbrug seed agent.
               </p>
-              <Button asChild className="mt-6 bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link href="/about">Read More About Frits <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── GrassPro App ─────────────────────────────────────────────── */}
-      <section className="w-full py-16 md:py-24 bg-background">
-        <div className="container px-4 md:px-6">
-          <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 items-center">
-            <div className="text-center sm:text-left">
-              <Badge className="bg-primary text-white uppercase tracking-widest px-3 mb-2">Free Download</Badge>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tighter font-headline">GrassPro App</h2>
-              <p className="mt-4 max-w-[600px] text-muted-foreground md:text-xl/relaxed mx-auto sm:mx-0 font-body">
-                Identify grasses of Southern Africa in the field. Over 2 000 diagnostic images, GPS-based filtering, offline capable. Download the evaluation version for free with a full upgrade available.
-              </p>
-              <ul className="mt-6 grid sm:grid-cols-2 gap-3 text-muted-foreground text-left max-w-md sm:max-w-none mx-auto sm:mx-0">
-                <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><Camera className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>2 000+ diagnostic images</strong> covering 390 grass species of Southern Africa.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><Globe className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>GPS functionality</strong> indicates grass species in your immediate vicinity.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><CheckCircle2 className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>Works fully offline</strong>, no signal needed. Sightings logging included.</span>
-                </li>
-                <li className="flex items-start gap-3">
-                  <div className="bg-primary/10 p-2 rounded-md shrink-0"><BookOpen className="h-5 w-5 text-primary" /></div>
-                  <span className="font-body text-sm md:text-base"><strong>Filters and ranks</strong> grass species using an award-winning &ldquo;Smart Search&rdquo; function.</span>
-                </li>
-              </ul>
-              <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center sm:justify-start">
-                <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90">
-                  <a href="https://play.google.com/store/apps/details?id=za.co.highbranching.grasspro" target="_blank" rel="noopener noreferrer">
-                    <svg className="mr-2 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M22.018 13.298l-3.919 2.218-3.515-3.493 3.543-3.521 3.891 2.202a1.49 1.49 0 0 1 0 2.594zM1.337.924a1.486 1.486 0 0 0-.112.568v21.017c0 .217.045.419.124.6l11.155-11.087L1.337.924zm12.207 10.065l3.258-3.238L3.45.195a1.466 1.466 0 0 0-.946-.179l11.04 10.973zm0 2.067l-11 10.933c.298.036.612-.016.906-.183l13.324-7.54-3.23-3.21z"/></svg>
-                    Google Play
-                  </a>
-                </Button>
-                <Button asChild size="lg" variant="outline" className="border-2 border-primary/30 hover:border-primary">
-                  <a href="https://apps.apple.com/za/app/grasspro/id1586118050" target="_blank" rel="noopener noreferrer">
-                    <svg className="mr-2 h-5 w-5 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg>
-                    App Store
-                  </a>
-                </Button>
-              </div>
-              <p className="mt-3 text-sm text-muted-foreground text-center sm:text-left">
-                Free to download · 50 grasses included · Full upgrade ~R199.99 per year.
-              </p>
-            </div>
-            <div className="flex justify-center">
-              {appPromoImage ? (
-                <div className="relative group">
-                  <div className="absolute -inset-4 bg-primary/5 rounded-2xl blur-2xl group-hover:bg-primary/10 transition-colors" />
-                  <Image
-                    src={appPromoImage.imageUrl}
-                    alt={appPromoImage.description}
-                    width={350}
-                    height={700}
-                    className="relative rounded-xl object-cover shadow-2xl border-8 border-background"
-                    data-ai-hint={appPromoImage.imageHint}
-                  />
+              <div className="mt-[26px] flex flex-wrap gap-9 border-t border-[rgba(237,239,232,0.14)] pt-[26px]">
+                <div>
+                  <div className="font-headline text-[15px] text-ondark">MSc Nature Conservation</div>
+                  <div className="mt-[3px] text-[12px] text-[#87938A]">Ecological Restoration</div>
                 </div>
-              ) : (
-                <Skeleton className="w-[350px] h-[700px] rounded-xl" />
-              )}
+                <div>
+                  <div className="font-headline text-[15px] text-ondark">Barenbrug SA</div>
+                  <div className="mt-[3px] text-[12px] text-[#87938A]">Registered seed agent</div>
+                </div>
+              </div>
+              <Link href="/about" className={`mt-[34px] self-start ${ctaLight}`}>
+                More about Frits
+                <ArrowRight className="h-[15px] w-[15px]" />
+              </Link>
             </div>
           </div>
-        </div>
+        </Container>
       </section>
 
-      {/* ── How can Frits help you? (2-path) ────────────────────────── */}
-      <section className="w-full py-16 md:py-24 bg-surface border-t">
-        <div className="container px-4 md:px-6">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl sm:text-4xl font-bold tracking-tighter font-headline">How can we help you?</h2>
-            <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
-              Expert field consulting or the right tools for the job. Find what you need below.
+      {/* ── TWO PATHS ────────────────────────────────────────── */}
+      <Container className="py-[clamp(56px,7vw,90px)]">
+        <SectionHead center eyebrow="Where to begin" title="How can we help you?" className="mb-11" />
+        <div className="grid grid-cols-1 gap-[26px] min-[720px]:grid-cols-2">
+          <div className="flex flex-col border border-line bg-cream-card p-[clamp(28px,4vw,44px)]">
+            <div className="mb-[22px] flex h-11 w-11 items-center justify-center rounded-[3px] bg-cream-band">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2E4A34" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M7 20h10M10 20c5.5-2.5.42-8.5-1-11-1.42 2.5-6.5 8.5-1 11M12 9v11" /></svg>
+            </div>
+            <h3 className="m-0 mb-3 font-headline text-[24px] font-semibold text-ink">Need a consultation?</h3>
+            <p className="m-0 mb-7 flex-grow text-[14.5px] leading-[1.6] text-body-soft">
+              Frits works directly with farmers, game reserves and land managers, veld assessments,
+              grazing-capacity studies, rehabilitation plans and grazing management, tailored to your
+              specific land.
             </p>
-          </div>
-          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-
-            {/* Path 1 — Consulting */}
-            <Card className="border-2 border-primary/20 hover:border-primary/50 transition-colors">
-              <CardContent className="p-8 flex flex-col h-full gap-5">
-                <div className="bg-primary/10 rounded-full w-14 h-14 flex items-center justify-center shrink-0">
-                  <Leaf className="h-7 w-7 text-primary" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold font-headline">Need a consultation?</h3>
-                  <p className="mt-2 text-muted-foreground leading-relaxed">
-                    Frits works directly with farmers, game reserves, and land managers. Veld assessments, grazing capacity studies, rehabilitation plans, and grazing management, all tailored to your specific land.
-                  </p>
-                </div>
-                <div className="mt-auto pt-2 flex flex-col sm:flex-row gap-3">
-                  <Button asChild className="bg-whatsapp hover:bg-whatsapp-hover text-white">
-                    <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation." target="_blank" rel="noopener noreferrer">
-                      <WhatsAppIcon className="mr-2 h-4 w-4" /> WhatsApp Frits
-                    </a>
-                  </Button>
-                  <Button asChild variant="outline" className="border-primary/30 hover:border-primary">
-                    <Link href="/consulting">View Services <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Path 2 — Shop */}
-            <Card className="border-2 border-accent/20 hover:border-accent/50 transition-colors">
-              <CardContent className="p-8 flex flex-col h-full gap-5">
-                <div className="bg-accent/10 rounded-full w-14 h-14 flex items-center justify-center shrink-0">
-                  <ShoppingBag className="h-7 w-7 text-accent" />
-                </div>
-                <div>
-                  <h3 className="text-2xl font-bold font-headline">Looking for books or tools?</h3>
-                  <p className="mt-2 text-muted-foreground leading-relaxed">
-                    The <em>Guide to Grasses</em>, Disc Pasture Meters, seed mixes, and the GrassPro app. Every resource Frits uses and recommends, available to order directly.
-                  </p>
-                </div>
-                <div className="mt-auto pt-2 flex flex-col sm:flex-row gap-3">
-                  <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90">
-                    <Link href="/shop">Browse the Shop <ArrowRight className="ml-2 h-4 w-4" /></Link>
-                  </Button>
-                  <Button asChild variant="outline" className="border-accent/30 hover:border-accent">
-                    <Link href="/seeds">Seed Enquiries</Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-          </div>
-        </div>
-      </section>
-
-      {/* ── Final CTA ────────────────────────────────────────────────── */}
-      <section className="w-full py-16 md:py-20 bg-background border-t-2">
-        <div className="container text-center">
-          <h2 className="text-3xl font-bold font-headline">Need expert guidance on your land or veld?</h2>
-          <p className="mt-3 text-muted-foreground max-w-xl mx-auto">Get in touch and our team will make sure you reach the right person.</p>
-          <div className="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button asChild size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white w-full sm:w-auto border-b-4 border-black/20">
-              <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%20need%20expert%20guidance%20on%20my%20land." target="_blank" rel="noopener noreferrer">
-                <WhatsAppIcon className="mr-2 h-5 w-5 shrink-0" /> WhatsApp Frits
+            <div className="flex flex-wrap gap-3">
+              <a href={WA_CONSULT} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-[3px] bg-forest px-[22px] py-3 text-[13.5px] font-semibold text-ondark-bright no-underline hover:bg-forest-dark">
+                <WhatsAppIcon className="h-4 w-4" /> WhatsApp Frits
               </a>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto border-2 border-primary/20 hover:border-primary">
-              <Link href="/contact">Send a Message</Link>
-            </Button>
+              <Link href="/consulting" className="inline-flex items-center rounded-[3px] border border-line-strong px-[18px] py-3 text-[13.5px] font-semibold text-forest no-underline hover:border-forest">
+                View services
+              </Link>
+            </div>
+          </div>
+
+          <div className="flex flex-col border border-line bg-cream-card p-[clamp(28px,4vw,44px)]">
+            <div className="mb-[22px] flex h-11 w-11 items-center justify-center rounded-[3px] bg-cream-band">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#2E4A34" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4zM3 6h18M16 10a4 4 0 0 1-8 0" /></svg>
+            </div>
+            <h3 className="m-0 mb-3 font-headline text-[24px] font-semibold text-ink">Looking for books or tools?</h3>
+            <p className="m-0 mb-7 flex-grow text-[14.5px] leading-[1.6] text-body-soft">
+              The <span className="font-medium text-ink">Guide to Grasses</span>, Disc Pasture Meters,
+              field charts and the GrassPro app, every resource Frits uses and recommends, available
+              to order directly.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/shop" className="inline-flex items-center gap-2 rounded-[3px] bg-forest px-[22px] py-3 text-[13.5px] font-semibold text-ondark-bright no-underline hover:bg-forest-dark">
+                Browse the shop
+              </Link>
+              <Link href="/seeds" className="inline-flex items-center rounded-[3px] border border-line-strong px-[18px] py-3 text-[13.5px] font-semibold text-forest no-underline hover:border-forest">
+                Seed enquiries
+              </Link>
+            </div>
           </div>
         </div>
-      </section>
-
+      </Container>
     </div>
   );
 }
