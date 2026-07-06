@@ -1,70 +1,42 @@
-
 "use client";
 
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckCircle, Copy, Check } from "lucide-react";
-import React, { useState } from "react";
+import { Check } from "lucide-react";
 import { InvoiceActions } from "@/components/invoice-actions";
+import { Container } from "@/components/redesign/ui";
 
 export default function SuccessContent() {
-  const searchParams = useSearchParams();
-  const orderId = searchParams.get('orderId');
-  const uid = searchParams.get('uid');
-  const invoiceToken = searchParams.get('t');
-  const orderNumber = searchParams.get('n');
-  const [copied, setCopied] = useState(false);
-
+  const sp = useSearchParams();
+  const orderId = sp.get("orderId");
+  const uid = sp.get("uid");
+  const invoiceToken = sp.get("t");
+  const orderNumber = sp.get("n");
   const trackingRef = orderNumber || orderId;
 
-  const copyToClipboard = () => {
-    if (!trackingRef) return;
-    navigator.clipboard.writeText(trackingRef);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
-    <div className="container flex min-h-[80vh] items-center justify-center py-12">
-      <Card className="w-full max-w-lg text-center">
-        <CardHeader>
-          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-            <CheckCircle className="h-10 w-10 text-green-600" />
+    <div className="bg-cream">
+      <Container className="py-[clamp(56px,7vw,96px)]">
+        <div className="mx-auto max-w-[620px] text-center">
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full border border-stock-border bg-stock-bg">
+            <Check className="h-[30px] w-[30px] text-[#2E7D46]" strokeWidth={2} />
           </div>
-          <CardTitle className="mt-4 text-3xl">Order Successful!</CardTitle>
-          <CardDescription className="mt-2 text-lg text-muted-foreground">
-            Thank you for your purchase.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <p>
-            Your order has been received and is now being processed.
-            You will receive an email confirmation with your invoice attached shortly.
+          <h1 className="m-0 mb-3 font-headline text-[clamp(30px,3.6vw,42px)] font-semibold tracking-[-0.02em] text-ink">
+            Thank you — your order is placed
+          </h1>
+          <p className="m-0 mb-2 text-[16px] leading-[1.6] text-body-soft">
+            We&rsquo;ve emailed your confirmation with your invoice attached, and we&rsquo;ll notify you when your order
+            ships nationwide.
           </p>
           {trackingRef && (
-            <div className="text-sm text-muted-foreground bg-secondary/50 p-4 rounded-md border-2 border-dashed">
-              <p className="uppercase tracking-widest text-[10px] font-bold mb-2">Order Number for Tracking</p>
-              <div className="flex items-center justify-center gap-3">
-                <code className="font-mono text-lg font-bold text-foreground">
-                  {orderNumber ? `#${orderNumber}` : orderId}
-                </code>
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={copyToClipboard}
-                    title="Copy order number"
-                >
-                    {copied ? <Check className="h-4 w-4 text-green-600" /> : <Copy className="h-4 w-4" />}
-                </Button>
-              </div>
+            <div className="mb-8 font-mono text-[13px] text-gold-deep">
+              Order {orderNumber ? `#${orderNumber}` : trackingRef}
             </div>
           )}
+
           {(invoiceToken || (orderId && uid)) && (
-            <div className="rounded-md border bg-card p-4">
-              <p className="text-sm font-medium mb-3">Your invoice is ready</p>
+            <div className="mb-7 rounded-[4px] border border-line bg-cream-card p-5 shadow-lifted">
+              <p className="m-0 mb-3 text-[14px] font-medium text-ink">Your invoice is ready</p>
               <InvoiceActions
                 orderId={orderId ?? undefined}
                 uid={uid ?? undefined}
@@ -73,17 +45,22 @@ export default function SuccessContent() {
               />
             </div>
           )}
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
-            <Button asChild variant="secondary" className="w-full sm:w-auto">
-              {/* Track Order works for guests (Order ID + email); the dashboard requires an account. */}
-              <Link href="/track-order">Track Your Order</Link>
-            </Button>
-            <Button asChild variant="outline" className="w-full sm:w-auto">
-              <Link href="/shop">Continue Shopping</Link>
-            </Button>
+
+          <div className="mb-7 rounded-[4px] border border-line bg-cream-card p-6 text-left shadow-lifted">
+            <div className="mb-3.5 font-body text-[11px] font-bold uppercase tracking-[0.14em] text-body-faint">What happens next</div>
+            <div className="flex flex-col gap-3 text-[13.5px] leading-[1.5] text-body">
+              <div className="flex gap-2.5"><span className="font-semibold text-forest">1.</span>You&rsquo;ll receive an email confirmation with your order details and invoice.</div>
+              <div className="flex gap-2.5"><span className="font-semibold text-forest">2.</span>We pack and dispatch your order via nationwide courier.</div>
+              <div className="flex gap-2.5"><span className="font-semibold text-forest">3.</span>A tracking update follows so you can follow it to your door.</div>
+            </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            <Link href="/shop" className="rounded-[3px] bg-forest px-6 py-3.5 text-[14px] font-semibold text-ondark-bright no-underline hover:bg-forest-dark">Continue shopping</Link>
+            <Link href="/track-order" className="rounded-[3px] border border-line-strong px-[22px] py-3.5 text-[14px] font-semibold text-forest no-underline hover:border-forest">Track your order</Link>
+          </div>
+        </div>
+      </Container>
     </div>
   );
 }
