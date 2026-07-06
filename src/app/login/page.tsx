@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Container, Eyebrow } from "@/components/redesign/ui";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, useFirestore, useUser } from "@/firebase";
 import { signInWithEmailAndPassword, sendPasswordResetEmail, signOut, type User } from "firebase/auth";
@@ -176,15 +176,16 @@ function LoginPageContent() {
   }
 
   return (
-    <div className="container flex min-h-[80vh] items-center justify-center py-12">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl">Welcome Back</CardTitle>
-          <CardDescription>Enter your credentials to access your account</CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="bg-cream">
+      <Container className="flex min-h-[78vh] items-center justify-center py-16">
+        <div className="w-full max-w-[440px] rounded-[4px] border border-line bg-cream-card p-8 shadow-lifted min-[560px]:p-10">
+          <div className="mb-7 text-center">
+            <Eyebrow tone="gold" className="mb-3 justify-center">Account</Eyebrow>
+            <h1 className="m-0 font-headline text-[clamp(26px,3vw,34px)] font-medium tracking-[-0.02em] text-ink">Welcome back</h1>
+            <p className="m-0 mt-2 text-[14px] text-body-soft">Log in to access your orders and account.</p>
+          </div>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
               <FormField
                 name="email"
                 control={form.control}
@@ -211,29 +212,28 @@ function LoginPageContent() {
                   </FormItem>
                 )}
               />
-              <div className="flex items-center justify-between">
-                <div />
+              <div className="flex items-center justify-end">
                 <button
                   type="button"
                   onClick={handleForgotPassword}
-                  className="text-sm text-muted-foreground hover:underline"
+                  className="text-[13px] text-body-soft hover:text-forest hover:underline"
                 >
                   Forgot password?
                 </button>
               </div>
               <Button type="submit" className="w-full" size="lg" disabled={isSubmitting}>
-                {isSubmitting ? "Logging In..." : "Log In"}
+                {isSubmitting ? "Logging in..." : "Log in"}
               </Button>
             </form>
           </Form>
-          <div className="mt-6 text-center text-sm text-muted-foreground">
+          <div className="mt-6 text-center text-[13.5px] text-body-soft">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-semibold text-primary hover:underline">
+            <Link href="/signup" className="font-semibold text-forest hover:underline">
               Sign up
             </Link>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </Container>
     </div>
   );
 }
