@@ -1,247 +1,160 @@
-
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
-import { services, consultationServices } from "@/lib/static-data";
-import { useMedia } from "@/context/media-context";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { ConsultationForm } from "@/components/consultation-form";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Check, ArrowRight, Wrench, Quote } from "lucide-react";
+import { Container, Eyebrow, ctaPrimary } from "@/components/redesign/ui";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
-import { Breadcrumbs } from "@/components/breadcrumbs";
-import { useLanguage } from "@/context/language-context";
+import { useToast } from "@/hooks/use-toast";
+import { submitInquiry } from "@/lib/submit-inquiry";
 
-const WA_BASE = "https://wa.me/27782280008";
-const waLink = (msg: string) => `${WA_BASE}?text=${encodeURIComponent(msg)}`;
+const SERVICES = [
+  { n: "01", title: "Veld condition assessment", body: "A structured evaluation of species composition, veld condition and trend — the baseline for every management decision." },
+  { n: "02", title: "Grazing-capacity studies", body: "Objective, defensible stocking-rate recommendations based on measured biomass and long-term rainfall." },
+  { n: "03", title: "Rehabilitation plans", body: "Staged restoration strategies for degraded veld and disturbed sites, including mine rehabilitation." },
+  { n: "04", title: "Grazing management", body: "Camp layout, rotation and rest planning tailored to your land, animals and objectives." },
+  { n: "05", title: "Custom seed formulation", body: "Species mixes matched to your rainfall, soil and purpose — as a registered Barenbrug agent." },
+  { n: "06", title: "Training & talks", body: "Practical grass-identification and veld-management training for teams, students and organisations." },
+];
 
-export default function ServicesPage() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedService, setSelectedService] = useState<string | undefined>(undefined);
+const PROCESS = [
+  { n: 1, title: "Enquiry", body: "Tell us about your land, your goals and the challenge you’re facing." },
+  { n: 2, title: "Field assessment", body: "On-site evaluation with objective measurement, not guesswork." },
+  { n: 3, title: "Report & plan", body: "A clear, actionable plan tailored to your land and objectives." },
+  { n: 4, title: "Follow-up", body: "Ongoing support as the plan is put into practice on the ground." },
+];
 
-  const { t } = useLanguage();
-  const { getImage } = useMedia();
-  const heroImage = getImage('about-frits');
+const labelCls = "flex flex-col gap-1.5";
+const darkSpan = "text-[12px] font-semibold text-[#C4C7BB]";
+const darkInput = "h-[46px] rounded-[3px] border border-[rgba(237,239,232,0.2)] bg-[#16241B] px-3.5 font-body text-[14px] text-ondark outline-none transition-colors focus:border-gold placeholder:text-ondark-faint";
 
-  const handleRequestConsultation = (serviceTitle?: string) => {
-    setSelectedService(serviceTitle);
-    setIsModalOpen(true);
-  };
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Service",
+  serviceType: "Environmental and Agricultural Consultation",
+  provider: {
+    "@type": "LocalBusiness",
+    name: "Working on Grass",
+    address: { "@type": "PostalAddress", addressLocality: "Modimolle", addressRegion: "Limpopo", addressCountry: "ZA" },
+  },
+  areaServed: "Southern Africa",
+  hasOfferCatalog: {
+    "@type": "OfferCatalog",
+    name: "Land Management Services",
+    itemListElement: SERVICES.map((s) => ({ "@type": "Offer", itemOffered: { "@type": "Service", name: s.title, description: s.body } })),
+  },
+};
 
-  const serviceJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Service',
-    serviceType: 'Environmental and Agricultural Consultation',
-    provider: {
-      '@type': 'LocalBusiness',
-      name: 'Working on Grass',
-      address: {
-        '@type': 'PostalAddress',
-        addressLocality: 'Modimolle',
-        addressRegion: 'Limpopo',
-        addressCountry: 'ZA'
-      }
-    },
-    areaServed: 'Southern Africa',
-    hasOfferCatalog: {
-      '@type': 'OfferCatalog',
-      name: 'Land Management Services',
-      itemListElement: services.map(s => ({
-        '@type': 'Offer',
-        itemOffered: {
-          '@type': 'Service',
-          name: s.title,
-          description: s.description
-        }
-      }))
+export default function ConsultingPage() {
+  const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", phone: "", email: "", size: "", service: SERVICES[0].title, message: "" });
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim()) {
+      toast({ variant: "destructive", title: "Please add your name and email", description: "So Frits can get back to you." });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await submitInquiry("consultation", {
+        name: form.name,
+        contactDetail: form.email || form.phone,
+        location: "",
+        service: form.service,
+        needs: [form.message, form.phone && `Phone: ${form.phone}`, form.size && `Property size: ${form.size} ha`].filter(Boolean).join("\n\n"),
+      });
+      toast({ title: "Enquiry sent", description: "Frits’s team will be in touch, usually within 1 business day." });
+      setForm({ name: "", phone: "", email: "", size: "", service: SERVICES[0].title, message: "" });
+    } catch {
+      toast({ variant: "destructive", title: "Could not send enquiry", description: "Please try again, or reach us on WhatsApp." });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
-      />
-      <div className="container pt-8 md:pb-20">
-        <Breadcrumbs items={[{ label: "Consulting" }]} />
-        
-        {/* Hero Section */}
-        <div className="grid md:grid-cols-2 gap-12 items-center mb-20">
-          <div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight font-headline">{t("consulting.headline")}</h1>
-            <p className="mt-4 max-w-xl text-lg text-muted-foreground font-body">
-              {t("consulting.subheadline")}
-            </p>
-            <div className="mt-8 flex flex-wrap items-center gap-4">
-              <Button
-                size="lg"
-                className="bg-whatsapp hover:bg-whatsapp-hover text-white"
-                asChild
-              >
-                <a href={waLink("Hi Frits, I'd like to discuss a consultation.")} target="_blank" rel="noopener noreferrer">
-                  <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" className="border-2" onClick={() => handleRequestConsultation()}>
-                Send a Message
-              </Button>
-              <a href="#services" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
-                View all services ↓
-              </a>
-            </div>
-          </div>
-          <div className="flex justify-center">
-            {heroImage ? (
-              <Image
-                src={heroImage.imageUrl}
-                alt={heroImage.description}
-                width={400}
-                height={400}
-                className="rounded-lg object-cover shadow-lg aspect-square border-4 border-white"
-                data-ai-hint={heroImage.imageHint}
-              />
-            ) : (
-              <Skeleton className="h-[400px] w-[400px] rounded-lg" />
-            )}
-          </div>
-        </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
 
-        {/* Services Grid */}
-        <div id="services" className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {services.map((service) => (
-            <Card key={service.title} className="flex flex-col border-2 hover:border-primary/50 hover:shadow-lg hover:-translate-y-1 transition-all duration-200">
-              <CardHeader className="pb-2">
-                <CardTitle className="font-headline text-2xl">{service.title}</CardTitle>
-              </CardHeader>
-              <CardContent className="flex-grow">
-                <CardDescription className="font-body text-base leading-relaxed">{service.description}</CardDescription>
-              </CardContent>
-              <CardFooter className="flex flex-col sm:flex-row gap-2 pt-2">
-                <Button className="w-full bg-whatsapp hover:bg-whatsapp-hover text-white" asChild>
-                  <a href={waLink(`Hi Frits, I'd like to enquire about: ${service.title}`)} target="_blank" rel="noopener noreferrer">
-                    <WhatsAppIcon className="mr-2 h-4 w-4" /> WhatsApp Frits
-                  </a>
-                </Button>
-                <Button className="w-full" variant="outline" onClick={() => handleRequestConsultation(service.title)}>
-                  {service.cta}
-                </Button>
-              </CardFooter>
-            </Card>
+      {/* Hero */}
+      <section className="border-b border-line bg-cream-band">
+        <Container className="py-[clamp(48px,6vw,72px)] pb-[clamp(40px,5vw,56px)]">
+          <Eyebrow rule tone="green" className="mb-4">Consulting &amp; advisory</Eyebrow>
+          <h1 className="m-0 font-headline text-[clamp(34px,4.4vw,56px)] font-medium leading-[1.06] tracking-[-0.02em] text-ink">Expert veld &amp; land-use consulting</h1>
+          <p className="m-0 mt-[18px] max-w-[600px] font-body text-[17px] leading-[1.65] text-body">Frits works directly with farmers, game reserves, land managers and the mining sector — turning thirty years of field science into practical, site-specific plans for your land.</p>
+        </Container>
+      </section>
+
+      {/* Services */}
+      <Container className="pb-4 pt-[clamp(48px,6vw,72px)]">
+        <h2 className="m-0 mb-8 font-headline text-[clamp(24px,3vw,32px)] font-medium tracking-[-0.02em] text-ink">Services</h2>
+        <div className="grid grid-cols-1 gap-6 min-[720px]:grid-cols-2 min-[940px]:grid-cols-3">
+          {SERVICES.map((s) => (
+            <div key={s.n} className="rounded-[4px] border border-line bg-cream-card p-7">
+              <div className="mb-3.5 font-mono text-[12px] text-gold-deep">{s.n}</div>
+              <h3 className="m-0 mb-2.5 font-headline text-[20px] font-semibold text-ink">{s.title}</h3>
+              <p className="m-0 text-[13.5px] leading-[1.6] text-body-soft">{s.body}</p>
+            </div>
           ))}
         </div>
+      </Container>
 
-        {/* Contextual Product Link - Related Tools */}
-        <div className="mt-16 bg-secondary/30 p-8 rounded-lg border-2 border-dashed border-primary/20 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-4">
-                <div className="bg-primary/10 p-3 rounded-full">
-                    <Wrench className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                    <h3 className="font-bold text-lg">Essential Tools for Veld Assessment</h3>
-                    <p className="text-muted-foreground text-sm">We recommend using the Disc Pasture Meter for accurate biomass estimation.</p>
-                </div>
+      {/* Process */}
+      <Container className="pb-4 pt-[clamp(48px,6vw,72px)]">
+        <h2 className="m-0 mb-8 font-headline text-[clamp(24px,3vw,32px)] font-medium tracking-[-0.02em] text-ink">How it works</h2>
+        <div className="grid grid-cols-1 gap-5 min-[560px]:grid-cols-2 min-[940px]:grid-cols-4">
+          {PROCESS.map((p) => (
+            <div key={p.n}>
+              <div className="mb-3.5 flex h-8 w-8 items-center justify-center rounded-full bg-forest font-mono text-[13px] font-medium text-ondark-bright">{p.n}</div>
+              <h3 className="m-0 mb-1.5 font-headline text-[17px] font-semibold text-ink">{p.title}</h3>
+              <p className="m-0 text-[13px] leading-[1.55] text-body-soft">{p.body}</p>
             </div>
-            <Button asChild variant="outline" className="shrink-0 border-2">
-                <Link href="/shop">Explore Measurement Tools <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
+          ))}
         </div>
+      </Container>
 
-        {/* Social Proof */}
-        <div className="mt-20">
-          <h2 className="text-3xl font-bold text-center mb-10 font-headline">What Clients Say</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {[
-              {
-                quote: "Frits's assessment gave us a clear picture of our veld condition and a practical plan to improve it. His knowledge of Southern African grasses is unmatched.",
-                name: "Commercial Livestock Farmer",
-                region: "Limpopo",
-              },
-              {
-                quote: "We engaged Frits for an ecological management plan for our game ranch. His report was thorough, practical, and immediately usable. Not a desk study.",
-                name: "Game Ranch Manager",
-                region: "Waterberg",
-              },
-              {
-                quote: "The EIA vegetation assessment Frits completed for our project was accepted without issues. His credibility with regulators is well established.",
-                name: "Environmental Practitioner",
-                region: "Gauteng",
-              },
-            ].map((t, i) => (
-              <Card key={i} className="border-2 bg-secondary/20 relative">
-                <CardContent className="pt-8 pb-6">
-                  <Quote className="h-6 w-6 text-primary/20 absolute top-4 left-4" />
-                  <p className="text-muted-foreground font-body italic leading-relaxed text-sm">
-                    "{t.quote}"
-                  </p>
-                  <div className="mt-4 pt-4 border-t border-primary/10">
-                    <p className="font-bold text-sm text-foreground">{t.name}</p>
-                    <p className="text-xs text-muted-foreground">{t.region}</p>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+      {/* Lead-gen form */}
+      <section className="mt-[clamp(48px,6vw,72px)] border-t border-line bg-forest-bark text-ondark">
+        <Container className="grid grid-cols-1 items-start gap-12 py-[clamp(48px,6vw,72px)] min-[940px]:grid-cols-[0.9fr_1.1fr]">
+          <div>
+            <Eyebrow tone="gold" className="mb-3.5">Request a consultation</Eyebrow>
+            <h2 className="m-0 mb-3.5 font-headline text-[clamp(24px,3vw,34px)] font-medium tracking-[-0.01em] text-ondark-bright">Tell us about your land</h2>
+            <p className="m-0 mb-[22px] max-w-[380px] text-[14px] leading-[1.7] text-ondark-soft">Share a few details and Frits’s team will be in touch to scope the right assessment for your situation.</p>
+            <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20discuss%20a%20consultation." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 text-[13.5px] text-ondark no-underline">
+              <WhatsAppIcon className="h-4 w-4 text-[#25D366]" /> Prefer to talk? WhatsApp +27 78 228 0008
+            </a>
           </div>
-          <p className="text-center text-xs text-muted-foreground mt-4">
-            * Testimonials are representative. Names withheld by request.
-          </p>
+          <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 min-[560px]:grid-cols-2">
+            <label className={labelCls}><span className={darkSpan}>Full name</span><input value={form.name} onChange={set("name")} placeholder="Your name" className={darkInput} /></label>
+            <label className={labelCls}><span className={darkSpan}>Phone</span><input type="tel" value={form.phone} onChange={set("phone")} placeholder="+27" className={darkInput} /></label>
+            <label className={labelCls}><span className={darkSpan}>Email</span><input type="email" value={form.email} onChange={set("email")} placeholder="you@farm.co.za" className={darkInput} /></label>
+            <label className={labelCls}><span className={darkSpan}>Property size (ha)</span><input value={form.size} onChange={set("size")} placeholder="e.g. 800" className={darkInput} /></label>
+            <label className={`${labelCls} min-[560px]:col-span-2`}><span className={darkSpan}>Service needed</span>
+              <select value={form.service} onChange={set("service")} className={`${darkInput} appearance-none`}>
+                {SERVICES.map((s) => <option key={s.title}>{s.title}</option>)}
+              </select>
+            </label>
+            <label className={`${labelCls} min-[560px]:col-span-2`}><span className={darkSpan}>Tell us about your land</span><textarea rows={3} value={form.message} onChange={set("message")} placeholder="Location, current challenge, what you’d like to achieve…" className={`${darkInput} h-auto resize-y py-3`} /></label>
+            <button type="submit" disabled={submitting} className="col-span-1 h-[50px] rounded-[3px] bg-gold font-body text-[14.5px] font-semibold text-forest-dark transition-opacity hover:opacity-90 disabled:opacity-60 min-[560px]:col-span-2">
+              {submitting ? "Sending…" : "Send enquiry"}
+            </button>
+          </form>
+        </Container>
+      </section>
+
+      {/* Tools cross-link */}
+      <Container className="py-[clamp(40px,5vw,64px)]">
+        <div className="flex flex-col items-center justify-between gap-5 rounded-[4px] border border-dashed border-line-strong bg-cream-panel p-8 text-center min-[720px]:flex-row min-[720px]:text-left">
+          <div>
+            <h3 className="m-0 mb-1 font-headline text-[19px] font-semibold text-ink">Essential tools for veld assessment</h3>
+            <p className="m-0 text-[13.5px] text-body-soft">We recommend the Disc Pasture Meter for accurate, objective biomass estimation.</p>
+          </div>
+          <Link href="/shop" className={`${ctaPrimary} shrink-0`}>Explore measurement tools</Link>
         </div>
-
-        {/* Detailed Service List */}
-        <div className="mt-20">
-            <h2 className="text-3xl font-bold text-center mb-8 font-headline">What a Consultation Can Cover</h2>
-            <Card className="max-w-5xl mx-auto shadow-md">
-                <CardContent className="p-8">
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-4 text-muted-foreground font-body">
-                        {consultationServices.map((item, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                                <Check className="h-5 w-5 mt-0.5 text-primary flex-shrink-0" />
-                                <span>{item}</span>
-                            </li>
-                        ))}
-                    </ul>
-                </CardContent>
-            </Card>
-        </div>
-
-
-         {/* Final CTA */}
-        <div className="mt-20 text-center bg-primary text-primary-foreground py-16 rounded-lg shadow-xl">
-            <h2 className="text-3xl font-bold font-headline">Not sure which service applies to your land?</h2>
-             <p className="mt-2 max-w-2xl mx-auto opacity-90 text-lg">
-                Every farm, veld, and project is different. Send Frits a quick message and he'll point you in the right direction.
-            </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-               <Button size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white px-10 font-bold shadow-md" asChild>
-                <a href={waLink("Hi Frits, I'm not sure which consulting service I need. Can you help?")} target="_blank" rel="noopener noreferrer">
-                  <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Frits
-                </a>
-               </Button>
-               <Button size="lg" variant="secondary" className="px-10 font-bold shadow-md" onClick={() => handleRequestConsultation()}>
-                Send a Message
-               </Button>
-            </div>
-        </div>
-      </div>
-
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-headline">Request Expert Guidance</DialogTitle>
-            <DialogDescription className="font-body text-base">
-              Submit your details and ecologist Frits van Oudtshoorn will contact you directly to discuss your situation.
-            </DialogDescription>
-          </DialogHeader>
-          <ConsultationForm
-            service={selectedService}
-            onSuccess={() => setIsModalOpen(false)}
-          />
-        </DialogContent>
-      </Dialog>
+      </Container>
     </>
   );
 }

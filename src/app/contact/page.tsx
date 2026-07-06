@@ -1,255 +1,105 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Mail, MapPin, Phone } from "lucide-react"
-import { useSearchParams } from 'next/navigation'
-import React, { Suspense } from 'react'
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon"
+import React, { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Container, Eyebrow } from "@/components/redesign/ui";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
+import { useToast } from "@/hooks/use-toast";
+import { submitInquiry } from "@/lib/submit-inquiry";
 
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { services } from "@/lib/static-data"
-import { submitInquiry } from "@/lib/submit-inquiry"
+const labelCls = "flex flex-col gap-1.5";
+const span = "text-[12px] font-semibold text-[#43483F]";
+const input = "h-[46px] rounded-[3px] border border-line-strong bg-[#F7F4EC] px-3.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-forest placeholder:text-body-faint";
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-   serviceInterestedIn: z.string({
-    required_error: "Please select a service.",
-  }),
-  message: z.string().min(10, {
-    message: "Message must be at least 10 characters.",
-  }).optional().or(z.literal('')),
-})
+const DETAILS = [
+  { label: "Office support", value: "+27 71 866 1331", href: "tel:+27718661331", mono: true },
+  { label: "Frits van Oudtshoorn", value: "+27 78 228 0008", href: "tel:+27782280008", mono: true },
+  { label: "Email", value: "admin@workingongrass.co.za", href: "mailto:admin@workingongrass.co.za", mono: false },
+];
 
 function ContactForm() {
-  const { toast } = useToast()
-  const searchParams = useSearchParams()
-  const serviceQuery = searchParams.get('service')
+  const { toast } = useToast();
+  const serviceQuery = useSearchParams().get("service");
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", subject: "", message: "" });
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      location: "",
-      serviceInterestedIn: serviceQuery || undefined,
-      message: "",
-    },
-  })
+  useEffect(() => { if (serviceQuery) setForm((f) => ({ ...f, subject: serviceQuery })); }, [serviceQuery]);
 
-  React.useEffect(() => {
-    if (serviceQuery) {
-      form.setValue('serviceInterestedIn', serviceQuery);
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim() || form.message.trim().length < 10) {
+      toast({ variant: "destructive", title: "Please complete the form", description: "Name, email and a short message are required." });
+      return;
     }
-  }, [serviceQuery, form]);
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
+    setSubmitting(true);
     try {
-      await submitInquiry('contact', values);
-      toast({
-        title: "Message sent",
-        description: "Frits will be in touch soon, usually within 1 business day.",
-      })
-      form.reset()
+      await submitInquiry("contact", {
+        name: form.name,
+        email: form.email,
+        serviceInterestedIn: form.subject || "General Inquiry",
+        message: form.message,
+      });
+      toast({ title: "Message sent", description: "Frits will be in touch soon, usually within 1 business day." });
+      setForm({ name: "", email: "", subject: "", message: "" });
     } catch {
-      toast({
-        variant: "destructive",
-        title: "Could not send message",
-        description: "Please try again, or reach us on WhatsApp.",
-      })
+      toast({ variant: "destructive", title: "Could not send message", description: "Please try again, or reach us on WhatsApp." });
+    } finally {
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="name"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Full Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your full name" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email Address</FormLabel>
-                  <FormControl>
-                    <Input placeholder="you@example.com" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        </div>
-         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone <span className="text-muted-foreground">(Optional)</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="Your contact number" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Location / Farm Name <span className="text-muted-foreground">(Optional)</span></FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g. Near Bela-Bela" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        </div>
-        <FormField
-          control={form.control}
-          name="serviceInterestedIn"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Service Interested In</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a service..." />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {services.map((service, index) => (
-                    <SelectItem key={index} value={service.title}>
-                      {service.title}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="General Inquiry">General Inquiry</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Message <span className="text-muted-foreground">(Optional)</span></FormLabel>
-              <FormControl>
-                <Textarea placeholder="Tell us more about your land or project needs..." {...field} rows={6} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button type="submit" size="lg">Send Message</Button>
-          <Button type="button" size="lg" className="bg-whatsapp hover:bg-whatsapp-hover text-white" asChild>
-            <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20get%20in%20touch." target="_blank" rel="noopener noreferrer">
-              <WhatsAppIcon className="mr-2 h-5 w-5" /> WhatsApp Instead
-            </a>
-          </Button>
-        </div>
-      </form>
-    </Form>
-  )
+    <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2">
+      <label className={labelCls}><span className={span}>Name</span><input value={form.name} onChange={set("name")} className={input} /></label>
+      <label className={labelCls}><span className={span}>Email</span><input type="email" value={form.email} onChange={set("email")} className={input} /></label>
+      <label className={`${labelCls} min-[520px]:col-span-2`}><span className={span}>Subject</span><input value={form.subject} onChange={set("subject")} className={input} /></label>
+      <label className={`${labelCls} min-[520px]:col-span-2`}><span className={span}>Message</span><textarea rows={4} value={form.message} onChange={set("message")} className={`${input} h-auto resize-y py-3`} /></label>
+      <button type="submit" disabled={submitting} className="col-span-1 h-[50px] rounded-[3px] bg-forest font-body text-[14.5px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:opacity-60 min-[520px]:col-span-2">
+        {submitting ? "Sending…" : "Send message"}
+      </button>
+    </form>
+  );
 }
 
 export default function ContactPage() {
   return (
-    <div className="container py-12 md:py-20">
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">Get in Touch</h1>
-        <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-          Ask a question, request an assessment, or just describe what's going on with your land. Frits will respond personally.
-        </p>
-      </div>
+    <>
+      <section className="border-b border-line bg-cream-band">
+        <Container className="py-[clamp(48px,6vw,72px)] pb-[clamp(40px,5vw,56px)]">
+          <Eyebrow rule tone="green" className="mb-4">Get in touch</Eyebrow>
+          <h1 className="m-0 font-headline text-[clamp(34px,4.4vw,56px)] font-medium leading-[1.06] tracking-[-0.02em] text-ink">Contact us</h1>
+          <p className="m-0 mt-[18px] max-w-[560px] font-body text-[17px] leading-[1.65] text-body">Questions about a product, a consultation or a seed mix? Reach us directly — we’ll make sure you get to the right person.</p>
+        </Container>
+      </section>
 
-      <div className="grid md:grid-cols-5 gap-12">
-        <div className="md:col-span-3">
-          <h2 className="text-2xl font-bold mb-6">Send a Message</h2>
-           <Suspense fallback={<div className="text-muted-foreground text-sm">Loading form...</div>}>
+      <Container className="grid grid-cols-1 items-start gap-14 py-[clamp(48px,6vw,72px)] min-[940px]:grid-cols-[0.85fr_1.15fr]">
+        {/* Details */}
+        <div className="flex flex-col gap-[22px]">
+          {DETAILS.map((d) => (
+            <div key={d.label}>
+              <div className="mb-1.5 font-body text-[11px] font-bold uppercase tracking-[0.14em] text-body-faint">{d.label}</div>
+              <a href={d.href} className={`text-ink no-underline hover:text-forest ${d.mono ? "font-mono text-[15px]" : "text-[14.5px]"}`}>{d.value}</a>
+            </div>
+          ))}
+          <div>
+            <div className="mb-1.5 font-body text-[11px] font-bold uppercase tracking-[0.14em] text-body-faint">Location</div>
+            <p className="m-0 text-[14px] leading-[1.6] text-[#43483F]">Working on Grass HQ<br />Modimolle, Limpopo<br />0510, South Africa</p>
+          </div>
+          <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20get%20in%20touch." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 self-start rounded-[3px] bg-[#25D366] px-[22px] py-[13px] text-[14px] font-semibold text-white no-underline transition-opacity hover:opacity-90">
+            <WhatsAppIcon className="h-[17px] w-[17px]" /> WhatsApp Frits
+          </a>
+        </div>
+
+        {/* Form */}
+        <div className="rounded-[4px] border border-line bg-cream-card p-[clamp(24px,3vw,36px)] shadow-lifted">
+          <h2 className="m-0 mb-5 font-headline text-[22px] font-semibold text-ink">Send a message</h2>
+          <Suspense fallback={<div className="text-[13px] text-body-soft">Loading form…</div>}>
             <ContactForm />
-           </Suspense>
+          </Suspense>
         </div>
-        <div className="md:col-span-2">
-            <h2 className="text-2xl font-bold mb-6">Direct Contact Info</h2>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Working on Grass</CardTitle>
-                    <CardDescription>Environmental & Agricultural Services</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                    <div className="flex items-start gap-4">
-                        <MapPin className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
-                        <div>
-                            <p className="font-semibold">Address</p>
-                            <p className="text-muted-foreground">Modimolle, Limpopo, 0510, South Africa</p>
-                        </div>
-                    </div>
-                     <div className="flex items-start gap-4">
-                        <Phone className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
-                        <div>
-                            <p className="font-semibold">Phone / WhatsApp</p>
-                            <a
-                              href="https://wa.me/27782280008"
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary font-medium hover:underline"
-                            >
-                              +27 78 228 0008
-                            </a>
-                            <p className="text-xs text-muted-foreground mt-0.5">Frits van Oudtshoorn (tap to chat)</p>
-                        </div>
-                    </div>
-                     <div className="flex items-start gap-4">
-                        <Mail className="h-5 w-5 mt-1 text-primary flex-shrink-0"/>
-                        <div>
-                            <p className="font-semibold">Email</p>
-                            <p className="text-muted-foreground">admin@workingongrass.co.za</p>
-                        </div>
-                    </div>
-                </CardContent>
-            </Card>
-        </div>
-      </div>
-    </div>
-  )
+      </Container>
+    </>
+  );
 }

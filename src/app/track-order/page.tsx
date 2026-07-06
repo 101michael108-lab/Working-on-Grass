@@ -1,237 +1,146 @@
-
 "use client";
 
 import React, { useState } from "react";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Search, Package, MapPin, CheckCircle2, Truck, Clock, AlertTriangle, Copy, Check } from "lucide-react";
+import { AlertTriangle } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { formatOrderRef } from "@/lib/order-number";
-import { Breadcrumbs } from "@/components/breadcrumbs";
 import { InvoiceActions } from "@/components/invoice-actions";
+import { Container, Eyebrow } from "@/components/redesign/ui";
 
-const getStatusIcon = (status: Order['status']) => {
-    switch (status) {
-        case 'Pending': return <Clock className="h-5 w-5 text-muted-foreground" />;
-        case 'Processing': return <Package className="h-5 w-5 text-primary" />;
-        case 'Shipped': return <Truck className="h-5 w-5 text-primary" />;
-        case 'Delivered': return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-        case 'Cancelled': return <AlertTriangle className="h-5 w-5 text-destructive" />;
-        default: return <Clock className="h-5 w-5" />;
-    }
+const labelCls = "flex flex-col gap-1.5";
+const span = "text-[12px] font-semibold text-[#43483F]";
+const input = "h-[46px] rounded-[3px] border border-line-strong bg-[#F7F4EC] px-3.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-forest placeholder:text-body-faint";
+
+const RANK: Record<Order["status"], number> = { Pending: 0, Processing: 1, Shipped: 2, Fulfilled: 3, Delivered: 3, Cancelled: -1 };
+
+function buildTimeline(order: Order) {
+  const rank = RANK[order.status] ?? 0;
+  const placed = order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString("en-ZA", { day: "numeric", month: "long", year: "numeric" }) : "";
+  const step = (label: string, sub: string, state: "done" | "current" | "pending") => ({ label, sub, state });
+  return [
+    step("Order confirmed", placed, "done"),
+    step("Packed & dispatched", rank >= 2 ? "Courier collected" : rank === 1 ? "Being prepared" : "", rank >= 2 ? "done" : rank === 1 ? "current" : "pending"),
+    step("In transit", rank === 2 ? "On its way to you" : "", rank >= 3 ? "done" : rank === 2 ? "current" : "pending"),
+    step("Delivered", rank >= 3 ? "Delivered" : "", rank >= 3 ? "done" : "pending"),
+  ];
 }
 
 export default function TrackOrderPage() {
-    const [orderId, setOrderId] = useState("");
-    const [email, setEmail] = useState("");
-    const [order, setOrder] = useState<Order | null>(null);
-    const [invoiceToken, setInvoiceToken] = useState<string | null>(null);
-    const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
-    const [copied, setCopied] = useState(false);
+  const [orderId, setOrderId] = useState("");
+  const [email, setEmail] = useState("");
+  const [order, setOrder] = useState<Order | null>(null);
+  const [invoiceToken, setInvoiceToken] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-    const handleTrack = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!orderId || !email) return;
-
-        setIsLoading(true);
-        setError(null);
-        setOrder(null);
-        setInvoiceToken(null);
-
-        try {
-            const res = await fetch('/api/track-order', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    orderId: orderId.trim(),
-                    email: email.trim().toLowerCase(),
-                }),
-            });
-
-            if (res.ok) {
-                const { order: foundOrder, invoiceToken: tok } = await res.json();
-                setOrder(foundOrder as Order);
-                setInvoiceToken(tok ?? null);
-            } else {
-                setError("Order not found. Please check your Order ID and Email Address.");
-            }
-        } catch (e: any) {
-            console.error(e);
-            setError("An error occurred while fetching your order. Please try again later.");
-        } finally {
-            setIsLoading(false);
-        }
+  const handleTrack = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!orderId || !email) return;
+    setIsLoading(true);
+    setError(null);
+    setOrder(null);
+    setInvoiceToken(null);
+    try {
+      const res = await fetch("/api/track-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: orderId.trim(), email: email.trim().toLowerCase() }),
+      });
+      if (res.ok) {
+        const { order: foundOrder, invoiceToken: tok } = await res.json();
+        setOrder(foundOrder as Order);
+        setInvoiceToken(tok ?? null);
+      } else {
+        setError("Order not found. Please check your order number and email address.");
+      }
+    } catch (err) {
+      console.error(err);
+      setError("Something went wrong fetching your order. Please try again later.");
+    } finally {
+      setIsLoading(false);
     }
+  };
 
-    const copyOrderId = () => {
-        if (!order) return;
-        navigator.clipboard.writeText(order.orderNumber != null ? String(order.orderNumber) : order.id);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-    }
+  const cancelled = order?.status === "Cancelled";
+  const statusPill = cancelled
+    ? "text-destructive bg-destructive/10 border-destructive/20"
+    : order?.status === "Delivered"
+    ? "text-stock bg-stock-bg border-stock-border"
+    : "text-stock bg-stock-bg border-stock-border";
 
-    return (
-        <div className="container py-12 md:py-20">
-            <Breadcrumbs items={[{ label: "Track Order" }]} />
-            
-            <div className="max-w-4xl mx-auto">
-                <div className="text-center mb-12">
-                    <h1 className="text-4xl md:text-5xl font-bold font-headline mb-4">Track Your Order</h1>
-                    <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-                        Enter your order number and the email address used during checkout to view your current status.
-                    </p>
-                </div>
-
-                {!order ? (
-                    <Card className="max-w-md mx-auto border-2 shadow-lg">
-                        <CardHeader className="bg-muted/30 border-b-2">
-                            <CardTitle className="text-xl">Lookup Order</CardTitle>
-                            <CardDescription>Found in your confirmation email.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pt-6">
-                            <form onSubmit={handleTrack} className="space-y-4">
-                                <div className="space-y-2">
-                                    <Label htmlFor="orderId">Order Number</Label>
-                                    <Input
-                                        id="orderId"
-                                        placeholder="e.g. 1001"
-                                        value={orderId}
-                                        onChange={(e) => setOrderId(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email Address</Label>
-                                    <Input 
-                                        id="email" 
-                                        type="email"
-                                        placeholder="you@example.com" 
-                                        value={email} 
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                    />
-                                </div>
-                                {error && (
-                                    <div className="p-3 bg-destructive/10 text-destructive text-sm rounded border border-destructive/20 flex items-center gap-2">
-                                        <AlertTriangle className="h-4 w-4" />
-                                        {error}
-                                    </div>
-                                )}
-                                <Button type="submit" className="w-full h-12 font-bold" disabled={isLoading}>
-                                    {isLoading ? "Searching..." : "Track My Order"}
-                                    {!isLoading && <Search className="ml-2 h-4 w-4" />}
-                                </Button>
-                            </form>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-primary/5 p-6 rounded-lg border-2 border-primary/10">
-                            <div>
-                                <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-1">Current Progress</p>
-                                <div className="flex items-center gap-3">
-                                    {getStatusIcon(order.status)}
-                                    <h2 className="text-3xl font-bold font-headline">{order.status}</h2>
-                                </div>
-                            </div>
-                            <Button variant="outline" onClick={() => setOrder(null)} className="border-2">
-                                Track Another Order
-                            </Button>
-                        </div>
-
-                        {order.userId && (
-                            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-card p-4 rounded-lg border-2">
-                                <p className="text-sm font-medium">Need a copy of your invoice?</p>
-                                <InvoiceActions orderId={order.id} uid={order.userId} token={invoiceToken ?? undefined} />
-                            </div>
-                        )}
-
-                        <div className="grid md:grid-cols-2 gap-8">
-                            <Card className="border-2">
-                                <CardHeader className="bg-muted/30 border-b-2">
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <Package className="h-5 w-5 text-primary" /> Order Information
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-6 space-y-4">
-                                    <div className="flex justify-between items-center py-2 border-b">
-                                        <span className="text-muted-foreground">Order Number</span>
-                                        <div className="flex items-center gap-2">
-                                            <span className="font-mono text-sm font-bold">{formatOrderRef(order)}</span>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={copyOrderId}>
-                                                {copied ? <Check className="h-3 w-3 text-green-600" /> : <Copy className="h-3 w-3" />}
-                                            </Button>
-                                        </div>
-                                    </div>
-                                    <div className="flex justify-between py-2 border-b">
-                                        <span className="text-muted-foreground">Placed On</span>
-                                        <span className="font-medium">{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString('en-ZA', { dateStyle: 'long' }) : 'N/A'}</span>
-                                    </div>
-                                    <div className="flex justify-between py-2 border-b">
-                                        <span className="text-muted-foreground">Payment Status</span>
-                                        <Badge variant="success" className="bg-green-600">Paid Securely</Badge>
-                                    </div>
-                                    <div className="flex justify-between py-2 font-bold text-lg text-accent">
-                                        <span>Total Paid</span>
-                                        <span>R{order.totalAmount.toFixed(2)}</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-
-                            <Card className="border-2">
-                                <CardHeader className="bg-muted/30 border-b-2">
-                                    <CardTitle className="text-lg flex items-center gap-2">
-                                        <MapPin className="h-5 w-5 text-primary" /> Delivery Address
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="pt-6 font-body">
-                                    <div className="bg-secondary/20 p-4 rounded border">
-                                        <p className="font-bold text-lg">{order.shippingInfo.firstName} {order.shippingInfo.lastName}</p>
-                                        <p className="text-muted-foreground">{order.shippingInfo.address}</p>
-                                        <p className="text-muted-foreground">{order.shippingInfo.city}, {order.shippingInfo.postalCode}</p>
-                                        <p className="text-muted-foreground">{order.shippingInfo.country}</p>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-
-                        <Card className="border-2">
-                            <CardHeader className="bg-muted/30 border-b-2">
-                                <CardTitle className="text-lg">Ordered Items</CardTitle>
-                            </CardHeader>
-                            <CardContent className="p-0">
-                                <Table>
-                                    <TableHeader className="bg-muted/10">
-                                        <TableRow>
-                                            <TableHead className="pl-6">Item</TableHead>
-                                            <TableHead className="text-center">Quantity</TableHead>
-                                            <TableHead className="text-right pr-6">Price</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {order.items.map((item, index) => (
-                                            <TableRow key={index}>
-                                                <TableCell className="pl-6 font-medium font-headline text-lg">{item.name}</TableCell>
-                                                <TableCell className="text-center">{item.quantity}</TableCell>
-                                                <TableCell className="text-right pr-6 font-bold">R{item.price.toFixed(2)}</TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                            <CardFooter className="bg-muted/10 border-t-2 flex justify-between items-center py-4">
-                                <p className="text-xs text-muted-foreground italic">Standard shipping is included in the total paid.</p>
-                                <p className="font-bold text-accent">R{order.totalAmount.toFixed(2)}</p>
-                            </CardFooter>
-                        </Card>
-                    </div>
-                )}
-            </div>
+  return (
+    <Container className="py-[clamp(48px,6vw,80px)]">
+      <div className="mx-auto max-w-[620px]">
+        <div className="mb-9 text-center">
+          <Eyebrow tone="gold" className="mb-3 justify-center">Order status</Eyebrow>
+          <h1 className="m-0 font-headline text-[clamp(30px,3.6vw,44px)] font-medium tracking-[-0.02em] text-ink">Track your order</h1>
+          <p className="m-0 mt-3.5 font-body text-[15px] leading-[1.6] text-body-soft">Enter your order number and email to see the latest status.</p>
         </div>
-    );
+
+        {/* Lookup form */}
+        <form onSubmit={handleTrack} className="grid grid-cols-1 gap-4 rounded-[4px] border border-line bg-cream-card p-7 shadow-lifted min-[480px]:grid-cols-2">
+          <label className={labelCls}><span className={span}>Order number</span><input value={orderId} onChange={(e) => setOrderId(e.target.value)} placeholder="e.g. 1001" required className={input} /></label>
+          <label className={labelCls}><span className={span}>Email</span><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="you@farm.co.za" required className={input} /></label>
+          {error && (
+            <div className="col-span-1 flex items-center gap-2 rounded-[3px] border border-destructive/20 bg-destructive/10 px-3 py-2.5 text-[13px] text-destructive min-[480px]:col-span-2">
+              <AlertTriangle className="h-4 w-4 shrink-0" /> {error}
+            </div>
+          )}
+          <button type="submit" disabled={isLoading} className="col-span-1 h-[50px] rounded-[3px] bg-forest font-body text-[14.5px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:opacity-60 min-[480px]:col-span-2">
+            {isLoading ? "Searching…" : "Track order"}
+          </button>
+        </form>
+
+        {/* Result */}
+        {order && (
+          <div className="mt-6 animate-wog-fade rounded-[4px] border border-line bg-cream-band p-7">
+            <div className="mb-6 flex items-center justify-between">
+              <span className="font-mono text-[12px] text-gold-deep">{formatOrderRef(order)}</span>
+              <span className={`rounded-[20px] border px-3 py-1 text-[12px] font-semibold ${statusPill}`}>{order.status}</span>
+            </div>
+
+            {cancelled ? (
+              <p className="m-0 text-[14px] text-body">This order was cancelled. If you think this is a mistake, please contact us and we’ll help sort it out.</p>
+            ) : (
+              <div className="flex flex-col">
+                {buildTimeline(order).map((s, i, arr) => {
+                  const last = i === arr.length - 1;
+                  const dot = s.state === "pending" ? "bg-line-strong" : "bg-forest";
+                  const ring = s.state === "current" ? "ring-[3px] ring-stock-border" : "";
+                  const connector = s.state === "done" ? "bg-forest" : "bg-line-strong";
+                  const labelColor = s.state === "pending" ? "text-body-faint" : "text-ink";
+                  return (
+                    <div key={s.label} className="flex gap-3.5">
+                      <div className="flex flex-col items-center">
+                        <span className={`h-4 w-4 rounded-full ${dot} ${ring}`} />
+                        {!last && <span className={`min-h-[26px] w-0.5 flex-grow ${connector}`} />}
+                      </div>
+                      <div className={last ? "" : "pb-5"}>
+                        <div className={`text-[14px] font-semibold ${labelColor}`}>{s.label}</div>
+                        {s.sub && <div className="text-[12px] text-body-faint">{s.sub}</div>}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Details */}
+            <div className="mt-6 flex flex-col gap-2 border-t border-line pt-5 text-[13.5px]">
+              <div className="flex justify-between"><span className="text-body-soft">Placed on</span><span className="font-medium text-ink">{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString("en-ZA", { dateStyle: "long" }) : "—"}</span></div>
+              <div className="flex justify-between"><span className="text-body-soft">Deliver to</span><span className="font-medium text-ink">{order.shippingInfo.firstName} {order.shippingInfo.lastName}, {order.shippingInfo.city}</span></div>
+              <div className="flex justify-between text-[15px] font-bold text-ink"><span>Total paid</span><span>R{order.totalAmount.toFixed(2)}</span></div>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center justify-between gap-3">
+              {order.userId ? (
+                <InvoiceActions orderId={order.id} uid={order.userId} token={invoiceToken ?? undefined} />
+              ) : <span />}
+              <button onClick={() => setOrder(null)} className="text-[13px] font-semibold text-forest hover:underline">Track another order</button>
+            </div>
+          </div>
+        )}
+      </div>
+    </Container>
+  );
 }

@@ -1,248 +1,105 @@
-"use client"
+"use client";
 
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import * as z from "zod"
-import { Bird, Sprout, Wheat } from "lucide-react"
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon"
+import React, { useState } from "react";
+import { Container, Eyebrow } from "@/components/redesign/ui";
+import { useToast } from "@/hooks/use-toast";
+import { submitInquiry } from "@/lib/submit-inquiry";
 
-import { Button } from "@/components/ui/button"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { useToast } from "@/hooks/use-toast"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { seedCategories } from "@/lib/static-data"
-import { useLanguage } from "@/context/language-context"
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
-import type { SeedCategory } from "@/lib/types"
-import { submitInquiry } from "@/lib/submit-inquiry"
+const WHY = [
+  { n: 1, title: "Matched to your conditions", body: "Rainfall, soil type and altitude determine which species will actually establish and persist." },
+  { n: 2, title: "Matched to your purpose", body: "Grazing pasture, cover, or rehabilitation each call for different species and ratios." },
+  { n: 3, title: "Expert-formulated", body: "Every mix is put together by Frits, drawing on decades of establishment experience." },
+];
 
-const formSchema = z.object({
-  name: z.string().min(2, {
-    message: "Name must be at least 2 characters.",
-  }),
-  email: z.string().email({
-    message: "Please enter a valid email address.",
-  }),
-  phone: z.string().optional(),
-  location: z.string().optional(),
-  seedCategory: z.string({
-    required_error: "Please select a seed category.",
-  }),
-  farmSize: z.string().optional(),
-  primaryUse: z.string().optional(),
-  message: z.string().min(10, {
-    message: "Please describe your needs (e.g., hectarage, specific seed type).",
-  }),
-})
+const PURPOSES = ["Grazing pasture", "Soil cover / stabilisation", "Rehabilitation", "Other / not sure"];
 
-function SeedInquiryForm() {
-  const { toast } = useToast()
-
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      location: "",
-      seedCategory: undefined,
-      farmSize: "",
-      primaryUse: undefined,
-      message: "",
-    },
-  })
-
-  async function onSubmit(values: z.infer<typeof formSchema>) {
-    const serviceType = `Seed Inquiry: ${values.seedCategory}`;
-    try {
-      await submitInquiry('contact', { ...values, serviceInterestedIn: serviceType });
-      toast({
-        title: "Seed Inquiry Sent!",
-        description: "Thank you for your interest. We will get back to you shortly with a quote.",
-      })
-      form.reset()
-    } catch {
-      toast({
-        variant: "destructive",
-        title: "Could not send your enquiry",
-        description: "Please try again, or reach us on WhatsApp.",
-      })
-    }
-  }
-
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <FormField name="name" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField name="email" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Email Address</FormLabel><FormControl><Input placeholder="you@example.com" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-        </div>
-         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <FormField name="phone" control={form.control} render={({ field }) => (
-                <FormItem><FormLabel>Phone <span className="text-muted-foreground">(Optional)</span></FormLabel><FormControl><Input placeholder="Your contact number" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-            <FormField control={form.control} name="location" render={({ field }) => (
-                <FormItem><FormLabel>Location / Farm Name <span className="text-muted-foreground">(Optional)</span></FormLabel><FormControl><Input placeholder="e.g. Near Bela-Bela" {...field} /></FormControl><FormMessage /></FormItem>
-            )} />
-        </div>
-        <FormField
-          control={form.control}
-          name="seedCategory"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Seed Category of Interest</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger><SelectValue placeholder="Select a category..." /></SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {seedCategories.map((category) => (
-                    <SelectItem key={category.name} value={category.name}>
-                      {category.name}
-                    </SelectItem>
-                  ))}
-                  <SelectItem value="Other/Unsure">Other / Unsure</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <FormField control={form.control} name="farmSize" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Area to be planted <span className="text-muted-foreground">(ha, Optional)</span></FormLabel>
-              <FormControl><Input placeholder="e.g. 50 ha" {...field} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="primaryUse" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Primary Use <span className="text-muted-foreground">(Optional)</span></FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger><SelectValue placeholder="Select primary use..." /></SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Grazing / Pasture">Grazing / Pasture</SelectItem>
-                  <SelectItem value="Cover Crop">Cover Crop</SelectItem>
-                  <SelectItem value="Veld Restoration">Veld Restoration</SelectItem>
-                  <SelectItem value="Turf / Lawn">Turf / Lawn</SelectItem>
-                  <SelectItem value="Ornamental / Indigenous">Ornamental / Indigenous</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )} />
-        </div>
-        <FormField
-          control={form.control}
-          name="message"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Your Requirements</FormLabel>
-              <FormControl><Textarea placeholder="Describe your situation: soil type, rainfall area, current veld condition, or any specific seed mixtures you have in mind." {...field} rows={5} /></FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex flex-col sm:flex-row gap-3">
-          <Button type="submit" size="lg">Request a Quote</Button>
-          <Button type="button" size="lg" variant="outline" className="border-whatsapp text-whatsapp hover:bg-whatsapp hover:text-white" asChild>
-            <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20enquire%20about%20custom%20seed%20mixes." target="_blank" rel="noopener noreferrer">
-              <WhatsAppIcon className="mr-2 h-4 w-4" /> Prefer to WhatsApp Frits
-            </a>
-          </Button>
-        </div>
-      </form>
-    </Form>
-  )
-}
-
-const categoryIcons: { [key: string]: React.ElementType } = {
-  "Grasses": Sprout,
-  "Legumes": Wheat,
-  "Forage & Cover Crops": Bird
-};
+const labelCls = "flex flex-col gap-1.5";
+const span = "text-[12px] font-semibold text-[#43483F]";
+const input = "h-[46px] rounded-[3px] border border-line-strong bg-[#F7F4EC] px-3.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-forest placeholder:text-body-faint";
 
 export default function SeedsPage() {
-  const { t } = useLanguage();
+  const { toast } = useToast();
+  const [submitting, setSubmitting] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", phone: "", region: "", area: "", purpose: PURPOSES[0], notes: "" });
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
+    setForm((f) => ({ ...f, [k]: e.target.value }));
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim()) {
+      toast({ variant: "destructive", title: "Please add your name and email", description: "So we can send your quote." });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await submitInquiry("contact", {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        location: form.region,
+        serviceInterestedIn: `Seed mix: ${form.purpose}`,
+        farmSize: form.area,
+        primaryUse: form.purpose,
+        message: form.notes,
+      });
+      toast({ title: "Seed quote requested", description: "Thanks — Frits will respond with a tailored recommendation shortly." });
+      setForm({ name: "", email: "", phone: "", region: "", area: "", purpose: PURPOSES[0], notes: "" });
+    } catch {
+      toast({ variant: "destructive", title: "Could not send your enquiry", description: "Please try again, or reach us on WhatsApp." });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="container py-12 md:py-20">
-      <div className="mb-12 text-center">
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight">{t("seeds.headline")}</h1>
-        <p className="mt-4 max-w-3xl mx-auto text-lg text-muted-foreground">
-          {t("seeds.subheadline")}
-        </p>
-        <p className="mt-2 max-w-3xl mx-auto text-muted-foreground">
-          Submit an enquiry below, and Frits will respond with a tailored recommendation.
-        </p>
-        <div className="mt-6 inline-flex items-center gap-2 bg-secondary border border-primary/10 rounded-full px-5 py-2 text-sm text-muted-foreground">
-          <Sprout className="h-4 w-4 text-primary" />
-          <span>Summer &amp; winter pastures · Legumes · Cover crops · Turf</span>
-        </div>
-      </div>
+    <>
+      {/* Hero */}
+      <section className="border-b border-line bg-cream-band">
+        <Container className="py-[clamp(48px,6vw,72px)] pb-[clamp(40px,5vw,56px)]">
+          <Eyebrow rule tone="green" className="mb-4">Grass seed</Eyebrow>
+          <h1 className="m-0 font-headline text-[clamp(34px,4.4vw,56px)] font-medium leading-[1.06] tracking-[-0.02em] text-ink">Custom grass seed mixes</h1>
+          <p className="m-0 mt-[18px] max-w-[600px] font-body text-[17px] leading-[1.65] text-body">Seed isn’t sold off the shelf here. As a registered Barenbrug agent, Frits formulates mixes matched to your rainfall, soil and purpose — because the right species in the wrong place simply won’t establish.</p>
+        </Container>
+      </section>
 
-      <div className="grid md:grid-cols-5 gap-12">
-        <div className="md:col-span-2">
-            <h2 className="text-2xl font-bold mb-6">Our Seed Categories</h2>
-             <Accordion type="single" collapsible className="w-full" defaultValue="Grasses">
-                {seedCategories.map((category: SeedCategory) => {
-                    const Icon = categoryIcons[category.name] || Sprout;
-                    return (
-                        <AccordionItem key={category.name} value={category.name}>
-                            <AccordionTrigger className="text-lg">
-                                <div className="flex items-center gap-3">
-                                    <Icon className="h-5 w-5 text-primary" />
-                                    {category.name}
-                                </div>
-                            </AccordionTrigger>
-                            <AccordionContent>
-                                <div className="space-y-4">
-                                {category.subCategories.map(sub => (
-                                    <div key={sub.name}>
-                                        <h4 className="font-semibold text-foreground/90">{sub.name}</h4>
-                                        <p className="text-muted-foreground text-sm">
-                                            {sub.types.join(', ')}
-                                        </p>
-                                    </div>
-                                ))}
-                                </div>
-                            </AccordionContent>
-                        </AccordionItem>
-                    )
-                })}
-            </Accordion>
-            <p className="text-sm text-muted-foreground mt-6">Don't see what you're looking for? We can source a wide variety of seeds. Just let us know what you need in the inquiry form.</p>
+      <Container className="grid grid-cols-1 items-start gap-14 py-[clamp(48px,6vw,72px)] min-[940px]:grid-cols-[0.95fr_1.05fr]">
+        {/* Why */}
+        <div>
+          <h2 className="m-0 mb-5 font-headline text-[clamp(24px,3vw,32px)] font-medium tracking-[-0.02em] text-ink">Why we quote per case</h2>
+          <div className="flex flex-col gap-[18px]">
+            {WHY.map((w) => (
+              <div key={w.n} className="flex items-start gap-3.5">
+                <span className="flex h-[30px] w-[30px] shrink-0 items-center justify-center rounded-full bg-forest font-mono text-[13px] text-ondark-bright">{w.n}</span>
+                <div>
+                  <h3 className="m-0 mb-1 font-headline text-[17px] font-semibold text-ink">{w.title}</h3>
+                  <p className="m-0 text-[13.5px] leading-[1.6] text-body-soft">{w.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
-         <div className="md:col-span-3">
-          <Card>
-            <CardHeader>
-                <CardTitle>Request a Seed Quote</CardTitle>
-                <CardDescription>Fill out the form below, and we'll get back to you with a personalized quote.</CardDescription>
-            </CardHeader>
-            <CardContent>
-                <SeedInquiryForm />
-            </CardContent>
-          </Card>
+
+        {/* Form */}
+        <div className="rounded-[4px] border border-line bg-cream-card p-[clamp(24px,3vw,36px)] shadow-lifted">
+          <h2 className="m-0 mb-5 font-headline text-[22px] font-semibold text-ink">Request a seed quote</h2>
+          <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2">
+            <label className={labelCls}><span className={span}>Full name</span><input value={form.name} onChange={set("name")} placeholder="Your name" className={input} /></label>
+            <label className={labelCls}><span className={span}>Email</span><input type="email" value={form.email} onChange={set("email")} placeholder="you@farm.co.za" className={input} /></label>
+            <label className={labelCls}><span className={span}>Phone</span><input type="tel" value={form.phone} onChange={set("phone")} placeholder="+27" className={input} /></label>
+            <label className={labelCls}><span className={span}>Region / district</span><input value={form.region} onChange={set("region")} placeholder="e.g. Limpopo" className={input} /></label>
+            <label className={labelCls}><span className={span}>Area to plant (ha)</span><input value={form.area} onChange={set("area")} placeholder="e.g. 40" className={input} /></label>
+            <label className={labelCls}><span className={span}>Purpose</span>
+              <select value={form.purpose} onChange={set("purpose")} className={`${input} appearance-none`}>
+                {PURPOSES.map((p) => <option key={p}>{p}</option>)}
+              </select>
+            </label>
+            <label className={`${labelCls} min-[520px]:col-span-2`}><span className={span}>Notes on soil &amp; conditions</span><textarea rows={3} value={form.notes} onChange={set("notes")} placeholder="Soil type, rainfall, current cover…" className={`${input} h-auto resize-y py-3`} /></label>
+            <button type="submit" disabled={submitting} className="col-span-1 h-[50px] rounded-[3px] bg-forest font-body text-[14.5px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:opacity-60 min-[520px]:col-span-2">
+              {submitting ? "Sending…" : "Request quote"}
+            </button>
+          </form>
         </div>
-      </div>
-    </div>
-  )
+      </Container>
+    </>
+  );
 }
