@@ -9,16 +9,8 @@ import { doc } from "firebase/firestore";
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const formSchema = z.object({
   displayName: z.string().min(2, "Name is required"),
@@ -41,44 +33,36 @@ export default function ProfilePage() {
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     if (!user || !auth.currentUser) return;
-
     try {
-      // Update auth profile
       if (auth.currentUser.displayName !== values.displayName) {
         await updateProfile(auth.currentUser, { displayName: values.displayName });
       }
-
-      // Update firestore document
-      const userDocRef = doc(firestore, 'users', user.uid);
+      const userDocRef = doc(firestore, "users", user.uid);
       updateDocumentNonBlocking(userDocRef, { displayName: values.displayName });
-
-      toast({
-        title: "Profile updated successfully!",
-      });
-    } catch (error: any) {
+      toast({ title: "Profile updated successfully!" });
+    } catch (error: unknown) {
       toast({
         variant: "destructive",
-        title: "Uh oh! Something went wrong.",
-        description: error.message,
+        title: "Something went wrong",
+        description: error instanceof Error ? error.message : "Please try again.",
       });
     }
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>My Profile</CardTitle>
-        <CardDescription>Manage your account settings.</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="max-w-[560px]">
+      <div className="mb-1 font-body text-[11px] font-bold uppercase tracking-[0.14em] text-gold-deep">Account</div>
+      <h1 className="m-0 mb-6 font-headline text-[clamp(24px,3vw,32px)] font-medium tracking-[-0.02em] text-ink">My profile</h1>
+
+      <div className="rounded-[4px] border border-line bg-cream-card p-6 shadow-lifted min-[560px]:p-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
             <FormField
               control={form.control}
               name="displayName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Full Name</FormLabel>
+                  <FormLabel>Full name</FormLabel>
                   <FormControl><Input {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
@@ -89,16 +73,17 @@ export default function ProfilePage() {
               name="email"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>Email address</FormLabel>
                   <FormControl><Input disabled {...field} /></FormControl>
                   <FormMessage />
+                  <p className="text-[12px] text-body-faint">Your email is used for sign-in and can’t be changed here.</p>
                 </FormItem>
               )}
             />
-            <Button type="submit">Save Changes</Button>
+            <Button type="submit">Save changes</Button>
           </form>
         </Form>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
