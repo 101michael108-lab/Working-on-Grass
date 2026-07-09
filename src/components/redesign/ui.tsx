@@ -38,14 +38,6 @@ export function Eyebrow({
   );
 }
 
-/** Cross-hatch fill used behind image placeholders in the design. */
-export const hatchCream: React.CSSProperties = {
-  backgroundImage: "repeating-linear-gradient(135deg,#ECE6D9 0 2px,#F4F0E5 2px 11px)",
-};
-export const hatchDark: React.CSSProperties = {
-  backgroundImage: "repeating-linear-gradient(135deg,#26382A 0 2px,#213024 2px 11px)",
-};
-
 /** Shared CTA class strings — compose onto <Link>/<a>/<button>. */
 export const ctaPrimary =
   "inline-flex items-center justify-center gap-2.5 rounded-[3px] bg-forest px-7 py-[15px] text-[14.5px] font-semibold text-ondark-bright no-underline transition-colors hover:bg-forest-dark";

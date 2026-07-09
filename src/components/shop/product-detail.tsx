@@ -10,7 +10,7 @@ import type { Product } from "@/lib/types";
 import { useCart } from "@/context/cart-context";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import ProductCard from "@/components/shop/ProductCard";
-import { Container, Eyebrow, hatchCream } from "@/components/redesign/ui";
+import { Container, Eyebrow } from "@/components/redesign/ui";
 
 const rand = (v: number) => "R" + v.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
@@ -83,11 +83,9 @@ export default function ProductDetail({
       <Container className="grid grid-cols-1 items-start gap-14 pb-[clamp(40px,5vw,64px)] pt-[clamp(32px,4vw,56px)] min-[880px]:grid-cols-[1.15fr_0.85fr]">
         {/* Gallery */}
         <div>
-          <div className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[4px] border border-line ${images.length ? "bg-white shadow-sunken" : ""}`} style={images.length ? undefined : hatchCream}>
-            {images.length ? (
+          <div className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-[4px] border border-line ${images.length ? "bg-white shadow-sunken" : "bg-cream-band"}`}>
+            {images.length > 0 && (
               <Image src={images[active] ?? images[0]} alt={product.name} fill sizes="(min-width:880px) 60vw, 100vw" priority className="object-contain p-6" />
-            ) : (
-              <span className="font-body text-[12px] font-semibold uppercase tracking-[0.12em] text-[#9A9784]">{product.category}</span>
             )}
           </div>
           {images.length > 1 && (

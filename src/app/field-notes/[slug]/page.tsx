@@ -7,7 +7,7 @@ import { getFieldNoteBySlug, getPublishedFieldNotes, formatNoteDate, readingMinu
 import { getAdminFirestore } from "@/lib/firebase-admin";
 import type { Product } from "@/lib/types";
 import { productUrl } from "@/lib/utils";
-import { Container, hatchCream } from "@/components/redesign/ui";
+import { Container } from "@/components/redesign/ui";
 import { FieldNoteBody } from "@/components/field-notes/field-note-body";
 import { FieldNoteCard } from "@/components/field-notes/field-note-card";
 
@@ -117,17 +117,13 @@ export default async function FieldNoteArticle({ params }: { params: Promise<{ s
       </Container>
 
       {/* Hero image */}
-      <Container className="pb-2 pt-9">
-        <div className="relative flex aspect-[21/9] items-center justify-center overflow-hidden rounded-[4px] border border-line" style={note.coverImageUrl ? undefined : hatchCream}>
-          {note.coverImageUrl ? (
+      {note.coverImageUrl && (
+        <Container className="pb-2 pt-9">
+          <div className="relative aspect-[21/9] overflow-hidden rounded-[4px] border border-line">
             <Image src={note.coverImageUrl} alt={note.title} fill sizes="(min-width:1240px) 1160px, 100vw" className="object-cover" priority />
-          ) : (
-            <span className="mb-8 rounded-[2px] border border-line-strong bg-[rgba(244,241,233,0.7)] px-3.5 py-2 font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-[#9A9784]">
-              {note.category}
-            </span>
-          )}
-        </div>
-      </Container>
+          </div>
+        </Container>
+      )}
 
       {/* Body */}
       <Container className="pb-[clamp(40px,5vw,64px)] pt-[clamp(36px,4vw,52px)]">
@@ -155,7 +151,7 @@ export default async function FieldNoteArticle({ params }: { params: Promise<{ s
 
           {product && (
             <div className="my-10 flex flex-wrap items-center gap-5 rounded-[4px] border border-line bg-cream-card p-5">
-              <Link href={productUrl(product)} className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-line no-underline" style={product.images?.[0] ? undefined : hatchCream}>
+              <Link href={productUrl(product)} className="relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-[3px] border border-line bg-white no-underline">
                 {product.images?.[0] ? <Image src={product.images[0]} alt={product.name} fill sizes="96px" className="object-contain p-2" /> : null}
               </Link>
               <div className="min-w-[180px] flex-1">
@@ -169,7 +165,7 @@ export default async function FieldNoteArticle({ params }: { params: Promise<{ s
 
           {/* Author bio */}
           <div className="mt-11 flex items-start gap-[18px] border-t border-line pt-8">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-line font-headline text-[22px] font-semibold text-forest" style={hatchCream}>F</div>
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full border border-line bg-cream-band font-headline text-[22px] font-semibold text-forest">F</div>
             <div>
               <div className="mb-1.5 font-body text-[10.5px] font-bold uppercase tracking-[0.14em] text-body-faint">Written by</div>
               <h3 className="m-0 mb-1.5 font-headline text-[19px] font-semibold text-ink">Frits van Oudtshoorn</h3>

@@ -3,7 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import { getPublishedFieldNotes, formatNoteDate, readingMinutes, type LoadedFieldNote } from "@/lib/field-notes";
-import { Container, Eyebrow, hatchCream } from "@/components/redesign/ui";
+import { Container, Eyebrow } from "@/components/redesign/ui";
 import { FieldNoteCard } from "@/components/field-notes/field-note-card";
 
 export const dynamic = "force-dynamic";
@@ -81,21 +81,25 @@ export default async function FieldNotesHub({
           {/* Featured */}
           {featured && (
             <Container className="pb-2 pt-[clamp(40px,5vw,56px)]">
-              <div className="grid grid-cols-1 border border-line bg-cream-card shadow-lifted min-[860px]:grid-cols-[1.1fr_0.9fr]">
-                <Link
-                  href={`/field-notes/${featured.slug}`}
-                  className="relative flex min-h-[300px] items-end justify-center overflow-hidden border-line no-underline min-[860px]:min-h-[340px] min-[860px]:border-r"
-                  style={featured.coverImageUrl ? undefined : hatchCream}
-                >
-                  {featured.coverImageUrl ? (
+              <div className={`grid grid-cols-1 border border-line bg-cream-card shadow-lifted ${featured.coverImageUrl ? "min-[860px]:grid-cols-[1.1fr_0.9fr]" : ""}`}>
+                {featured.coverImageUrl && (
+                  <Link
+                    href={`/field-notes/${featured.slug}`}
+                    className="relative overflow-hidden border-line no-underline min-[860px]:border-r"
+                  >
                     <Image src={featured.coverImageUrl} alt={featured.title} fill sizes="(min-width:860px) 55vw, 100vw" className="object-cover" priority />
-                  ) : null}
-                  <span className="absolute left-4 top-4 rounded-[2px] border border-gold-border bg-gold-bg px-2.5 py-1 font-body text-[10px] font-bold uppercase tracking-[0.1em] text-gold-text">
-                    Featured
-                  </span>
-                </Link>
+                    <span className="absolute left-4 top-4 rounded-[2px] border border-gold-border bg-gold-bg px-2.5 py-1 font-body text-[10px] font-bold uppercase tracking-[0.1em] text-gold-text">
+                      Featured
+                    </span>
+                  </Link>
+                )}
                 <div className="flex flex-col justify-center p-[clamp(28px,3vw,44px)]">
-                  <span className="mb-3 font-body text-[10.5px] font-semibold uppercase tracking-[0.16em] text-body-faint">{featured.category}</span>
+                  <div className="mb-3 flex items-center gap-2.5">
+                    {!featured.coverImageUrl && (
+                      <span className="rounded-[2px] border border-gold-border bg-gold-bg px-2.5 py-1 font-body text-[10px] font-bold uppercase tracking-[0.1em] text-gold-text">Featured</span>
+                    )}
+                    <span className="font-body text-[10.5px] font-semibold uppercase tracking-[0.16em] text-body-faint">{featured.category}</span>
+                  </div>
                   <h2 className="m-0 mb-3.5 font-headline text-[clamp(24px,2.6vw,32px)] font-semibold leading-[1.15] tracking-[-0.01em] text-ink">
                     <Link href={`/field-notes/${featured.slug}`} className="text-ink no-underline hover:text-forest">{featured.title}</Link>
                   </h2>

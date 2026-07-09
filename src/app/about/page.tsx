@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { useMedia } from "@/context/media-context";
-import { Container, Eyebrow, ctaPrimary, ctaOutline, hatchDark } from "@/components/redesign/ui";
+import { Container, Eyebrow, ctaPrimary, ctaOutline } from "@/components/redesign/ui";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://workingongrass.co.za";
 
@@ -63,16 +63,9 @@ export default function AboutPage() {
       <section className="bg-forest-bark text-ondark">
         <Container>
           <div className="grid grid-cols-1 min-[940px]:grid-cols-[0.9fr_1.1fr]">
-            <div
-              className="relative flex min-h-[300px] items-end justify-center overflow-hidden min-[940px]:min-h-[460px] min-[940px]:border-r min-[940px]:border-[rgba(237,239,232,0.14)]"
-              style={aboutImage ? undefined : hatchDark}
-            >
-              {aboutImage ? (
+            <div className="relative min-h-[300px] overflow-hidden bg-[rgba(255,255,255,0.03)] min-[940px]:min-h-[460px] min-[940px]:border-r min-[940px]:border-[rgba(237,239,232,0.14)]">
+              {aboutImage && (
                 <Image src={aboutImage.imageUrl} alt={aboutImage.description || "Frits van Oudtshoorn"} fill sizes="(min-width:940px) 42vw, 100vw" className="object-cover" priority />
-              ) : (
-                <span className="mb-10 rounded-[2px] border border-[rgba(237,239,232,0.2)] px-[15px] py-2 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8AA08B]">
-                  Portrait — Frits van Oudtshoorn
-                </span>
               )}
             </div>
             <div className="flex flex-col justify-center py-[clamp(48px,6vw,80px)] min-[940px]:pl-16">

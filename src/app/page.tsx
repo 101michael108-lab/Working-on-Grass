@@ -19,8 +19,6 @@ import {
   ctaPrimary,
   ctaOutline,
   ctaLight,
-  hatchCream,
-  hatchDark,
 } from "@/components/redesign/ui";
 
 const WA_CONSULT =
@@ -76,11 +74,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div
-            className="relative flex min-h-[300px] items-end justify-center overflow-hidden border-line min-[940px]:min-h-[520px] min-[940px]:border-l"
-            style={heroImage ? undefined : hatchCream}
-          >
-            {heroImage ? (
+          <div className="relative min-h-[300px] overflow-hidden border-line bg-cream-band min-[940px]:min-h-[520px] min-[940px]:border-l">
+            {heroImage && (
               <Image
                 src={heroImage.imageUrl}
                 alt={heroImage.description || "Open veld under a clear South African sky"}
@@ -89,10 +84,6 @@ export default function Home() {
                 sizes="(min-width:940px) 47vw, 100vw"
                 className="object-cover"
               />
-            ) : (
-              <span className="mb-10 rounded-[2px] border border-line-strong bg-[rgba(244,241,233,0.75)] px-[15px] py-2 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8C9484]">
-                Field photo — open veld
-              </span>
             )}
           </div>
         </div>
@@ -137,11 +128,8 @@ export default function Home() {
       <section className="mt-[60px] border-t border-line bg-forest-bark text-ondark">
         <Container>
           <div className="grid grid-cols-1 min-[940px]:grid-cols-[0.85fr_1.15fr]">
-            <div
-              className="relative flex min-h-[340px] items-end justify-center overflow-hidden min-[940px]:min-h-[520px] min-[940px]:border-r min-[940px]:border-[rgba(237,239,232,0.14)]"
-              style={aboutImage ? undefined : hatchDark}
-            >
-              {aboutImage ? (
+            <div className="relative min-h-[340px] overflow-hidden bg-[rgba(255,255,255,0.03)] min-[940px]:min-h-[520px] min-[940px]:border-r min-[940px]:border-[rgba(237,239,232,0.14)]">
+              {aboutImage && (
                 <Image
                   src={aboutImage.imageUrl}
                   alt={aboutImage.description || "Frits van Oudtshoorn"}
@@ -149,10 +137,6 @@ export default function Home() {
                   sizes="(min-width:940px) 40vw, 100vw"
                   className="object-cover"
                 />
-              ) : (
-                <span className="mb-10 rounded-[2px] border border-[rgba(237,239,232,0.2)] px-[15px] py-2 font-body text-[11px] font-semibold uppercase tracking-[0.14em] text-[#8AA08B]">
-                  Portrait — Frits van Oudtshoorn
-                </span>
               )}
             </div>
             <div className="flex flex-col justify-center py-14 min-[940px]:py-20 min-[940px]:pl-16">

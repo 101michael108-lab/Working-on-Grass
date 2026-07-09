@@ -10,7 +10,7 @@ import type { SiteSettings } from "@/lib/types";
 import { calculateOrderShipping } from "@/lib/shipping";
 import { productUrl } from "@/lib/utils";
 import { Minus, Plus, Trash2, ShieldCheck } from "lucide-react";
-import { Container, hatchCream } from "@/components/redesign/ui";
+import { Container } from "@/components/redesign/ui";
 
 /** Editable quantity that only commits a valid number on blur/Enter. */
 function QtyInput({ value, onCommit }: { value: number; onCommit: (n: number) => void }) {
@@ -69,7 +69,6 @@ export default function CartPage() {
                   <Link
                     href={productUrl(product)}
                     className="relative h-20 w-20 shrink-0 overflow-hidden rounded-[3px] border border-line bg-white no-underline"
-                    style={product.images?.[0] ? undefined : hatchCream}
                   >
                     {product.images?.[0] && (
                       <Image src={product.images[0]} alt={product.name} fill sizes="80px" className="object-contain p-1.5" />

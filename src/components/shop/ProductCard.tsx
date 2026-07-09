@@ -6,7 +6,6 @@ import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { productUrl } from '@/lib/utils';
-import { hatchCream } from '@/components/redesign/ui';
 
 // First plain-text paragraph — skip bullet lines.
 function getTeaser(description: string): string {
@@ -38,10 +37,9 @@ export default function ProductCard({ product }: { product: Product }) {
     <div className="group relative flex flex-col border border-line bg-cream-card shadow-lifted transition-[box-shadow,border-color] duration-200 animate-wog-fade hover:border-line-strong hover:shadow-lifted-lg">
       {/* Image (whole card is clickable via the stretched title link) */}
       <div
-        className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-line ${img ? 'bg-white shadow-sunken' : ''}`}
-        style={img ? undefined : hatchCream}
+        className={`relative flex aspect-[4/3] items-center justify-center overflow-hidden border-b border-line ${img ? 'bg-white shadow-sunken' : 'bg-cream-band'}`}
       >
-        {img ? (
+        {img && (
           <Image
             src={img}
             alt={product.name}
@@ -49,10 +47,6 @@ export default function ProductCard({ product }: { product: Product }) {
             sizes="(min-width:940px) 33vw, (min-width:640px) 50vw, 100vw"
             className={`object-contain p-5 ${isOutOfStock ? 'opacity-60 grayscale' : ''}`}
           />
-        ) : (
-          <span className="font-body text-[11px] font-semibold uppercase tracking-[0.12em] text-[#A2A492]">
-            {product.category}
-          </span>
         )}
         {isOutOfStock ? (
           <span className="absolute right-3 top-3 z-[1] rounded-[2px] border border-gold-border bg-gold-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-gold-text">

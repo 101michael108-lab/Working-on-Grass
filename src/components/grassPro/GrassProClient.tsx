@@ -15,7 +15,7 @@ import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useMedia } from "@/context/media-context";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Container, Eyebrow, hatchDark, ctaPrimary } from "@/components/redesign/ui";
+import { Container, Eyebrow, ctaPrimary } from "@/components/redesign/ui";
 
 const PLAY_STORE = "https://play.google.com/store/apps/details?id=za.co.highbranching.grasspro";
 const APP_STORE = "https://apps.apple.com/za/app/grasspro/id1586118050";
@@ -85,7 +85,7 @@ export function GrassProClient() {
         ) : isLoading ? (
           <Skeleton className="h-[540px] w-[270px] rounded-none" />
         ) : (
-          <div className="flex h-[540px] w-[270px] items-center justify-center" style={hatchDark}><span className="text-[12px] text-ondark-mute">App screenshot</span></div>
+          <div className="h-[540px] w-[270px] bg-[#12180f]" />
         )}
       </div>
     </div>
@@ -110,7 +110,7 @@ export function GrassProClient() {
               ))}
             </div>
           </div>
-          <div className="flex items-end justify-center py-10 min-[940px]:py-[clamp(40px,5vw,64px)]" style={hatchDark}>
+          <div className="flex items-end justify-center py-10 min-[940px]:py-[clamp(40px,5vw,64px)]">
             <Phone priority />
           </div>
         </Container>
