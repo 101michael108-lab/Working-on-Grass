@@ -13,6 +13,7 @@ import { LanguageProvider } from "@/context/language-context";
 import { initializeFirebase } from "@/firebase";
 import { doc, getDoc } from "firebase/firestore";
 import { Spectral, Archivo, JetBrains_Mono } from "next/font/google";
+import Script from "next/script";
 
 const spectral = Spectral({ subsets: ["latin"], weight: ["400", "500", "600", "700"], style: ["normal", "italic"], variable: "--font-headline", display: "swap" });
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body", display: "swap" });
@@ -150,6 +151,17 @@ export default function RootLayout({
         />
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
+        {/* Google Ads global site tag (gtag.js) */}
+        <Script
+          src="https://www.googletagmanager.com/gtag/js?id=AW-18311112344"
+          strategy="afterInteractive"
+        />
+        <Script id="google-ads-gtag" strategy="afterInteractive">
+          {`window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'AW-18311112344');`}
+        </Script>
         <FirebaseClientProvider>
           <LanguageProvider>
           <MediaProvider>
