@@ -174,8 +174,8 @@ export async function POST(req: NextRequest) {
     // raw ids when no token secret is configured).
     const invoiceToken = signInvoiceToken(orderId, uid);
     const successQuery = invoiceToken
-      ? `orderId=${orderId}&t=${encodeURIComponent(invoiceToken)}&n=${orderNumber}`
-      : `orderId=${orderId}&uid=${uid}&n=${orderNumber}`;
+      ? `orderId=${orderId}&t=${encodeURIComponent(invoiceToken)}&n=${orderNumber}&amt=${total.toFixed(2)}`
+      : `orderId=${orderId}&uid=${uid}&n=${orderNumber}&amt=${total.toFixed(2)}`;
 
     const payfastData: Record<string, string> = {
       merchant_id: merchantId,

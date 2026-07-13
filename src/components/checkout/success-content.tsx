@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Check } from "lucide-react";
@@ -12,7 +13,43 @@ export default function SuccessContent() {
   const uid = sp.get("uid");
   const invoiceToken = sp.get("t");
   const orderNumber = sp.get("n");
+  const amt = sp.get("amt");
   const trackingRef = orderNumber || orderId;
+
+  // Report the completed purchase to Google Ads — once per order (guarded
+  // against refreshes) and with the real order total so ROAS is accurate.
+  useEffect(() => {
+    const txnId = orderNumber || orderId;
+    if (!txnId) return;
+    const key = `wog_conv_${txnId}`;
+    try {
+      if (sessionStorage.getItem(key)) return;
+    } catch {
+      /* sessionStorage unavailable — fall through and fire anyway */
+    }
+    const w = window as unknown as {
+      dataLayer?: unknown[];
+      gtag?: (...args: unknown[]) => void;
+    };
+    w.dataLayer = w.dataLayer || [];
+    if (typeof w.gtag !== "function") {
+      w.gtag = function gtag() {
+        // eslint-disable-next-line prefer-rest-params
+        (w.dataLayer as unknown[]).push(arguments);
+      };
+    }
+    const value = amt ? Number(amt) : NaN;
+    w.gtag("event", "conversion", {
+      send_to: "AW-18311112344/qnCiCKGz3c8cEJjNtZtE",
+      ...(Number.isFinite(value) ? { value, currency: "ZAR" } : {}),
+      transaction_id: txnId,
+    });
+    try {
+      sessionStorage.setItem(key, "1");
+    } catch {
+      /* ignore */
+    }
+  }, [orderNumber, orderId, amt]);
 
   return (
     <div className="bg-cream">
