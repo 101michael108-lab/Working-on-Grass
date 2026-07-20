@@ -10,10 +10,9 @@ import { FirebaseClientProvider } from "@/firebase/client-provider";
 import { MediaProvider } from "@/context/media-context";
 import { WhatsAppButton } from "@/components/whatsapp-button";
 import { LanguageProvider } from "@/context/language-context";
-import { initializeFirebase } from "@/firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { Analytics } from "@/components/analytics";
+import { getSiteImages } from "@/lib/site-images";
 import { Spectral, Archivo, JetBrains_Mono } from "next/font/google";
-import Script from "next/script";
 
 const spectral = Spectral({ subsets: ["latin"], weight: ["400", "500", "600", "700"], style: ["normal", "italic"], variable: "--font-headline", display: "swap" });
 const archivo = Archivo({ subsets: ["latin"], weight: ["400", "500", "600", "700"], variable: "--font-body", display: "swap" });
@@ -24,17 +23,10 @@ export const viewport: Viewport = {
 };
 
 export async function generateMetadata(): Promise<Metadata> {
-  const { firestore } = initializeFirebase();
-  let faviconUrl = "/favicon.ico";
-
-  try {
-    const faviconSnap = await getDoc(doc(firestore, 'siteImages', 'favicon'));
-    if (faviconSnap.exists()) {
-      faviconUrl = faviconSnap.data().imageUrl;
-    }
-  } catch (error) {
-    console.warn("Layout: Failed to fetch dynamic favicon, using fallback.", error);
-  }
+  // Shares the cached `siteImages` read with RootLayout below — one fetch, not two.
+  const siteImages = await getSiteImages();
+  const faviconUrl =
+    siteImages.find((image) => image.id === "favicon")?.imageUrl ?? "/favicon.ico";
 
   return {
     metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za'),
@@ -61,11 +53,13 @@ export async function generateMetadata(): Promise<Metadata> {
   };
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const siteImages = await getSiteImages();
+
   const organizationJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'LocalBusiness',
@@ -151,20 +145,11 @@ export default function RootLayout({
         />
       </head>
       <body className={cn("min-h-screen bg-background font-body antialiased")}>
-        {/* Google Ads global site tag (gtag.js) */}
-        <Script
-          src="https://www.googletagmanager.com/gtag/js?id=AW-18311112344"
-          strategy="afterInteractive"
-        />
-        <Script id="google-ads-gtag" strategy="afterInteractive">
-          {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', 'AW-18311112344');`}
-        </Script>
+        {/* Google Ads conversions + GA4, on one deferred tag. See components/analytics.tsx. */}
+        <Analytics />
         <FirebaseClientProvider>
           <LanguageProvider>
-          <MediaProvider>
+          <MediaProvider initialImages={siteImages}>
             <CartProvider>
               <div className="flex min-h-screen flex-col">
                 <Header />

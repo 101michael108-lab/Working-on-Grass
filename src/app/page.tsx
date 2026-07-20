@@ -1,15 +1,11 @@
-"use client";
-
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 
-import { useMedia } from "@/context/media-context";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, limit, orderBy } from "firebase/firestore";
+import { getSiteImages } from "@/lib/site-images";
+import { listPublicCollection } from "@/lib/firestore-rest";
 import type { Product } from "@/lib/types";
 import ProductCard from "@/components/shop/ProductCard";
-import { Skeleton } from "@/components/ui/skeleton";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import {
   Container,
@@ -24,17 +20,19 @@ import {
 const WA_CONSULT =
   "https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation.";
 
-export default function Home() {
-  const { getImage } = useMedia();
-  const heroImage = getImage("hero");
-  const aboutImage = getImage("about-frits");
+// This page is a server component on purpose. It used to be `"use client"`, which
+// meant the hero image, the portrait and the featured products all arrived only
+// after hydration + a Firestore round-trip — the LCP image did not exist in the
+// initial HTML at all. Reading both collections here ships real markup instead.
+export default async function Home() {
+  const [siteImages, featured] = await Promise.all([
+    getSiteImages(),
+    // Mirrors the old client query: orderBy("name"), limit(3).
+    listPublicCollection<Product>("products", { pageSize: 3, orderBy: "name" }),
+  ]);
 
-  const firestore = useFirestore();
-  const featuredQuery = useMemoFirebase(
-    () => query(collection(firestore, "products"), orderBy("name"), limit(3)),
-    [firestore]
-  );
-  const { data: featured, isLoading } = useCollection<Omit<Product, "id">>(featuredQuery);
+  const heroImage = siteImages.find((image) => image.id === "hero") ?? null;
+  const aboutImage = siteImages.find((image) => image.id === "about-frits") ?? null;
 
   return (
     <div className="bg-cream">
@@ -80,7 +78,11 @@ export default function Home() {
                 src={heroImage.imageUrl}
                 alt={heroImage.description || "Open veld under a clear South African sky"}
                 fill
+                // This is the LCP element. `priority` emits the preload; the explicit
+                // fetchPriority marks the request itself as high so it isn't queued
+                // behind the stylesheet and hydration chunks.
                 priority
+                fetchPriority="high"
                 sizes="(min-width:940px) 47vw, 100vw"
                 className="object-cover"
               />
@@ -118,9 +120,9 @@ export default function Home() {
           <InlineArrowLink href="/shop">View all</InlineArrowLink>
         </div>
         <div className="grid grid-cols-1 gap-[26px] min-[560px]:grid-cols-2 min-[880px]:grid-cols-3">
-          {isLoading
-            ? Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-[420px]" />)
-            : featured?.map((p) => <ProductCard key={p.id} product={p as Product} />)}
+          {featured.map((p) => (
+            <ProductCard key={p.id} product={p} />
+          ))}
         </div>
       </Container>
 
