@@ -8,7 +8,6 @@ import {
 } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/context/cart-context";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import ProductCard from "@/components/shop/ProductCard";
 import { Container, Eyebrow } from "@/components/redesign/ui";
 import { formatRand } from "@/lib/utils";
@@ -75,10 +74,6 @@ export default function ProductDetail({
     : /tool|meter|instrument|measurement/i.test(product.category)
     ? "instrument"
     : "book";
-
-  const waHref =
-    "https://wa.me/27782280008?text=" +
-    encodeURIComponent(`Hi Frits, I have a question about the ${product.name}.`);
 
   return (
     <div className="bg-cream">
@@ -181,11 +176,6 @@ export default function ProductDetail({
               {inStock ? `Add to cart · ${formatRand(unitPrice * qty)}` : "Sold out"}
             </button>
           </div>
-
-          <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-3 flex h-[46px] items-center justify-center gap-2.5 rounded-[3px] border border-line-strong text-[13.5px] font-semibold text-forest no-underline transition-colors hover:border-forest">
-            <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
-            Ask Frits about this product
-          </a>
 
           {/* Trust row */}
           <div className="mt-[26px] flex flex-col gap-[11px] border-t border-line pt-[22px]">
