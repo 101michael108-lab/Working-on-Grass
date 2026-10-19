@@ -27,6 +27,8 @@ export type Product = {
   id: string;
   name: string;
   price: number;
+  /** Discounted price. When set below `price`, customers pay this and `price` is shown struck through. */
+  salePrice?: number;
   stock: number;
   /** When set, overrides the store-wide shipping fee from Settings for this product. */
   shippingFee?: number;
@@ -125,6 +127,11 @@ export type Inquiry = {
     service?: string;
     message?: string;
     needs?: string;
+    /** Seed quotes: hectares to plant and purpose. */
+    farmSize?: string;
+    primaryUse?: string;
+    /** Consultations: property size in hectares. */
+    propertySize?: string;
     submissionDate: any; // Firestore Timestamp
     type: 'contact' | 'consultation';
 };

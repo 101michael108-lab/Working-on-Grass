@@ -1,10 +1,6 @@
-"use client";
-
 import ShopClient from "@/components/shop/ShopClient";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
-import { collection, query, orderBy } from "firebase/firestore";
-import type { Product } from "@/lib/types";
-import { Skeleton } from "@/components/ui/skeleton";
+import ShopClientFallback from "@/components/shop/ShopClientFallback";
+import { getProducts } from "@/lib/products";
 import Link from "next/link";
 import { Container } from "@/components/redesign/ui";
 
@@ -16,13 +12,16 @@ function SeedIcon({ className }: { className?: string }) {
   );
 }
 
-export default function ShopPage() {
-  const firestore = useFirestore();
-  const productsQuery = useMemoFirebase(
-    () => query(collection(firestore, "products"), orderBy("name")),
-    [firestore]
-  );
-  const { data: products, isLoading } = useCollection<Omit<Product, "id">>(productsQuery);
+// Server component on purpose (it used to be "use client" + a client Firestore
+// query): the catalogue now arrives in the HTML, so the grid shows immediately on
+// slow connections and search engines can see every product and price.
+export default async function ShopPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ category?: string | string[] }>;
+}) {
+  const [products, { category }] = await Promise.all([getProducts(), searchParams]);
+  const initialCategory = typeof category === "string" ? category : undefined;
 
   return (
     <div className="bg-cream">
@@ -61,17 +60,11 @@ export default function ShopPage() {
 
       {/* Body */}
       <Container className="pb-[clamp(56px,7vw,90px)] pt-[34px]">
-        {isLoading ? (
-          <div className="grid gap-11 min-[940px]:grid-cols-[210px_1fr]">
-            <Skeleton className="hidden h-[280px] min-[940px]:block" />
-            <div className="grid grid-cols-1 gap-6 min-[560px]:grid-cols-2 min-[880px]:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-[420px]" />
-              ))}
-            </div>
-          </div>
+        {products.length > 0 ? (
+          <ShopClient products={products} initialCategory={initialCategory} />
         ) : (
-          <ShopClient products={products || []} />
+          // Server read failed (it returns [] rather than throwing): load in the browser instead.
+          <ShopClientFallback initialCategory={initialCategory} />
         )}
       </Container>
     </div>

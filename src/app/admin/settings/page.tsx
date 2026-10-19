@@ -44,7 +44,8 @@ export default function AdminSettingsPage() {
         contactEmail: settings.contactEmail || "admin@workingongrass.co.za",
         senderEmail: settings.senderEmail || "",
         vatNumber: settings.vatNumber || "",
-        shippingFee: settings.shippingFee || 150,
+        // ?? not ||: a deliberate R0 (free delivery) must survive the next save.
+        shippingFee: settings.shippingFee ?? 150,
         payfastMerchantId: settings.payfastMerchantId || "",
         payfastMerchantKey: settings.payfastMerchantKey || "",
         isLiveMode: settings.isLiveMode || false,

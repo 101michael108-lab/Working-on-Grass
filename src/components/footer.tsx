@@ -10,8 +10,10 @@ const exploreLinks = [
   { href: "/consulting", label: "Consulting" },
   { href: "/shop", label: "Shop" },
   { href: "/seeds", label: "Seeds" },
+  { href: "/grassPro", label: "GrassPro" },
   { href: "/field-notes", label: "Field Notes" },
   { href: "/resources", label: "Resources" },
+  { href: "/contact", label: "Contact" },
 ];
 
 export function Footer() {

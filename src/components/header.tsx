@@ -28,14 +28,21 @@ const navLinks = [
   { href: "/grassPro", label: "GrassPro" },
   { href: "/field-notes", label: "Field Notes" },
   { href: "/resources", label: "Resources" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
 ];
+// The logo already links home, so desktop drops "Home" to make room.
+const desktopNavLinks = navLinks.filter((link) => link.href !== "/");
 
 export function Header() {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = React.useState(false);
   const { cartItems } = useCart();
   const cartItemCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
-  const { user } = useUser();
+  const { user: authUser } = useUser();
+  // A guest-checkout (anonymous) session is not a login: show "Log in", not a
+  // nameless "User" menu.
+  const user = authUser && !authUser.isAnonymous ? authUser : null;
   const auth = useAuth();
   const isAdmin = useIsAdmin();
 
@@ -56,8 +63,8 @@ export function Header() {
         <Logo variant="onDark" />
 
         {/* Desktop nav */}
-        <nav className="hidden items-center gap-[22px] text-[13.5px] font-medium min-[940px]:flex">
-          {navLinks.map((link) => (
+        <nav className="hidden items-center gap-[14px] whitespace-nowrap text-[13.5px] font-medium min-[940px]:flex min-[1120px]:gap-[22px]">
+          {desktopNavLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -162,12 +169,14 @@ export function Header() {
               Log out
             </button>
           ) : (
+            // Nobody needs an account to buy, so the prominent button is the
+            // highest-value action (a consultation), and log-in is secondary.
             <div className="mt-3 flex flex-col gap-2">
-              <Link href="/login" prefetch={false} onClick={() => setMenuOpen(false)} className="rounded-[3px] bg-gold py-3 text-center text-[14px] font-semibold text-forest-dark no-underline">
-                Log in
+              <Link href="/consulting#request" prefetch={false} onClick={() => setMenuOpen(false)} className="rounded-[3px] bg-gold py-3 text-center text-[14px] font-semibold text-forest-dark no-underline">
+                Request a consultation
               </Link>
-              <Link href="/signup" prefetch={false} onClick={() => setMenuOpen(false)} className="rounded-[3px] border border-[rgba(237,239,232,0.25)] py-3 text-center text-[14px] font-semibold text-[#EDEFE8] no-underline">
-                Sign up
+              <Link href="/login" prefetch={false} onClick={() => setMenuOpen(false)} className="rounded-[3px] border border-[rgba(237,239,232,0.25)] py-3 text-center text-[14px] font-semibold text-[#EDEFE8] no-underline">
+                Log in
               </Link>
             </div>
           )}

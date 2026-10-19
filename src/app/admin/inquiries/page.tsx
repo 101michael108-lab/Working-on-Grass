@@ -171,6 +171,25 @@ export default function AdminInquiriesPage() {
                                 </div>
                             </div>
 
+                            {(selectedInquiry.farmSize || selectedInquiry.propertySize || selectedInquiry.primaryUse) && (
+                                <div className="grid grid-cols-2 gap-4">
+                                    {(selectedInquiry.farmSize || selectedInquiry.propertySize) && (
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">
+                                                {selectedInquiry.farmSize ? 'Area to plant' : 'Property size'}
+                                            </p>
+                                            <p className="text-sm font-medium">{selectedInquiry.farmSize || selectedInquiry.propertySize} ha</p>
+                                        </div>
+                                    )}
+                                    {selectedInquiry.primaryUse && (
+                                        <div className="space-y-1">
+                                            <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Purpose</p>
+                                            <p className="text-sm font-medium">{selectedInquiry.primaryUse}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
                             <div className="space-y-2">
                                 <p className="text-[10px] font-bold uppercase text-muted-foreground tracking-widest">Interested In</p>
                                 <div className="bg-secondary/30 p-3 rounded border text-sm font-medium">

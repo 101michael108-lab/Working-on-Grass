@@ -4,6 +4,7 @@ import { getAdminFirestore, getAdminAuth, hasAdminCredentials } from '@/lib/fire
 import { generatePayfastSignature } from '@/lib/payfast-signature';
 import { getPayfastPassphrase, isSandboxMerchantId } from '@/lib/payfast-config';
 import { calculateOrderShipping } from '@/lib/shipping';
+import { getUnitPrice } from '@/lib/pricing';
 import { signInvoiceToken } from '@/lib/invoice-token';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import { ORDER_NUMBER_START } from '@/lib/order-number';
@@ -102,7 +103,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'A product in your cart is no longer available.' }, { status: 400 });
       }
       const p = snap.data() as Product;
-      const price = Number(p.price);
+      const price = getUnitPrice(p); // sale price when a discount is set
       if (!Number.isFinite(price) || price < 0) {
         return NextResponse.json({ error: `Invalid price for ${p.name}.` }, { status: 400 });
       }
@@ -181,14 +182,15 @@ export async function POST(req: NextRequest) {
       merchant_id: merchantId,
       merchant_key: merchantKey,
       return_url: `${base}/checkout/success?${successQuery}`,
-      cancel_url: `${base}/cart`,
+      cancel_url: `${base}/cart?payment=cancelled`,
       notify_url: `${base}/api/payfast-itn`,
       name_first: shippingInfo.firstName,
       name_last: shippingInfo.lastName,
       email_address: shippingInfo.email,
       m_payment_id: orderId,
       amount: total.toFixed(2),
-      item_name: `${storeName} - Order #${orderId.substring(0, 8)}`,
+      // Same reference the customer sees in their email and on the success page.
+      item_name: `${storeName} - Order #${orderNumber}`,
       custom_str1: uid,
     };
     payfastData.signature = generatePayfastSignature(payfastData, getPayfastPassphrase(isLive));

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   isPayfastPaymentComplete,
+  isPayfastPaymentPending,
   verifyItnSignature,
   getPayfastValidateUrl,
 } from './payfast-itn';
@@ -10,6 +11,14 @@ describe('payfast-itn', () => {
     expect(isPayfastPaymentComplete('COMPLETE')).toBe(true);
     expect(isPayfastPaymentComplete('complete')).toBe(true);
     expect(isPayfastPaymentComplete('PENDING')).toBe(false);
+  });
+
+  it('detects PENDING (not-yet-settled) payment status', () => {
+    expect(isPayfastPaymentPending('PENDING')).toBe(true);
+    expect(isPayfastPaymentPending(' pending ')).toBe(true);
+    expect(isPayfastPaymentPending('COMPLETE')).toBe(false);
+    expect(isPayfastPaymentPending('CANCELLED')).toBe(false);
+    expect(isPayfastPaymentPending(undefined)).toBe(false);
   });
 
   it('uses validate URLs for live vs sandbox', () => {

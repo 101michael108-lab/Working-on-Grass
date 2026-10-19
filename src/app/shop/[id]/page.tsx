@@ -1,11 +1,11 @@
 import React from 'react';
 import { Metadata, ResolvingMetadata } from 'next';
-import { initializeFirebase } from '@/firebase';
-import { doc, getDoc } from 'firebase/firestore';
 import ProductPageContent from './product-page-content';
 import { notFound } from 'next/navigation';
 import { extractProductId, productUrl } from '@/lib/utils';
+import { getGlobalShippingFee, getProduct, getProducts } from '@/lib/products';
 import type { Product } from '@/lib/types';
+import { getUnitPrice } from '@/lib/pricing';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -18,22 +18,26 @@ export async function generateMetadata(
   parent: ResolvingMetadata
 ): Promise<Metadata> {
   const { id } = await params;
-  const docId = extractProductId(id);
-  const { firestore } = initializeFirebase();
-  const docSnap = await getDoc(doc(firestore, 'products', docId));
+  // Same cached fetch as the page body below, so this costs no extra read.
+  const product = await getProduct(extractProductId(id));
 
-  if (!docSnap.exists()) {
+  if (product === null) {
     return { title: 'Product Not Found' };
   }
+  if (!product) {
+    // Read failed: the page still renders client-side, just without rich metadata.
+    return { title: 'Shop' };
+  }
 
-  const product = { id: docSnap.id, ...docSnap.data() } as Product;
   const path = productUrl(product);
   const description = product.description?.substring(0, 160) ?? '';
   const image = product.images?.[0];
   const previousImages = (await parent).openGraph?.images || [];
 
   return {
-    title: product.name,
+    // Absolute so the brand is always appended (the shop layout's own title
+    // otherwise stops the root "%s | Working on Grass" template reaching here).
+    title: { absolute: `${product.name} | Working on Grass` },
     description,
     alternates: {
       canonical: path,
@@ -51,12 +55,23 @@ export async function generateMetadata(
 export default async function ProductPage({ params }: Props) {
   const { id } = await params;
   const docId = extractProductId(id);
-  const { firestore } = initializeFirebase();
-  const docSnap = await getDoc(doc(firestore, 'products', docId));
+  const [product, allProducts, globalShippingFee] = await Promise.all([
+    getProduct(docId),
+    getProducts(),
+    getGlobalShippingFee(),
+  ]);
 
-  if (!docSnap.exists()) notFound();
+  if (product === null) notFound();
 
-  const product = { id: docSnap.id, ...docSnap.data() } as Product;
+  // The read failed: fall back to the old client-side fetch rather than 404/500.
+  if (!product) {
+    return <ProductPageContent productId={docId} />;
+  }
+
+  const related: Product[] | undefined = allProducts.length
+    ? allProducts.filter((p) => p.category === product.category && p.id !== product.id).slice(0, 3)
+    : undefined;
+
   const path = productUrl(product);
   const inStock = (product.stock ?? 0) > 0;
 
@@ -74,7 +89,7 @@ export default async function ProductPage({ params }: Props) {
     offers: {
       '@type': 'Offer',
       priceCurrency: 'ZAR',
-      price: product.price.toFixed(2),
+      price: getUnitPrice(product).toFixed(2),
       availability: inStock
         ? 'https://schema.org/InStock'
         : 'https://schema.org/OutOfStock',
@@ -106,7 +121,12 @@ export default async function ProductPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <ProductPageContent productId={docId} />
+      <ProductPageContent
+        productId={docId}
+        initialProduct={product}
+        initialRelated={related}
+        globalShippingFee={globalShippingFee}
+      />
     </>
   );
 }

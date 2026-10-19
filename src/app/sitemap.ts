@@ -4,6 +4,10 @@ import { collection, getDocs } from 'firebase/firestore';
 import { slugify } from '@/lib/utils';
 import { getPublishedFieldNotes } from '@/lib/field-notes';
 
+// Rebuild hourly rather than once per deploy, so new products and Field Notes
+// appear without waiting for the next release.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://workingongrass.co.za';
   const { firestore } = initializeFirebase();

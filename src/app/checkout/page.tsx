@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
 import * as z from "zod";
-import { useCart } from "@/context/cart-context";
+import { useLiveCart } from "@/context/cart-context";
 import { useToast } from "@/hooks/use-toast";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -13,8 +13,10 @@ import { useState, useRef, useEffect } from "react";
 import { signInAnonymously } from "firebase/auth";
 import type { SiteSettings } from "@/lib/types";
 import { ShieldCheck, User } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, formatRand } from "@/lib/utils";
 import { calculateOrderShipping } from "@/lib/shipping";
+import { getSalePrice, getUnitPrice } from "@/lib/pricing";
+import { toGaItem, track } from "@/lib/analytics";
 import { Container } from "@/components/redesign/ui";
 
 const formSchema = z
@@ -61,7 +63,7 @@ const INPUT =
   "h-11 w-full rounded-[3px] border border-line-strong bg-cream-card px-3.5 font-body text-[14px] text-ink outline-none placeholder:text-body-faint focus:border-forest";
 
 function Field({
-  form, name, label, type = "text", placeholder, optional, full,
+  form, name, label, type = "text", placeholder, optional, full, autoComplete, inputMode,
 }: {
   form: UseFormReturn<Values>;
   name: keyof Values;
@@ -70,6 +72,9 @@ function Field({
   placeholder?: string;
   optional?: boolean;
   full?: boolean;
+  /** Lets phones autofill the field (e.g. "given-name", "postal-code"). */
+  autoComplete?: string;
+  inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"];
 }) {
   const err = form.formState.errors[name];
   return (
@@ -78,14 +83,14 @@ function Field({
         {label}
         {optional && <span className="font-normal text-body-faint"> (optional)</span>}
       </span>
-      <input type={type} placeholder={placeholder} {...form.register(name as any)} className={INPUT} />
+      <input type={type} placeholder={placeholder} autoComplete={autoComplete} inputMode={inputMode} {...form.register(name as any)} className={INPUT} />
       {err && <span className="text-[11.5px] text-destructive">{String(err.message)}</span>}
     </label>
   );
 }
 
 export default function CheckoutPage() {
-  const { cartItems, clearCart, isHydrated } = useCart();
+  const { cartItems, isHydrated } = useLiveCart();
   const { toast } = useToast();
   const router = useRouter();
   const { user } = useUser();
@@ -101,7 +106,8 @@ export default function CheckoutPage() {
 
   const globalShippingFee = settings?.shippingFee ?? 150;
   const shippingFee = calculateOrderShipping(cartItems, globalShippingFee);
-  const subtotal = cartItems.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
+  const subtotal = cartItems.reduce((sum, item) => sum + getUnitPrice(item.product) * item.quantity, 0);
+  const savings = cartItems.reduce((sum, item) => sum + (Number(item.product.price) - getUnitPrice(item.product)) * item.quantity, 0);
   const total = subtotal + shippingFee;
 
   const form = useForm<Values>({
@@ -135,6 +141,30 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (payfastConfig && payfastFormRef.current) payfastFormRef.current.submit();
   }, [payfastConfig]);
+
+  // Funnel step for GA4: reached checkout with a non-empty cart (once per visit).
+  const beganCheckout = useRef(false);
+  useEffect(() => {
+    if (!isHydrated || cartItems.length === 0 || beganCheckout.current) return;
+    beganCheckout.current = true;
+    track("begin_checkout", {
+      currency: "ZAR",
+      value: subtotal,
+      items: cartItems.map(({ product, quantity }) => toGaItem(product, quantity)),
+    });
+  }, [isHydrated, cartItems, subtotal]);
+
+  // Pressing Back from PayFast can restore this page from the back/forward cache
+  // still showing "Proceeding to payment". Reset to the form so the buyer can retry.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setPayfastConfig(null);
+      setIsProcessing(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   async function onSubmit(values: Values) {
     setIsProcessing(true);
@@ -192,9 +222,11 @@ export default function CheckoutPage() {
         setIsProcessing(false);
         return;
       }
+      // The cart is deliberately NOT cleared here: a buyer who cancels on PayFast
+      // (or presses Back) must come back to their cart intact. It is cleared on
+      // /checkout/success once payment has actually gone through.
       setPayfastUrl(data.payfastUrl);
       setPayfastConfig(data.payfastData);
-      clearCart();
     } catch (error: any) {
       toast({ variant: "destructive", title: "Uh oh!", description: error?.message || "Checkout failed." });
       setIsProcessing(false);
@@ -255,24 +287,27 @@ export default function CheckoutPage() {
         <form onSubmit={form.handleSubmit(onSubmit, onInvalid)} className="grid grid-cols-1 items-start gap-11 min-[940px]:grid-cols-[1fr_340px]">
           {/* Left: details */}
           <div>
-            {!user && (
+            {(!user || user.isAnonymous) && (
               <div className="mb-5 flex items-center gap-2.5 rounded-[3px] border border-line bg-cream-band px-4 py-3 text-[13px] text-body">
                 <User className="h-4 w-4 text-forest" strokeWidth={1.6} />
-                Checking out as a guest. <Link href="/login" className="font-semibold text-forest no-underline">Log in</Link> for faster checkout.
+                <span>
+                  Checking out as a guest.{" "}
+                  <Link href="/login?redirect=/checkout" className="font-semibold text-forest no-underline">Log in</Link> for faster checkout.
+                </span>
               </div>
             )}
 
             <h2 className="m-0 mb-4 font-headline text-[19px] font-semibold text-ink">Contact &amp; delivery</h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Field form={form} name="firstName" label="First name" />
-              <Field form={form} name="lastName" label="Last name" />
-              <Field form={form} name="email" label="Email" type="email" placeholder="you@example.com" />
-              <Field form={form} name="phone" label="Phone" type="tel" placeholder="+27 82 000 0000" />
-              <Field form={form} name="address" label="Delivery address" placeholder="Street address" full />
-              <Field form={form} name="city" label="Town / city" />
-              <Field form={form} name="postalCode" label="Postal code" />
-              <Field form={form} name="country" label="Country" full />
-              <Field form={form} name="vatNumber" label="VAT number" placeholder="e.g. 4123456789" optional full />
+              <Field form={form} name="firstName" label="First name" autoComplete="shipping given-name" />
+              <Field form={form} name="lastName" label="Last name" autoComplete="shipping family-name" />
+              <Field form={form} name="email" label="Email" type="email" placeholder="you@example.com" autoComplete="email" />
+              <Field form={form} name="phone" label="Phone" type="tel" placeholder="+27 82 000 0000" autoComplete="tel" />
+              <Field form={form} name="address" label="Delivery address" placeholder="Street address" full autoComplete="shipping street-address" />
+              <Field form={form} name="city" label="Town / city" autoComplete="shipping address-level2" />
+              <Field form={form} name="postalCode" label="Postal code" autoComplete="shipping postal-code" inputMode="numeric" />
+              <Field form={form} name="country" label="Country" full autoComplete="shipping country-name" />
+              <Field form={form} name="vatNumber" label="VAT number" placeholder="e.g. 4123456789" optional full autoComplete="off" inputMode="numeric" />
             </div>
 
             {/* Billing */}
@@ -283,12 +318,12 @@ export default function CheckoutPage() {
             </label>
             {!sameBilling && (
               <div className="mt-4 grid grid-cols-1 gap-4 rounded-[3px] border border-line bg-cream-band/60 p-4 sm:grid-cols-2">
-                <Field form={form} name="billingFirstName" label="First name" />
-                <Field form={form} name="billingLastName" label="Last name" />
-                <Field form={form} name="billingAddress" label="Billing address" placeholder="Street address" full />
-                <Field form={form} name="billingCity" label="Town / city" />
-                <Field form={form} name="billingPostalCode" label="Postal code" />
-                <Field form={form} name="billingCountry" label="Country" full />
+                <Field form={form} name="billingFirstName" label="First name" autoComplete="billing given-name" />
+                <Field form={form} name="billingLastName" label="Last name" autoComplete="billing family-name" />
+                <Field form={form} name="billingAddress" label="Billing address" placeholder="Street address" full autoComplete="billing street-address" />
+                <Field form={form} name="billingCity" label="Town / city" autoComplete="billing address-level2" />
+                <Field form={form} name="billingPostalCode" label="Postal code" autoComplete="billing postal-code" inputMode="numeric" />
+                <Field form={form} name="billingCountry" label="Country" full autoComplete="billing country-name" />
               </div>
             )}
 
@@ -321,14 +356,27 @@ export default function CheckoutPage() {
             {cartItems.map(({ product, quantity }) => (
               <div key={product.id} className="flex justify-between gap-3 py-[7px] text-[13px]">
                 <span className="text-ink">{quantity} × {product.name}</span>
-                <span className="whitespace-nowrap font-semibold text-ink">R{(product.price * quantity).toFixed(2)}</span>
+                {getSalePrice(product) !== null ? (
+                  <span className="flex items-baseline gap-1.5 whitespace-nowrap">
+                    <span className="sr-only">Regular price </span>
+                    <s className="text-[12px] text-body-faint">{formatRand(product.price * quantity)}</s>
+                    <span className="font-semibold text-sale">{formatRand(getUnitPrice(product) * quantity)}</span>
+                  </span>
+                ) : (
+                  <span className="whitespace-nowrap font-semibold text-ink">{formatRand(product.price * quantity)}</span>
+                )}
               </div>
             ))}
             <div className="mt-2.5 border-t border-line pt-3">
-              <div className="flex justify-between py-1.5 text-[14px] text-body-soft"><span>Subtotal</span><span className="font-semibold text-ink">R{subtotal.toFixed(2)}</span></div>
-              <div className="flex justify-between py-1.5 text-[14px] text-body-soft"><span>Delivery</span><span className="font-semibold text-ink">{shippingFee === 0 ? "Free" : `R${shippingFee.toFixed(2)}`}</span></div>
-              <div className="mt-2 flex justify-between border-t border-line pt-3 text-[17px] font-bold text-ink"><span>Total</span><span>R{total.toFixed(2)}</span></div>
+              <div className="flex justify-between py-1.5 text-[14px] text-body-soft"><span>Subtotal</span><span className="font-semibold text-ink">{formatRand(subtotal)}</span></div>
+              <div className="flex justify-between py-1.5 text-[14px] text-body-soft"><span>Delivery</span><span className="font-semibold text-ink">{shippingFee === 0 ? "Free" : formatRand(shippingFee)}</span></div>
+              <div className="mt-2 flex justify-between border-t border-line pt-3 text-[17px] font-bold text-ink"><span>Total</span><span>{formatRand(total)}</span></div>
               <span className="text-[11px] text-body-faint">Incl. VAT</span>
+              {savings > 0 && (
+                <div className="mt-3 rounded-[2px] border border-sale-border bg-sale-bg px-3 py-2 text-center text-[12.5px] font-semibold text-sale">
+                  You&rsquo;re saving {formatRand(savings)} on sale items
+                </div>
+              )}
             </div>
             {/* Desktop CTA lives in the sticky summary; mobile uses the bar below. */}
             <div className="hidden min-[940px]:block">
@@ -349,7 +397,7 @@ export default function CheckoutPage() {
           <div className="fixed inset-x-0 bottom-0 z-40 flex items-center justify-between gap-3 border-t border-line bg-cream-card px-[22px] py-3 shadow-[0_-2px_10px_rgba(27,42,30,0.06)] min-[940px]:hidden">
             <div className="flex flex-col leading-tight">
               <span className="text-[11px] text-body-faint">Total incl. VAT</span>
-              <span className="font-body text-[18px] font-bold text-ink">R{total.toFixed(2)}</span>
+              <span className="font-body text-[18px] font-bold text-ink">{formatRand(total)}</span>
             </div>
             <button
               type="submit"

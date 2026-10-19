@@ -1,12 +1,9 @@
 "use client";
 
 import Script from "next/script";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-
-/** Google Ads conversion account. */
-const ADS_ID = "AW-18311112344";
-/** GA4 property — the one Firebase Analytics used to report to. */
-const GA4_ID = "G-QQGK35J3TB";
+import { ADS_ID, ensureGtag, track } from "@/lib/analytics";
 
 /**
  * How long to wait before loading gtag.js if the visitor never interacts.
@@ -29,18 +26,32 @@ const INTERACTION_EVENTS = [
  * gtag.js is ~290 kB across its two containers and costs ~260 ms of main-thread
  * work — it was the single largest contributor to Total Blocking Time. Nothing on
  * screen depends on it, so the heavy script is held until the visitor interacts,
- * or `FALLBACK_DELAY_MS` after mount, whichever happens first.
+ * or `FALLBACK_DELAY_MS` after mount, whichever happens first. The exception is
+ * /checkout/success: a buyer who closes that tab within seconds must still be
+ * counted, so the purchase page loads the tag straight away.
  *
- * Deferring the *script* does not defer the *data*: the inline bootstrap below
- * runs immediately, so `window.gtag(...)` exists from the start and every call —
- * including the purchase conversion fired on /checkout/success — is queued on
- * `dataLayer`. gtag.js drains that queue when it arrives, so no event is lost.
+ * Deferring the *script* does not defer the *data*: ensureGtag() defines
+ * `window.gtag` up front, so every call is queued on `dataLayer` and drained
+ * when gtag.js arrives. No event is lost.
+ *
+ * Also reports clicks on WhatsApp / phone / email links — the site's main lead
+ * channels — so they can be marked as key events in GA4 and imported into Ads.
  */
 export function Analytics() {
+  const pathname = usePathname();
+  const isPurchasePage = pathname?.startsWith("/checkout/success") ?? false;
   const [shouldLoad, setShouldLoad] = useState(false);
 
   useEffect(() => {
+    ensureGtag();
+  }, []);
+
+  useEffect(() => {
     if (shouldLoad) return;
+    if (isPurchasePage) {
+      setShouldLoad(true);
+      return;
+    }
 
     const load = () => setShouldLoad(true);
 
@@ -55,27 +66,28 @@ export function Analytics() {
         window.removeEventListener(event, load);
       }
     };
-  }, [shouldLoad]);
+  }, [shouldLoad, isPurchasePage]);
 
-  return (
-    <>
-      {/* Runs immediately and is ~200 bytes: defines dataLayer + the gtag() shim
-          so callers can queue events before the real tag has loaded. */}
-      <Script id="gtag-bootstrap" strategy="afterInteractive">
-        {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${ADS_ID}');
-gtag('config', '${GA4_ID}');`}
-      </Script>
+  // One delegated listener instead of wiring every WhatsApp button by hand.
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as Element | null)?.closest?.("a[href]") as HTMLAnchorElement | null;
+      if (!link) return;
+      const href = link.getAttribute("href") || "";
+      const params = { link_url: href.split("?")[0], page_path: window.location.pathname };
+      if (/^https?:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(href)) track("whatsapp_click", params);
+      else if (href.startsWith("tel:")) track("phone_click", params);
+      else if (href.startsWith("mailto:")) track("email_click", params);
+    };
+    document.addEventListener("click", onClick, { capture: true });
+    return () => document.removeEventListener("click", onClick, { capture: true });
+  }, []);
 
-      {shouldLoad && (
-        <Script
-          id="gtag-js"
-          src={`https://www.googletagmanager.com/gtag/js?id=${ADS_ID}`}
-          strategy="afterInteractive"
-        />
-      )}
-    </>
-  );
+  return shouldLoad ? (
+    <Script
+      id="gtag-js"
+      src={`https://www.googletagmanager.com/gtag/js?id=${ADS_ID}`}
+      strategy="afterInteractive"
+    />
+  ) : null;
 }

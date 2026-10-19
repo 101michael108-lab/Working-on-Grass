@@ -36,9 +36,8 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     description: "Professional environmental and agricultural services for sustainable and regenerative land use in Southern Africa. Led by ecologist Frits van Oudtshoorn.",
     keywords: ["veld management", "pasture assessment", "grass identification", "Southern Africa", "disc pasture meter", "regenerative agriculture", "Frits van Oudtshoorn"],
-    alternates: {
-      canonical: '/',
-    },
+    // No site-wide canonical here: every page without its own would inherit it and
+    // tell Google it's a duplicate of the home page. The home page sets its own.
     openGraph: {
       siteName: 'Working on Grass',
       locale: 'en_ZA',

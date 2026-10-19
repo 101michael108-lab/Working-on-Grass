@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
-import { productUrl } from '@/lib/utils';
+import { formatRand, productUrl } from '@/lib/utils';
+import { getDiscountPercent, getSalePrice } from '@/lib/pricing';
 
 // First plain-text paragraph — skip bullet lines.
 function getTeaser(description: string): string {
@@ -25,6 +26,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const url = productUrl(product);
   const img = product.images?.[0];
   const teaser = getTeaser(product.description);
+  const salePrice = getSalePrice(product);
 
   // Keep Add working above the stretched card link.
   const handleAdd = (e: MouseEvent) => {
@@ -57,6 +59,11 @@ export default function ProductCard({ product }: { product: Product }) {
             Digital
           </span>
         ) : null}
+        {salePrice !== null && (
+          <span className="absolute left-3 top-3 z-[1] rounded-[2px] border border-sale-border bg-sale-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-sale">
+            {getDiscountPercent(product)}% off
+          </span>
+        )}
       </div>
 
       {/* Body */}
@@ -74,11 +81,21 @@ export default function ProductCard({ product }: { product: Product }) {
           </Link>
         </h3>
         {teaser && (
-          <p className="mb-5 line-clamp-3 flex-grow text-[13.5px] leading-[1.55] text-body-soft">{teaser}</p>
+          <p className="mb-5 line-clamp-3 text-[13.5px] leading-[1.55] text-body-soft">{teaser}</p>
         )}
-        <div className="flex items-center justify-between border-t border-cream-line pt-4">
-          <div className="flex flex-col">
-            <span className="font-body text-[19px] font-bold leading-none text-ink">R{product.price.toFixed(2)}</span>
+        {/* mt-auto, not flex-grow on the teaser: a stretched line-clamp box shows a cut-off 4th line. */}
+        <div className="mt-auto flex items-center justify-between gap-3 border-t border-cream-line pt-4">
+          <div className="flex min-w-0 flex-col">
+            {salePrice !== null ? (
+              <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
+                <span className="sr-only">Sale price</span>
+                <span className="font-body text-[19px] font-bold leading-none text-sale">{formatRand(salePrice)}</span>
+                <span className="sr-only">, regular price</span>
+                <s className="font-body text-[13px] font-medium leading-none text-body-faint">{formatRand(product.price)}</s>
+              </span>
+            ) : (
+              <span className="font-body text-[19px] font-bold leading-none text-ink">{formatRand(product.price)}</span>
+            )}
             {product.price > 0 && (
               <span className="mt-1 text-[9.5px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
             )}

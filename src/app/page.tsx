@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
@@ -16,6 +17,10 @@ import {
   ctaOutline,
   ctaLight,
 } from "@/components/redesign/ui";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const WA_CONSULT =
   "https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20request%20a%20consultation.";
@@ -97,7 +102,7 @@ export default async function Home() {
           {[
             ["30", "yr", "Hands-on veld assessment & fieldwork"],
             ["390", "", "Grass species documented across Southern Africa"],
-            ["2", "", "Standard-reference books authored & in print"],
+            ["3", "", "Standard-reference books authored & in print"],
           ].map(([num, unit, label], i) => (
             <div
               key={i}
@@ -155,6 +160,8 @@ export default async function Home() {
                 <span className="font-medium text-ondark">Guide to Grasses of Southern Africa</span>{" "}
                 and{" "}
                 <span className="font-medium text-ondark">Veld Management: Principles &amp; Practices</span>,
+                co-author of{" "}
+                <span className="font-medium text-ondark">Planted Pastures and Forage Crops</span>,
                 and a registered Barenbrug seed agent.
               </p>
               <div className="mt-[26px] flex flex-wrap gap-9 border-t border-[rgba(237,239,232,0.14)] pt-[26px]">

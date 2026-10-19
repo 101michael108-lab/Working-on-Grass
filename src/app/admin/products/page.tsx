@@ -9,6 +9,7 @@ import { collection, query, orderBy, doc, deleteDoc } from "firebase/firestore";
 import { PlusCircle, AlertTriangle, Pencil, Trash2 } from "lucide-react";
 import Link from "next/link";
 import type { Product } from "@/lib/types";
+import { getDiscountPercent, getSalePrice, getUnitPrice } from "@/lib/pricing";
 import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
@@ -74,7 +75,17 @@ export default function AdminProductsPage() {
                       <TableRow key={product.id}>
                           <TableCell className="font-medium">{product.name}</TableCell>
                           <TableCell>{product.category}</TableCell>
-                          <TableCell>R{product.price.toFixed(2)}</TableCell>
+                          <TableCell>
+                              {getSalePrice(product) !== null ? (
+                                  <div className="flex items-center gap-2">
+                                      <span className="font-semibold text-sale">R{getUnitPrice(product).toFixed(2)}</span>
+                                      <s className="text-muted-foreground">R{product.price.toFixed(2)}</s>
+                                      <Badge variant="outline" className="h-5 border-sale-border bg-sale-bg px-1.5 text-sale">-{getDiscountPercent(product)}%</Badge>
+                                  </div>
+                              ) : (
+                                  <>R{product.price.toFixed(2)}</>
+                              )}
+                          </TableCell>
                           <TableCell>
                               <div className="flex items-center gap-2">
                                   <span>{product.stock ?? 0}</span>

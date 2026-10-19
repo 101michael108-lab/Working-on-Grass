@@ -7,14 +7,16 @@ interface ProductPageClientProps {
   product: Product;
   relatedProducts: Product[];
   isLoadingRelated: boolean;
+  globalShippingFee?: number;
 }
 
-export default function ProductPageClient({ product, relatedProducts, isLoadingRelated }: ProductPageClientProps) {
+export default function ProductPageClient({ product, relatedProducts, isLoadingRelated, globalShippingFee }: ProductPageClientProps) {
   return (
     <ProductDetail
       product={product}
       relatedProducts={relatedProducts}
       isLoadingRelated={isLoadingRelated}
+      globalShippingFee={globalShippingFee}
     />
   );
 }
