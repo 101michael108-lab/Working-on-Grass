@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { getDiscountPercent, getSalePrice, getUnitPrice } from './pricing';
+import { getDiscountPercent, getSaleLabel, getSalePrice, getUnitPrice } from './pricing';
 
 describe('getSalePrice', () => {
   it('returns the sale price when it is below the regular price', () => {
@@ -52,5 +52,21 @@ describe('getDiscountPercent', () => {
 
   it('is 0 when not on sale', () => {
     expect(getDiscountPercent({ price: 450 })).toBe(0);
+  });
+});
+
+describe('getSaleLabel', () => {
+  it('returns the trimmed label while on sale', () => {
+    expect(getSaleLabel({ price: 450, salePrice: 399, saleLabel: '  Launch Special ' })).toBe('Launch Special');
+  });
+
+  it('hides the label when the product is not on sale', () => {
+    expect(getSaleLabel({ price: 450, saleLabel: 'Launch Special' })).toBeNull();
+    expect(getSaleLabel({ price: 450, salePrice: 500, saleLabel: 'Launch Special' })).toBeNull();
+  });
+
+  it('is null for a missing or blank label', () => {
+    expect(getSaleLabel({ price: 450, salePrice: 399 })).toBeNull();
+    expect(getSaleLabel({ price: 450, salePrice: 399, saleLabel: '   ' })).toBeNull();
   });
 });
