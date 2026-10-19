@@ -6,6 +6,8 @@ import { Container, Eyebrow, ctaPrimary } from "@/components/redesign/ui";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import { useToast } from "@/hooks/use-toast";
 import { submitInquiry } from "@/lib/submit-inquiry";
+import { track } from "@/lib/analytics";
+import { HoneypotField } from "@/components/forms/honeypot-field";
 
 const SERVICES = [
   { n: "01", title: "Veld condition assessment", body: "A structured evaluation of species composition, veld condition and trend — the baseline for every management decision." },
@@ -22,6 +24,12 @@ const PROCESS = [
   { n: 3, title: "Report & plan", body: "A clear, actionable plan tailored to your land and objectives." },
   { n: 4, title: "Follow-up", body: "Ongoing support as the plan is put into practice on the ground." },
 ];
+
+/** Default dropdown choice, so leads who don't know the jargon aren't mislabelled. */
+const NOT_SURE = "Not sure yet — advise me";
+const SERVICE_OPTIONS = [NOT_SURE, ...SERVICES.map((s) => s.title)];
+const EMPTY_FORM = { name: "", phone: "", email: "", size: "", service: NOT_SURE, message: "", website: "" };
+const WA_CONSULT = "https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20discuss%20a%20consultation.";
 
 const labelCls = "flex flex-col gap-1.5";
 const darkSpan = "text-[12px] font-semibold text-[#C4C7BB]";
@@ -47,27 +55,34 @@ const jsonLd = {
 export default function ConsultingPage() {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", phone: "", email: "", size: "", service: SERVICES[0].title, message: "" });
+  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) {
-      toast({ variant: "destructive", title: "Please add your name and email", description: "So Frits can get back to you." });
+    // Many farmers would rather be phoned than emailed: either one is enough.
+    if (!form.name.trim() || (!form.email.trim() && !form.phone.trim())) {
+      toast({ variant: "destructive", title: "Please add your name and a phone number or email", description: "So Frits can get back to you." });
       return;
     }
     setSubmitting(true);
     try {
       await submitInquiry("consultation", {
         name: form.name,
+        email: form.email,
+        phone: form.phone,
         contactDetail: form.email || form.phone,
+        propertySize: form.size,
         location: "",
         service: form.service,
-        needs: [form.message, form.phone && `Phone: ${form.phone}`, form.size && `Property size: ${form.size} ha`].filter(Boolean).join("\n\n"),
+        needs: form.message,
+        website: form.website,
       });
-      toast({ title: "Enquiry sent", description: "Frits’s team will be in touch, usually within 1 business day." });
-      setForm({ name: "", phone: "", email: "", size: "", service: SERVICES[0].title, message: "" });
+      track("generate_lead", { form_name: "consultation", service: form.service });
+      setSent(true);
+      setForm(EMPTY_FORM);
     } catch {
       toast({ variant: "destructive", title: "Could not send enquiry", description: "Please try again, or reach us on WhatsApp." });
     } finally {
@@ -85,6 +100,12 @@ export default function ConsultingPage() {
           <Eyebrow rule tone="green" className="mb-4">Consulting &amp; advisory</Eyebrow>
           <h1 className="m-0 font-headline text-[clamp(34px,4.4vw,56px)] font-medium leading-[1.06] tracking-[-0.02em] text-ink">Expert veld &amp; land-use consulting</h1>
           <p className="m-0 mt-[18px] max-w-[600px] font-body text-[17px] leading-[1.65] text-body">Frits works directly with farmers, game reserves, land managers and the mining sector — turning thirty years of field science into practical, site-specific plans for your land.</p>
+          <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+            <a href="#request" className={ctaPrimary}>Request a consultation</a>
+            <a href={WA_CONSULT} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-[14px] font-semibold text-forest no-underline">
+              <WhatsAppIcon className="h-4 w-4 text-[#25D366]" /> or WhatsApp Frits
+            </a>
+          </div>
         </Container>
       </section>
 
@@ -117,31 +138,45 @@ export default function ConsultingPage() {
       </Container>
 
       {/* Lead-gen form */}
-      <section className="mt-[clamp(48px,6vw,72px)] border-t border-line bg-forest-bark text-ondark">
+      <section id="request" className="mt-[clamp(48px,6vw,72px)] scroll-mt-[72px] border-t border-line bg-forest-bark text-ondark">
         <Container className="grid grid-cols-1 items-start gap-12 py-[clamp(48px,6vw,72px)] min-[940px]:grid-cols-[0.9fr_1.1fr]">
           <div>
             <Eyebrow tone="gold" className="mb-3.5">Request a consultation</Eyebrow>
             <h2 className="m-0 mb-3.5 font-headline text-[clamp(24px,3vw,34px)] font-medium tracking-[-0.01em] text-ondark-bright">Tell us about your land</h2>
             <p className="m-0 mb-[22px] max-w-[380px] text-[14px] leading-[1.7] text-ondark-soft">Share a few details and Frits’s team will be in touch to scope the right assessment for your situation.</p>
-            <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20to%20discuss%20a%20consultation." target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 text-[13.5px] text-ondark no-underline">
+            <a href={WA_CONSULT} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2.5 text-[13.5px] text-ondark no-underline">
               <WhatsAppIcon className="h-4 w-4 text-[#25D366]" /> Prefer to talk? WhatsApp +27 78 228 0008
             </a>
           </div>
-          <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 min-[560px]:grid-cols-2">
-            <label className={labelCls}><span className={darkSpan}>Full name</span><input value={form.name} onChange={set("name")} placeholder="Your name" className={darkInput} /></label>
-            <label className={labelCls}><span className={darkSpan}>Phone</span><input type="tel" value={form.phone} onChange={set("phone")} placeholder="+27" className={darkInput} /></label>
-            <label className={labelCls}><span className={darkSpan}>Email</span><input type="email" value={form.email} onChange={set("email")} placeholder="you@farm.co.za" className={darkInput} /></label>
-            <label className={labelCls}><span className={darkSpan}>Property size (ha)</span><input value={form.size} onChange={set("size")} placeholder="e.g. 800" className={darkInput} /></label>
-            <label className={`${labelCls} min-[560px]:col-span-2`}><span className={darkSpan}>Service needed</span>
-              <select value={form.service} onChange={set("service")} className={`${darkInput} appearance-none`}>
-                {SERVICES.map((s) => <option key={s.title}>{s.title}</option>)}
-              </select>
-            </label>
-            <label className={`${labelCls} min-[560px]:col-span-2`}><span className={darkSpan}>Tell us about your land</span><textarea rows={3} value={form.message} onChange={set("message")} placeholder="Location, current challenge, what you’d like to achieve…" className={`${darkInput} h-auto resize-y py-3`} /></label>
-            <button type="submit" disabled={submitting} className="col-span-1 h-[50px] rounded-[3px] bg-gold font-body text-[14.5px] font-semibold text-forest-dark transition-opacity hover:opacity-90 disabled:opacity-60 min-[560px]:col-span-2">
-              {submitting ? "Sending…" : "Send enquiry"}
-            </button>
-          </form>
+          {sent ? (
+            <div role="status" className="rounded-[4px] border border-[rgba(237,239,232,0.2)] bg-[#16241B] p-7">
+              <h3 className="m-0 mb-2 font-headline text-[22px] font-medium text-ondark-bright">Thank you — your enquiry is in.</h3>
+              <p className="m-0 mb-5 text-[14px] leading-[1.7] text-ondark-soft">
+                Frits&rsquo;s team will be in touch, usually within 1 business day. If it&rsquo;s urgent, WhatsApp Frits on +27 78 228 0008.
+              </p>
+              <button type="button" onClick={() => setSent(false)} className="text-[13.5px] font-semibold text-gold underline-offset-2 hover:underline">
+                Send another enquiry
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={onSubmit} className="relative grid grid-cols-1 gap-4 min-[560px]:grid-cols-2">
+              <HoneypotField value={form.website} onChange={set("website")} />
+              <label className={labelCls}><span className={darkSpan}>Full name</span><input value={form.name} onChange={set("name")} placeholder="Your name" autoComplete="name" className={darkInput} /></label>
+              <label className={labelCls}><span className={darkSpan}>Phone</span><input type="tel" value={form.phone} onChange={set("phone")} placeholder="+27" autoComplete="tel" className={darkInput} /></label>
+              <label className={labelCls}><span className={darkSpan}>Email</span><input type="email" value={form.email} onChange={set("email")} placeholder="you@farm.co.za" autoComplete="email" className={darkInput} /></label>
+              <label className={labelCls}><span className={darkSpan}>Property size (ha)</span><input value={form.size} onChange={set("size")} placeholder="e.g. 800" inputMode="decimal" className={darkInput} /></label>
+              <p className="m-0 -mt-1 text-[12px] text-ondark-faint min-[560px]:col-span-2">A phone number or email is enough — whichever you prefer.</p>
+              <label className={`${labelCls} min-[560px]:col-span-2`}><span className={darkSpan}>Service needed</span>
+                <select value={form.service} onChange={set("service")} className={`${darkInput} appearance-none`}>
+                  {SERVICE_OPTIONS.map((s) => <option key={s}>{s}</option>)}
+                </select>
+              </label>
+              <label className={`${labelCls} min-[560px]:col-span-2`}><span className={darkSpan}>Tell us about your land</span><textarea rows={3} value={form.message} onChange={set("message")} placeholder="Location, current challenge, what you’d like to achieve…" className={`${darkInput} h-auto resize-y py-3`} /></label>
+              <button type="submit" disabled={submitting} className="col-span-1 h-[50px] rounded-[3px] bg-gold font-body text-[14.5px] font-semibold text-forest-dark transition-opacity hover:opacity-90 disabled:opacity-60 min-[560px]:col-span-2">
+                {submitting ? "Sending…" : "Send enquiry"}
+              </button>
+            </form>
+          )}
         </Container>
       </section>
 

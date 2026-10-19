@@ -6,9 +6,12 @@ import Link from "next/link";
 import { Check } from "lucide-react";
 import { InvoiceActions } from "@/components/invoice-actions";
 import { Container } from "@/components/redesign/ui";
+import { useCart } from "@/context/cart-context";
+import { ADS_PURCHASE_CONVERSION, GA4_ID, toGaItem, track } from "@/lib/analytics";
 
 export default function SuccessContent() {
   const sp = useSearchParams();
+  const { cartItems, clearCart, isHydrated } = useCart();
   const orderId = sp.get("orderId");
   const uid = sp.get("uid");
   const invoiceToken = sp.get("t");
@@ -16,40 +19,45 @@ export default function SuccessContent() {
   const amt = sp.get("amt");
   const trackingRef = orderNumber || orderId;
 
-  // Report the completed purchase to Google Ads — once per order (guarded
-  // against refreshes) and with the real order total so ROAS is accurate.
+  // Report the purchase, then empty the cart. Waits for the cart to be restored
+  // from localStorage: it still holds what was just bought (checkout keeps it
+  // until here so a cancelled PayFast payment doesn't lose it), which gives GA4
+  // its line items — and clearing before the restore would be undone by it.
   useEffect(() => {
+    if (!isHydrated) return;
+
     const txnId = orderNumber || orderId;
-    if (!txnId) return;
-    const key = `wog_conv_${txnId}`;
-    try {
-      if (sessionStorage.getItem(key)) return;
-    } catch {
-      /* sessionStorage unavailable — fall through and fire anyway */
+    if (txnId) {
+      // Once per order (guarded against refreshes), with the real order total so
+      // ROAS is accurate.
+      const key = `wog_conv_${txnId}`;
+      let alreadySent = false;
+      try {
+        alreadySent = !!sessionStorage.getItem(key);
+      } catch {
+        /* sessionStorage unavailable — fire anyway */
+      }
+      if (!alreadySent) {
+        const value = amt ? Number(amt) : NaN;
+        const money = Number.isFinite(value) ? { value, currency: "ZAR" } : {};
+        track("conversion", { send_to: ADS_PURCHASE_CONVERSION, ...money, transaction_id: txnId });
+        track("purchase", {
+          send_to: GA4_ID,
+          transaction_id: txnId,
+          ...money,
+          items: cartItems.map(({ product, quantity }) => toGaItem(product, quantity)),
+        });
+        try {
+          sessionStorage.setItem(key, "1");
+        } catch {
+          /* ignore */
+        }
+      }
     }
-    const w = window as unknown as {
-      dataLayer?: unknown[];
-      gtag?: (...args: unknown[]) => void;
-    };
-    w.dataLayer = w.dataLayer || [];
-    if (typeof w.gtag !== "function") {
-      w.gtag = function gtag() {
-        // eslint-disable-next-line prefer-rest-params
-        (w.dataLayer as unknown[]).push(arguments);
-      };
-    }
-    const value = amt ? Number(amt) : NaN;
-    w.gtag("event", "conversion", {
-      send_to: "AW-18311112344/qnCiCKGz3c8cEJjNtZtE",
-      ...(Number.isFinite(value) ? { value, currency: "ZAR" } : {}),
-      transaction_id: txnId,
-    });
-    try {
-      sessionStorage.setItem(key, "1");
-    } catch {
-      /* ignore */
-    }
-  }, [orderNumber, orderId, amt]);
+
+    if (orderId) clearCart();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isHydrated, orderNumber, orderId, amt]);
 
   return (
     <div className="bg-cream">

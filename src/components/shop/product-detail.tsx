@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -11,8 +11,10 @@ import { useCart } from "@/context/cart-context";
 import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import ProductCard from "@/components/shop/ProductCard";
 import { Container, Eyebrow } from "@/components/redesign/ui";
-
-const rand = (v: number) => "R" + v.toLocaleString("en-ZA", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+import { formatRand } from "@/lib/utils";
+import { getProductShippingFee } from "@/lib/shipping";
+import { getDiscountPercent, getSalePrice, getUnitPrice } from "@/lib/pricing";
+import { toGaItem, track } from "@/lib/analytics";
 
 function FormattedText({ text }: { text?: string }) {
   if (!text) return null;
@@ -38,10 +40,13 @@ function FormattedText({ text }: { text?: string }) {
 export default function ProductDetail({
   product,
   relatedProducts,
+  globalShippingFee,
 }: {
   product: Product;
   relatedProducts: Product[];
   isLoadingRelated?: boolean;
+  /** Store-wide delivery fee; when known, the delivery cost is shown up front. */
+  globalShippingFee?: number;
 }) {
   const { addToCart } = useCart();
   const [qty, setQty] = useState(1);
@@ -49,6 +54,17 @@ export default function ProductDetail({
 
   const images = product.images ?? [];
   const inStock = (product.stock ?? 0) > 0;
+  const salePrice = getSalePrice(product);
+  const unitPrice = getUnitPrice(product);
+  // Show delivery before the cart so a R450 book doesn't surprise anyone as R600.
+  const deliveryFee =
+    globalShippingFee === undefined ? undefined : getProductShippingFee(product, globalShippingFee);
+
+  useEffect(() => {
+    track("view_item", { currency: "ZAR", value: getUnitPrice(product), items: [toGaItem(product)] });
+    // Once per product page, not on every live-data refresh.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [product.id]);
   const es = product.enabledSections;
   const on = (key: keyof NonNullable<typeof es>, hasData: boolean) =>
     (es ? !!es[key] : true) && hasData;
@@ -108,15 +124,44 @@ export default function ProductDetail({
           <div className="mb-3 font-body text-[10.5px] font-semibold uppercase tracking-[0.16em] text-body-faint">{product.category}</div>
           <h1 className="m-0 font-headline text-[clamp(28px,3vw,36px)] font-semibold leading-[1.14] tracking-[-0.01em] text-ink">{product.name}</h1>
 
-          <div className="mt-[22px] flex items-baseline gap-2.5">
-            <span className="font-body text-[32px] font-bold leading-none text-ink">{rand(product.price)}</span>
-            <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
-          </div>
+          {salePrice !== null ? (
+            <>
+              <div className="mt-[22px] flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+                <span className="sr-only">Sale price</span>
+                <span className="font-body text-[32px] font-bold leading-none text-sale">{formatRand(salePrice)}</span>
+                <span className="sr-only">, regular price</span>
+                <s className="font-body text-[19px] font-medium leading-none text-body-faint">{formatRand(product.price)}</s>
+                <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
+              </div>
+              <div className="mt-2.5 inline-flex items-center rounded-[2px] border border-sale-border bg-sale-bg px-2 py-[3px] font-body text-[11px] font-bold uppercase tracking-[0.08em] text-sale">
+                Save {formatRand(product.price - salePrice)} &middot; {getDiscountPercent(product)}% off
+              </div>
+            </>
+          ) : (
+            <div className="mt-[22px] flex items-baseline gap-2.5">
+              <span className="font-body text-[32px] font-bold leading-none text-ink">{formatRand(product.price)}</span>
+              <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
+            </div>
+          )}
+          {deliveryFee !== undefined && (
+            <div className="mt-2 text-[13px] text-body-soft">
+              {deliveryFee === 0
+                ? "Free delivery"
+                : <>+ {formatRand(deliveryFee)} delivery, nationwide &middot; one fee per order</>}
+            </div>
+          )}
 
-          <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-stock-border bg-stock-bg px-3 py-1.5 text-[12px] font-semibold text-forest">
-            <span className="h-[7px] w-[7px] rounded-full bg-stock" />
-            {inStock ? (isDigital ? "Available · digital licence" : "In stock · ready to ship") : "Currently unavailable"}
-          </div>
+          {inStock ? (
+            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-stock-border bg-stock-bg px-3 py-1.5 text-[12px] font-semibold text-forest">
+              <span className="h-[7px] w-[7px] rounded-full bg-stock" />
+              {isDigital ? "Available · digital licence" : "In stock · ready to ship"}
+            </div>
+          ) : (
+            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-cream-band px-3 py-1.5 text-[12px] font-semibold text-body-mute">
+              <span className="h-[7px] w-[7px] rounded-full bg-[#B4AE9C]" />
+              Currently unavailable &middot; ask Frits about restock
+            </div>
+          )}
 
           <p className="mt-[22px] text-[14.5px] leading-[1.6] text-body-soft">{product.description}</p>
 
@@ -133,7 +178,7 @@ export default function ProductDetail({
               className="flex h-[50px] min-w-[190px] flex-1 items-center justify-center gap-2.5 rounded-[3px] bg-forest px-5 font-body text-[14.5px] font-semibold text-ondark-bright transition-colors hover:bg-forest-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
               <ShoppingCart className="h-[17px] w-[17px]" strokeWidth={1.8} />
-              {inStock ? `Add to cart · ${rand(product.price * qty)}` : "Sold out"}
+              {inStock ? `Add to cart · ${formatRand(unitPrice * qty)}` : "Sold out"}
             </button>
           </div>
 

@@ -34,29 +34,45 @@ function ProductLoadingSkeleton() {
     )
 }
 
-export default function ProductPageContent({ productId }: { productId: string }) {
+/**
+ * The server normally passes the product (and related products) in, so the page
+ * renders straight from the HTML. The client-side Firestore reads below only run
+ * as a fallback when that server read failed.
+ */
+export default function ProductPageContent({
+    productId,
+    initialProduct,
+    initialRelated,
+    globalShippingFee,
+}: {
+    productId: string;
+    initialProduct?: Product;
+    initialRelated?: Product[];
+    globalShippingFee?: number;
+}) {
     const firestore = useFirestore();
 
     const productRef = useMemoFirebase(() => {
-        if (!productId) return null;
+        if (initialProduct || !productId) return null;
         return doc(firestore, 'products', productId);
-    }, [firestore, productId]);
+    }, [firestore, productId, initialProduct]);
 
-    const { data: product, isLoading: isLoadingProduct } = useDoc<Product>(productRef);
-    
+    const { data: fetchedProduct, isLoading: isLoadingProduct } = useDoc<Product>(productRef);
+    const product = initialProduct ?? fetchedProduct;
+
     const relatedProductsQuery = useMemoFirebase(() => {
-        if (!product) return null;
+        if (!product || initialRelated) return null;
         return query(
-            collection(firestore, 'products'), 
+            collection(firestore, 'products'),
             where('category', '==', product.category),
             where(documentId(), '!=', productId),
             limit(3)
         );
-    }, [product, productId, firestore]);
+    }, [product, productId, firestore, initialRelated]);
 
-    const { data: relatedProducts, isLoading: isLoadingRelated } = useCollection<Product>(relatedProductsQuery);
+    const { data: fetchedRelated, isLoading: isLoadingRelated } = useCollection<Product>(relatedProductsQuery);
 
-    if (isLoadingProduct) {
+    if (!product && isLoadingProduct) {
         return <ProductLoadingSkeleton />;
     }
 
@@ -68,8 +84,9 @@ export default function ProductPageContent({ productId }: { productId: string })
     return (
         <ProductPageClient
             product={product}
-            relatedProducts={relatedProducts || []}
-            isLoadingRelated={isLoadingRelated}
+            relatedProducts={initialRelated ?? fetchedRelated ?? []}
+            isLoadingRelated={!initialRelated && isLoadingRelated}
+            globalShippingFee={globalShippingFee}
         />
     );
 }

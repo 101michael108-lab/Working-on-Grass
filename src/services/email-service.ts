@@ -86,8 +86,17 @@ interface InquiryPayload {
   customerEmail?: string;
   service: string;
   message?: string;
+  /** Extra submitted fields (phone, region, hectares…) shown as a table in the admin email. */
+  details?: Array<[label: string, value: string | undefined]>;
   storeName?: string;
   fromEmail?: string;
+}
+
+/** Escape user-submitted text before it goes into an email's HTML. */
+function escapeHtml(value: unknown): string {
+  return String(value ?? '').replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string)
+  );
 }
 
 /**
@@ -364,8 +373,8 @@ export async function sendInquiryAcknowledgmentEmail(payload: InquiryPayload, db
             <h2 style="color: #ffffff; margin: 0;">${storeName}</h2>
           </div>
           <div style="padding: 30px;">
-            <p>Hello ${payload.customerName},</p>
-            <p>Thank you for reaching out to us regarding <strong>${payload.service}</strong>. We have received your inquiry and ecologist Frits van Oudtshoorn will review your request and get back to you shortly.</p>
+            <p>Hello ${escapeHtml(payload.customerName)},</p>
+            <p>Thank you for reaching out to us regarding <strong>${escapeHtml(payload.service)}</strong>. We have received your inquiry and ecologist Frits van Oudtshoorn will review your request and get back to you shortly.</p>
             <div style="background-color: #f8fafc; padding: 15px; border-radius: 4px; border-left: 4px solid #1a3a1a; margin: 20px 0;">
                 <p style="margin: 0; font-size: 14px; color: #64748b;"><em>Our typical response time for technical assessments and seed quotes is 1-2 business days.</em></p>
             </div>
@@ -388,19 +397,32 @@ export async function sendAdminInquiryNotification(payload: InquiryPayload, db?:
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
 
+  const customerEmail = payload.customerEmail?.includes('@') ? payload.customerEmail : undefined;
+  const detailRows = (payload.details ?? [])
+    .filter(([, value]) => value && value.trim())
+    .map(
+      ([label, value]) =>
+        `<tr><td style="padding: 4px 16px 4px 0; color: #64748b; vertical-align: top;">${escapeHtml(label)}</td>` +
+        `<td style="padding: 4px 0;"><strong>${escapeHtml(value)}</strong></td></tr>`
+    )
+    .join('');
+
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
+    // So hitting "Reply" answers the customer, not our own sender address.
+    ...(customerEmail && { replyTo: customerEmail }),
     message: {
       subject: `[NEW LEAD] ${payload.service} - ${payload.customerName}`,
       html: `
         <div style="font-family: sans-serif;">
           <h2 style="color: #1a3a1a;">New Inquiry Received</h2>
-          <p><strong>Service:</strong> ${payload.service}</p>
-          <p><strong>From:</strong> ${payload.customerName} (${payload.customerEmail || 'No email provided'})</p>
+          <p><strong>Service:</strong> ${escapeHtml(payload.service)}</p>
+          <p><strong>From:</strong> ${escapeHtml(payload.customerName)} (${escapeHtml(payload.customerEmail || 'No email provided')})</p>
+          ${detailRows ? `<table style="border-collapse: collapse; margin: 8px 0 4px;">${detailRows}</table>` : ''}
           <hr/>
           <p><strong>Message / Requirements:</strong></p>
-          <div style="white-space: pre-wrap; background: #f1f5f9; padding: 15px; border-radius: 4px;">${payload.message || 'No additional details provided.'}</div>
+          <div style="white-space: pre-wrap; background: #f1f5f9; padding: 15px; border-radius: 4px;">${escapeHtml(payload.message || 'No additional details provided.')}</div>
           <p style="margin-top: 20px;"><a href="${getSiteUrl()}/admin/inquiries">View in Admin Dashboard</a></p>
         </div>
       `

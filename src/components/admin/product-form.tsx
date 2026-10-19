@@ -33,7 +33,8 @@ import {
   ImagePlus, XCircle, PlusCircle, Trash, ChevronDown, FileText, UploadCloud,
   BookOpen, Users, Wrench, MapPin, Table2, Quote, Sparkles, AlertTriangle,
 } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { cn, formatRand } from '@/lib/utils';
+import { getDiscountPercent, getSalePrice } from '@/lib/pricing';
 
 // ─── Zod Schema ────────────────────────────────────────────────────────────────
 
@@ -53,6 +54,7 @@ const formSchema = z.object({
   name: z.string().min(2, "Name is required"),
   description: z.string().min(5, "Short description is required"),
   price: z.coerce.number().nonnegative(),
+  salePrice: z.union([z.literal(''), z.coerce.number().nonnegative()]).optional(),
   stock: z.coerce.number().int().nonnegative(),
   shippingFee: z.union([z.literal(''), z.coerce.number().nonnegative()]).optional(),
   isDigital: z.boolean().default(false),
@@ -74,7 +76,10 @@ const formSchema = z.object({
   fieldUse: z.string().optional(),
   calibrationNote: z.string().optional(),
   targetAudience: z.string().optional(),
-});
+}).refine(
+  (v) => v.salePrice === '' || v.salePrice == null || Number(v.salePrice) < Number(v.price),
+  { path: ['salePrice'], message: 'Sale price must be lower than the regular price' }
+);
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -193,6 +198,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       name: product?.name ?? "",
       description: product?.description ?? "",
       price: product?.price ?? 0,
+      salePrice: product?.salePrice != null ? product.salePrice : '',
       stock: product?.stock ?? 0,
       shippingFee:
         product?.shippingFee != null ? product.shippingFee : '',
@@ -237,7 +243,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   };
 
   async function onSubmit(values: FormValues) {
-    const { shippingFee: shippingFeeInput, ...rest } = values;
+    const { shippingFee: shippingFeeInput, salePrice: salePriceInput, ...rest } = values;
     const productData: Record<string, unknown> = {
       ...rest,
       price: Number(values.price),
@@ -245,6 +251,12 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       images,
       features: values.features?.map(f => f.text) ?? [],
     };
+
+    if (salePriceInput !== '' && salePriceInput != null) {
+      productData.salePrice = Number(salePriceInput);
+    } else if (product) {
+      productData.salePrice = deleteField();
+    }
 
     if (values.isDigital) {
       // Digital products never ship — drop any override so it can't linger.
@@ -325,6 +337,13 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
 
   const enabledSections = form.watch("enabledSections");
   const isDigital = form.watch("isDigital");
+  const watchedPrice = form.watch("price");
+  const watchedSalePrice = form.watch("salePrice");
+  const salePreview = (() => {
+    const priced = { price: Number(watchedPrice), salePrice: watchedSalePrice === '' ? undefined : Number(watchedSalePrice) };
+    const sale = getSalePrice(priced);
+    return sale === null ? null : { sale, regular: priced.price, percent: getDiscountPercent(priced) };
+  })();
 
   return (
     <>
@@ -355,6 +374,38 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                     <FormMessage />
                   </FormItem>
                 )} />
+                <FormField name="salePrice" control={form.control} render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sale price (R) <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
+                    <FormControl>
+                      <Input
+                        type="number"
+                        step="0.01"
+                        min={0}
+                        placeholder="Leave empty for no discount"
+                        name={field.name}
+                        ref={field.ref}
+                        onBlur={field.onBlur}
+                        value={field.value === '' || field.value === undefined ? '' : field.value}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          field.onChange(raw === '' ? '' : Number(raw));
+                        }}
+                      />
+                    </FormControl>
+                    {salePreview ? (
+                      <p className="text-[10px] text-muted-foreground">
+                        Customers pay <span className="font-semibold text-sale">{formatRand(salePreview.sale)}</span>{' '}
+                        instead of <s>{formatRand(salePreview.regular)}</s> ({salePreview.percent}% off).
+                      </p>
+                    ) : (
+                      <p className="text-[10px] text-muted-foreground italic">Set a discounted price to show the regular price struck through. Clear it to end the sale.</p>
+                    )}
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField name="stock" control={form.control} render={({ field }) => (
                   <FormItem>
                     <FormLabel>Inventory</FormLabel>

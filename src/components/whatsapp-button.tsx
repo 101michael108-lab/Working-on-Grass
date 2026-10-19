@@ -7,7 +7,7 @@ const WHATSAPP_NUMBER = "27782280008";
 const WHATSAPP_URL = `https://wa.me/${WHATSAPP_NUMBER}?text=Hi%2C%20I%20have%20a%20question%20about%20Working%20on%20Grass.`;
 
 // Pages that already have prominent inline WhatsApp CTAs — no need to double up
-const PAGES_WITH_INLINE_CTA = ["/", "/about", "/consulting", "/seeds", "/contact"];
+const PAGES_WITH_INLINE_CTA = ["/", "/consulting", "/contact"];
 
 export function WhatsAppButton() {
   const pathname = usePathname();

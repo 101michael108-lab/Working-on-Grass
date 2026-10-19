@@ -66,6 +66,37 @@ export type ListOptions = {
 };
 
 /**
+ * Reads one public document.
+ *
+ * Three outcomes, because callers treat them differently:
+ *   - the document           → render it on the server;
+ *   - `null`                 → it genuinely does not exist (Firestore said 404), so 404 the page;
+ *   - `undefined`            → the read failed; fall back to the client-side read, never 404/500.
+ */
+export async function getPublicDocument<T>(
+  collection: string,
+  id: string,
+  { revalidate = 300, tag }: Pick<ListOptions, 'revalidate' | 'tag'> = {}
+): Promise<T | null | undefined> {
+  const params = new URLSearchParams({ key: firebaseConfig.apiKey });
+  try {
+    const res = await fetch(`${BASE}/${collection}/${encodeURIComponent(id)}?${params}`, {
+      next: { revalidate, ...(tag ? { tags: [tag] } : {}) },
+    });
+    if (res.status === 404) return null;
+    if (!res.ok) {
+      console.warn(`getPublicDocument(${collection}/${id}): Firestore REST responded ${res.status}`);
+      return undefined;
+    }
+    const doc = (await res.json()) as RestDocument;
+    return { id, ...decodeFields(doc.fields) } as T;
+  } catch (error) {
+    console.warn(`getPublicDocument(${collection}/${id}): read failed, falling back to client.`, error);
+    return undefined;
+  }
+}
+
+/**
  * Reads a public collection. Returns `[]` rather than throwing: every caller has
  * a client-side fallback, so a failed read should degrade to the old behaviour
  * (content appears after hydration), never blank the page or 500 the route.

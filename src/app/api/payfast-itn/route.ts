@@ -9,6 +9,7 @@ import type { SiteSettings } from '@/lib/types';
 import {
   confirmItnWithPayfast,
   isPayfastPaymentComplete,
+  isPayfastPaymentPending,
   verifyItnSignature,
 } from '@/lib/payfast-itn';
 import { getPayfastPassphrase } from '@/lib/payfast-config';
@@ -148,6 +149,12 @@ export async function POST(req: NextRequest) {
         if (current.status !== 'Pending') return false; // already handled
 
         if (!shouldFulfil) {
+          // Not settled yet: record what PayFast said but keep the order open, so
+          // the COMPLETE notification that follows can still fulfil it.
+          if (isPayfastPaymentPending(paymentStatus)) {
+            tx.update(orderRef, { paymentInfo });
+            return false;
+          }
           tx.update(orderRef, { status: 'Cancelled', paymentInfo });
           return false;
         }

@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import type { Order } from "@/lib/types";
 import { formatOrderRef } from "@/lib/order-number";
+import { formatRand } from "@/lib/utils";
 import { InvoiceActions } from "@/components/invoice-actions";
 import { Container, Eyebrow } from "@/components/redesign/ui";
 
@@ -129,7 +130,7 @@ export default function TrackOrderPage() {
             <div className="mt-6 flex flex-col gap-2 border-t border-line pt-5 text-[13.5px]">
               <div className="flex justify-between"><span className="text-body-soft">Placed on</span><span className="font-medium text-ink">{order.orderDate ? new Date(order.orderDate.toDate()).toLocaleDateString("en-ZA", { dateStyle: "long" }) : "—"}</span></div>
               <div className="flex justify-between"><span className="text-body-soft">Deliver to</span><span className="font-medium text-ink">{order.shippingInfo.firstName} {order.shippingInfo.lastName}, {order.shippingInfo.city}</span></div>
-              <div className="flex justify-between text-[15px] font-bold text-ink"><span>Total paid</span><span>R{order.totalAmount.toFixed(2)}</span></div>
+              <div className="flex justify-between text-[15px] font-bold text-ink"><span>Total paid</span><span>{formatRand(order.totalAmount)}</span></div>
             </div>
 
             <div className="mt-5 flex flex-wrap items-center justify-between gap-3">

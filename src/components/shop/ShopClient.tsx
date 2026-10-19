@@ -3,23 +3,31 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { Search } from "lucide-react";
 import type { Product } from "@/lib/types";
-import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import ProductCard from "@/components/shop/ProductCard";
 
 const ALL = "All products";
 
-export default function ShopClient({ products }: { products: Product[] }) {
-  const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category");
-
-  const [activeCat, setActiveCat] = useState<string>(ALL);
+/**
+ * `initialCategory` comes from the page's ?category= search param (read on the
+ * server, so the filtered grid is already in the HTML rather than switching
+ * after hydration).
+ */
+export default function ShopClient({
+  products,
+  initialCategory,
+}: {
+  products: Product[];
+  initialCategory?: string;
+}) {
+  const [activeCat, setActiveCat] = useState<string>(initialCategory || ALL);
   const [searchTerm, setSearchTerm] = useState("");
 
+  // Client-side navigation to another ?category= re-renders with a new prop.
   useEffect(() => {
-    if (categoryParam) setActiveCat(categoryParam);
-  }, [categoryParam]);
+    setActiveCat(initialCategory || ALL);
+  }, [initialCategory]);
 
   // Category list with counts, in a stable, sensible order.
   const categories = useMemo(() => {

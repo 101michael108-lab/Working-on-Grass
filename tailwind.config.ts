@@ -66,6 +66,12 @@ export default {
           bg: '#EAF1E7',
           border: '#BFD6BD',
         },
+        /* Discounted prices + "% off" badges — earthy brick red, AA on cream. */
+        sale: {
+          DEFAULT: '#A8432A',
+          bg: '#FBECE6',
+          border: '#E9BBA9',
+        },
         background: 'hsl(var(--background))',
         surface: 'hsl(var(--surface))',
         foreground: 'hsl(var(--foreground))',

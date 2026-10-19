@@ -16,6 +16,7 @@
 import { initializeFirebase } from '@/firebase';
 import { collection, getDocs, doc, getDoc } from 'firebase/firestore';
 import { productUrl } from '@/lib/utils';
+import { getSalePrice } from '@/lib/pricing';
 import type { Product, Specification } from '@/lib/types';
 
 // Render at request time (never at build) so a deploy can't be blocked by a
@@ -88,6 +89,10 @@ function buildItem(product: Product, globalShippingFee: number): string | null {
     tag('g:condition', 'new'),
     tag('g:brand', brand),
   ];
+
+  // Discounts: Google shows the sale price with the regular price struck through.
+  const salePrice = getSalePrice(product);
+  if (salePrice !== null) parts.push(tag('g:sale_price', `${salePrice.toFixed(2)} ZAR`));
 
   const gCat = googleCategory(product);
   if (gCat) parts.push(tag('g:google_product_category', gCat));

@@ -4,6 +4,10 @@ import React, { useState } from "react";
 import { Container, Eyebrow } from "@/components/redesign/ui";
 import { useToast } from "@/hooks/use-toast";
 import { submitInquiry } from "@/lib/submit-inquiry";
+import { track } from "@/lib/analytics";
+import { HoneypotField } from "@/components/forms/honeypot-field";
+import { FormSent } from "@/components/forms/form-sent";
+import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 
 const WHY = [
   { n: 1, title: "Matched to your conditions", body: "Rainfall, soil type and altitude determine which species will actually establish and persist." },
@@ -13,6 +17,8 @@ const WHY = [
 
 const PURPOSES = ["Grazing pasture", "Soil cover / stabilisation", "Rehabilitation", "Other / not sure"];
 
+const EMPTY_FORM = { name: "", email: "", phone: "", region: "", area: "", purpose: PURPOSES[0], notes: "", website: "" };
+
 const labelCls = "flex flex-col gap-1.5";
 const span = "text-[12px] font-semibold text-[#43483F]";
 const input = "h-[46px] rounded-[3px] border border-line-strong bg-[#F7F4EC] px-3.5 font-body text-[14px] text-ink outline-none transition-colors focus:border-forest placeholder:text-body-faint";
@@ -20,14 +26,16 @@ const input = "h-[46px] rounded-[3px] border border-line-strong bg-[#F7F4EC] px-
 export default function SeedsPage() {
   const { toast } = useToast();
   const [submitting, setSubmitting] = useState(false);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", region: "", area: "", purpose: PURPOSES[0], notes: "" });
+  const [sent, setSent] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
   const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm((f) => ({ ...f, [k]: e.target.value }));
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.email.trim()) {
-      toast({ variant: "destructive", title: "Please add your name and email", description: "So we can send your quote." });
+    // Phone-only is fine: many farmers would rather be called than emailed.
+    if (!form.name.trim() || (!form.email.trim() && !form.phone.trim())) {
+      toast({ variant: "destructive", title: "Please add your name and a phone number or email", description: "So we can send your quote." });
       return;
     }
     setSubmitting(true);
@@ -41,9 +49,11 @@ export default function SeedsPage() {
         farmSize: form.area,
         primaryUse: form.purpose,
         message: form.notes,
+        website: form.website,
       });
-      toast({ title: "Seed quote requested", description: "Thanks — Frits will respond with a tailored recommendation shortly." });
-      setForm({ name: "", email: "", phone: "", region: "", area: "", purpose: PURPOSES[0], notes: "" });
+      track("generate_lead", { form_name: "seed_quote", service: form.purpose });
+      setSent(true);
+      setForm(EMPTY_FORM);
     } catch {
       toast({ variant: "destructive", title: "Could not send your enquiry", description: "Please try again, or reach us on WhatsApp." });
     } finally {
@@ -82,12 +92,19 @@ export default function SeedsPage() {
         {/* Form */}
         <div className="rounded-[4px] border border-line bg-cream-card p-[clamp(24px,3vw,36px)] shadow-lifted">
           <h2 className="m-0 mb-5 font-headline text-[22px] font-semibold text-ink">Request a seed quote</h2>
-          <form onSubmit={onSubmit} className="grid grid-cols-1 gap-4 min-[520px]:grid-cols-2">
-            <label className={labelCls}><span className={span}>Full name</span><input value={form.name} onChange={set("name")} placeholder="Your name" className={input} /></label>
-            <label className={labelCls}><span className={span}>Email</span><input type="email" value={form.email} onChange={set("email")} placeholder="you@farm.co.za" className={input} /></label>
-            <label className={labelCls}><span className={span}>Phone</span><input type="tel" value={form.phone} onChange={set("phone")} placeholder="+27" className={input} /></label>
+          {sent ? (
+            <FormSent title="Thanks — your seed quote request is in." onReset={() => setSent(false)}>
+              Frits will come back to you with a tailored recommendation, usually within 1&ndash;2 business days.
+            </FormSent>
+          ) : (
+          <form onSubmit={onSubmit} className="relative grid grid-cols-1 gap-4 min-[520px]:grid-cols-2">
+            <HoneypotField value={form.website} onChange={set("website")} />
+            <label className={labelCls}><span className={span}>Full name</span><input value={form.name} onChange={set("name")} placeholder="Your name" autoComplete="name" className={input} /></label>
+            <label className={labelCls}><span className={span}>Email</span><input type="email" value={form.email} onChange={set("email")} placeholder="you@farm.co.za" autoComplete="email" className={input} /></label>
+            <label className={labelCls}><span className={span}>Phone</span><input type="tel" value={form.phone} onChange={set("phone")} placeholder="+27" autoComplete="tel" className={input} /></label>
             <label className={labelCls}><span className={span}>Region / district</span><input value={form.region} onChange={set("region")} placeholder="e.g. Limpopo" className={input} /></label>
-            <label className={labelCls}><span className={span}>Area to plant (ha)</span><input value={form.area} onChange={set("area")} placeholder="e.g. 40" className={input} /></label>
+            <p className="m-0 -mt-1 text-[12px] text-body-faint min-[520px]:col-span-2">A phone number or email is enough — whichever you prefer.</p>
+            <label className={labelCls}><span className={span}>Area to plant (ha)</span><input value={form.area} onChange={set("area")} placeholder="e.g. 40" inputMode="decimal" className={input} /></label>
             <label className={labelCls}><span className={span}>Purpose</span>
               <select value={form.purpose} onChange={set("purpose")} className={`${input} appearance-none`}>
                 {PURPOSES.map((p) => <option key={p}>{p}</option>)}
@@ -98,6 +115,10 @@ export default function SeedsPage() {
               {submitting ? "Sending…" : "Request quote"}
             </button>
           </form>
+          )}
+          <a href="https://wa.me/27782280008?text=Hi%20Frits%2C%20I%27d%20like%20a%20grass%20seed%20quote." target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 text-[13.5px] font-semibold text-forest no-underline">
+            <WhatsAppIcon className="h-4 w-4 text-[#25D366]" /> Prefer WhatsApp? Message Frits on +27 78 228 0008
+          </a>
         </div>
       </Container>
     </>

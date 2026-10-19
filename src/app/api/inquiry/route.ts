@@ -37,6 +37,12 @@ export async function POST(req: NextRequest) {
   const kind = str(body.kind);
   const entry = (body.entry && typeof body.entry === 'object' ? body.entry : {}) as Record<string, unknown>;
 
+  // Honeypot: the forms render a visually-hidden "website" field people never
+  // see. Bots fill it in. Pretend success so they don't retry, and send nothing.
+  if (str(entry.website)) {
+    return NextResponse.json({ ok: true });
+  }
+
   const name = str(entry.name, 200);
   if (!name) {
     return NextResponse.json({ error: 'Name is required' }, { status: 400 });
@@ -58,42 +64,66 @@ export async function POST(req: NextRequest) {
       const needs = str(entry.needs, 4000);
       const service = str(entry.service, 200) || 'General Inquiry';
       const serviceType = `Consultation: ${service}`;
+      // Newer forms send email/phone separately; older ones only `contactDetail`.
+      const email = str(entry.email, 300) || (contactDetail.includes('@') ? contactDetail : '');
+      const phone = str(entry.phone, 100) || (contactDetail && !contactDetail.includes('@') ? contactDetail : '');
+      const location = str(entry.location, 300);
+      const propertySize = str(entry.propertySize, 100);
 
       await db.collection('consultationRequests').add({
         name,
-        contactDetail,
-        location: str(entry.location, 300),
+        contactDetail: contactDetail || email || phone,
+        email,
+        phone,
+        location,
+        propertySize,
         needs,
         service,
         type: 'consultation',
         submissionDate: FieldValue.serverTimestamp(),
       });
 
-      const customerEmail = contactDetail.includes('@') ? contactDetail : undefined;
-      if (customerEmail) {
+      if (email) {
         await sendInquiryAcknowledgmentEmail(
-          { to: customerEmail, customerName: name, service: serviceType, ...emailMeta },
+          { to: email, customerName: name, service: serviceType, ...emailMeta },
           db
         );
       }
       await sendAdminInquiryNotification(
-        { to: adminTo, customerName: name, customerEmail: contactDetail, service: serviceType, message: needs, ...emailMeta },
+        {
+          to: adminTo,
+          customerName: name,
+          customerEmail: email,
+          service: serviceType,
+          message: needs,
+          details: [
+            ['Phone', phone],
+            ['Email', email],
+            ['Location', location],
+            ['Property size', propertySize && `${propertySize} ha`],
+          ],
+          ...emailMeta,
+        },
         db
       );
     } else {
       // contact + seed both write to contactFormEntries
       const email = str(entry.email, 300);
+      const phone = str(entry.phone, 100);
+      const location = str(entry.location, 300);
+      const farmSize = str(entry.farmSize, 100);
+      const primaryUse = str(entry.primaryUse, 100);
       const serviceInterestedIn = str(entry.serviceInterestedIn, 200) || 'General Inquiry';
       const message = str(entry.message, 4000);
 
       await db.collection('contactFormEntries').add({
         name,
         email,
-        phone: str(entry.phone, 100),
-        location: str(entry.location, 300),
+        phone,
+        location,
         serviceInterestedIn,
-        farmSize: str(entry.farmSize, 100),
-        primaryUse: str(entry.primaryUse, 100),
+        farmSize,
+        primaryUse,
         message,
         submissionDate: FieldValue.serverTimestamp(),
       });
@@ -105,7 +135,21 @@ export async function POST(req: NextRequest) {
         );
       }
       await sendAdminInquiryNotification(
-        { to: adminTo, customerName: name, customerEmail: email, service: serviceInterestedIn, message, ...emailMeta },
+        {
+          to: adminTo,
+          customerName: name,
+          customerEmail: email,
+          service: serviceInterestedIn,
+          message,
+          details: [
+            ['Phone', phone],
+            ['Email', email],
+            ['Region', location],
+            ['Area to plant', farmSize && `${farmSize} ha`],
+            ['Purpose', primaryUse],
+          ],
+          ...emailMeta,
+        },
         db
       );
     }

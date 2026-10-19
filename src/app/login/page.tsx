@@ -78,7 +78,9 @@ function LoginPageContent() {
   const [isRedirecting, setIsRedirecting] = useState(false);
 
   useEffect(() => {
-    if (isUserLoading || !user) return;
+    // Guest checkout leaves an anonymous session behind; that isn't a login, so
+    // still show the form rather than bouncing the guest straight back out.
+    if (isUserLoading || !user || user.isAnonymous) return;
 
     let cancelled = false;
     setIsRedirecting(true);

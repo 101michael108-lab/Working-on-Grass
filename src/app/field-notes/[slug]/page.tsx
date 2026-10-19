@@ -6,7 +6,8 @@ import Image from "next/image";
 import { getFieldNoteBySlug, getPublishedFieldNotes, formatNoteDate, readingMinutes } from "@/lib/field-notes";
 import { getAdminFirestore } from "@/lib/firebase-admin";
 import type { Product } from "@/lib/types";
-import { productUrl } from "@/lib/utils";
+import { formatRand, productUrl } from "@/lib/utils";
+import { getSalePrice, getUnitPrice } from "@/lib/pricing";
 import { Container } from "@/components/redesign/ui";
 import { FieldNoteBody } from "@/components/field-notes/field-note-body";
 import { FieldNoteCard } from "@/components/field-notes/field-note-card";
@@ -157,7 +158,16 @@ export default async function FieldNoteArticle({ params }: { params: Promise<{ s
               <div className="min-w-[180px] flex-1">
                 <div className="mb-1.5 font-body text-[10px] font-bold uppercase tracking-[0.14em] text-gold-deep">Referenced in this article</div>
                 <h3 className="m-0 mb-1 font-headline text-[19px] font-semibold text-ink">{product.name}</h3>
-                <span className="font-body text-[16px] font-bold text-ink">R{product.price.toFixed(2)}</span>
+                {getSalePrice(product) !== null ? (
+                  <span className="flex items-baseline gap-2">
+                    <span className="sr-only">Sale price</span>
+                    <span className="font-body text-[16px] font-bold text-sale">{formatRand(getUnitPrice(product))}</span>
+                    <span className="sr-only">, regular price</span>
+                    <s className="font-body text-[13px] font-medium text-body-faint">{formatRand(product.price)}</s>
+                  </span>
+                ) : (
+                  <span className="font-body text-[16px] font-bold text-ink">{formatRand(product.price)}</span>
+                )}
               </div>
               <Link href={productUrl(product)} className="whitespace-nowrap rounded-[3px] bg-forest px-5 py-3 text-[13.5px] font-semibold text-ondark-bright no-underline hover:bg-forest-dark">View product</Link>
             </div>

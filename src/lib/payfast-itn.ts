@@ -49,3 +49,12 @@ export function verifyItnSignature(
 export function isPayfastPaymentComplete(paymentStatus: string | undefined): boolean {
   return (paymentStatus ?? '').trim().toUpperCase() === 'COMPLETE';
 }
+
+/**
+ * PayFast can report a payment as PENDING (e.g. some EFT methods) and send a
+ * COMPLETE notification later. That is not a failure, so the order must stay
+ * open rather than being cancelled.
+ */
+export function isPayfastPaymentPending(paymentStatus: string | undefined): boolean {
+  return (paymentStatus ?? '').trim().toUpperCase() === 'PENDING';
+}
