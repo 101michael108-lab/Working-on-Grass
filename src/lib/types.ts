@@ -29,6 +29,8 @@ export type Product = {
   price: number;
   /** Discounted price. When set below `price`, customers pay this and `price` is shown struck through. */
   salePrice?: number;
+  /** Optional reason shown beside the discount tag, e.g. "Launch Special". Only shown while on sale. */
+  saleLabel?: string;
   stock: number;
   /** When set, overrides the store-wide shipping fee from Settings for this product. */
   shippingFee?: number;

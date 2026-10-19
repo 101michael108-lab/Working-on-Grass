@@ -8,12 +8,11 @@ import {
 } from "lucide-react";
 import type { Product } from "@/lib/types";
 import { useCart } from "@/context/cart-context";
-import { WhatsAppIcon } from "@/components/icons/WhatsAppIcon";
 import ProductCard from "@/components/shop/ProductCard";
 import { Container, Eyebrow } from "@/components/redesign/ui";
 import { formatRand } from "@/lib/utils";
 import { getProductShippingFee } from "@/lib/shipping";
-import { getDiscountPercent, getSalePrice, getUnitPrice } from "@/lib/pricing";
+import { getDiscountPercent, getSaleLabel, getSalePrice, getUnitPrice } from "@/lib/pricing";
 import { toGaItem, track } from "@/lib/analytics";
 
 function FormattedText({ text }: { text?: string }) {
@@ -55,6 +54,7 @@ export default function ProductDetail({
   const images = product.images ?? [];
   const inStock = (product.stock ?? 0) > 0;
   const salePrice = getSalePrice(product);
+  const saleLabel = getSaleLabel(product);
   const unitPrice = getUnitPrice(product);
   // Show delivery before the cart so a R450 book doesn't surprise anyone as R600.
   const deliveryFee =
@@ -75,10 +75,6 @@ export default function ProductDetail({
     : /tool|meter|instrument|measurement/i.test(product.category)
     ? "instrument"
     : "book";
-
-  const waHref =
-    "https://wa.me/27782280008?text=" +
-    encodeURIComponent(`Hi Frits, I have a question about the ${product.name}.`);
 
   return (
     <div className="bg-cream">
@@ -133,8 +129,13 @@ export default function ProductDetail({
                 <s className="font-body text-[19px] font-medium leading-none text-body-faint">{formatRand(product.price)}</s>
                 <span className="text-[11px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
               </div>
-              <div className="mt-2.5 inline-flex items-center rounded-[2px] border border-sale-border bg-sale-bg px-2 py-[3px] font-body text-[11px] font-bold uppercase tracking-[0.08em] text-sale">
-                Save {formatRand(product.price - salePrice)} &middot; {getDiscountPercent(product)}% off
+              <div className="mt-2.5 flex flex-wrap items-center gap-1.5 font-body text-[11px] font-bold uppercase tracking-[0.08em]">
+                {saleLabel && (
+                  <span className="rounded-[2px] border border-sale bg-sale px-2 py-[3px] text-white">{saleLabel}</span>
+                )}
+                <span className="rounded-[2px] border border-sale-border bg-sale-bg px-2 py-[3px] text-sale">
+                  Save {formatRand(product.price - salePrice)} &middot; {getDiscountPercent(product)}% off
+                </span>
               </div>
             </>
           ) : (
@@ -181,11 +182,6 @@ export default function ProductDetail({
               {inStock ? `Add to cart · ${formatRand(unitPrice * qty)}` : "Sold out"}
             </button>
           </div>
-
-          <a href={waHref} target="_blank" rel="noopener noreferrer" className="mt-3 flex h-[46px] items-center justify-center gap-2.5 rounded-[3px] border border-line-strong text-[13.5px] font-semibold text-forest no-underline transition-colors hover:border-forest">
-            <WhatsAppIcon className="h-4 w-4 text-[#25D366]" />
-            Ask Frits about this product
-          </a>
 
           {/* Trust row */}
           <div className="mt-[26px] flex flex-col gap-[11px] border-t border-line pt-[22px]">

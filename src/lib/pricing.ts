@@ -21,6 +21,15 @@ export function getUnitPrice(product: PricedProduct): number {
   return getSalePrice(product) ?? Number(product.price);
 }
 
+/** Longest sale label the storefront tag is laid out for (fits the narrowest shop card). */
+export const SALE_LABEL_MAX_LENGTH = 20;
+
+/** The sale's label (e.g. "Launch Special"), or null when there is none or the product isn't on sale. */
+export function getSaleLabel(product: Pick<Product, 'price' | 'salePrice' | 'saleLabel'>): string | null {
+  const label = typeof product.saleLabel === 'string' ? product.saleLabel.trim() : '';
+  return label && getSalePrice(product) !== null ? label : null;
+}
+
 /** Whole-number percentage off the regular price (e.g. R450 → R399 is 11), or 0 when not on sale. */
 export function getDiscountPercent(product: PricedProduct): number {
   const sale = getSalePrice(product);
