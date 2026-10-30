@@ -13,7 +13,7 @@ import { Container, Eyebrow } from "@/components/redesign/ui";
 import { formatRand } from "@/lib/utils";
 import { getProductShippingFee } from "@/lib/shipping";
 import { getDiscountPercent, getSalePrice, getUnitPrice } from "@/lib/pricing";
-import { toGaItem, track } from "@/lib/analytics";
+import { toGaItem, track, countFunnelStep } from "@/lib/analytics";
 
 function FormattedText({ text }: { text?: string }) {
   if (!text) return null;
@@ -61,6 +61,7 @@ export default function ProductDetail({
 
   useEffect(() => {
     track("view_item", { currency: "ZAR", value: getUnitPrice(product), items: [toGaItem(product)] });
+    countFunnelStep("view_item");
     // Once per product page, not on every live-data refresh.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);

@@ -56,6 +56,40 @@ export function track(event: string, params: Record<string, unknown> = {}): void
   }
 }
 
+/**
+ * Count a funnel step in the shop's own tally, as well as sending it to GA4.
+ *
+ * Fire-and-forget: the request is never awaited and never surfaces an error,
+ * because nothing about measuring a checkout may be allowed to interrupt one.
+ * `keepalive` lets the request finish even when the click navigates away, which
+ * is exactly the case for the step that leaves for PayFast.
+ */
+export function countFunnelStep(event: string, reason?: string): void {
+  if (typeof fetch !== 'function') return;
+  try {
+    void fetch('/api/track', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ event, ...(reason ? { reason } : {}) }),
+      keepalive: true,
+    }).catch(() => {
+      /* analytics must never break the page */
+    });
+  } catch {
+    /* ignore */
+  }
+}
+
+/** Send a funnel step to GA4 and to the shop's own tally in one call. */
+export function trackFunnel(
+  event: string,
+  params: Record<string, unknown> = {},
+  options: { countAs?: string; reason?: string } = {}
+): void {
+  track(event, params);
+  countFunnelStep(options.countAs ?? event, options.reason);
+}
+
 /** A product as a GA4 ecommerce `item`. */
 export function toGaItem(product: Pick<Product, 'id' | 'name' | 'price' | 'salePrice' | 'category' | 'brand'>, quantity = 1) {
   const salePrice = getSalePrice(product);

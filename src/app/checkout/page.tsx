@@ -16,7 +16,7 @@ import { ShieldCheck, User } from "lucide-react";
 import { cn, formatRand } from "@/lib/utils";
 import { calculateOrderShipping } from "@/lib/shipping";
 import { getSalePrice, getUnitPrice } from "@/lib/pricing";
-import { toGaItem, track } from "@/lib/analytics";
+import { toGaItem, track, countFunnelStep } from "@/lib/analytics";
 import { Container } from "@/components/redesign/ui";
 
 const formSchema = z
@@ -147,6 +147,7 @@ export default function CheckoutPage() {
   useEffect(() => {
     if (!isHydrated || cartItems.length === 0 || beganCheckout.current) return;
     beganCheckout.current = true;
+    countFunnelStep("begin_checkout");
     track("begin_checkout", {
       currency: "ZAR",
       value: subtotal,
@@ -218,16 +219,25 @@ export default function CheckoutPage() {
 
       const data = await res.json();
       if (!res.ok) {
+        // A refused checkout is a sale lost at the final step and leaves no
+        // order behind, so without this it is invisible to the owner.
+        countFunnelStep("checkout_failed", data?.reason || `http_${res.status}`);
         toast({ variant: "destructive", title: "Checkout problem", description: data?.error || "Could not start payment. Please try again." });
         setIsProcessing(false);
         return;
       }
+
+      // The step that was missing: they completed the form and are being sent
+      // to PayFast. Everything lost after this point is lost at the payment
+      // provider, not on this site.
+      countFunnelStep("payment_started");
       // The cart is deliberately NOT cleared here: a buyer who cancels on PayFast
       // (or presses Back) must come back to their cart intact. It is cleared on
       // /checkout/success once payment has actually gone through.
       setPayfastUrl(data.payfastUrl);
       setPayfastConfig(data.payfastData);
     } catch (error: any) {
+      countFunnelStep("checkout_failed", "network_error");
       toast({ variant: "destructive", title: "Uh oh!", description: error?.message || "Checkout failed." });
       setIsProcessing(false);
     }

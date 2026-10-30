@@ -136,6 +136,19 @@ service cloud.firestore {
     }
 
     // ------------------------------------------------------------------
+    // Funnel tallies (how far visitors get before giving up)
+    // ------------------------------------------------------------------
+
+    // One document per day holding nothing but counters — no identifiers and
+    // nothing about an individual visitor. Written only by /api/track and the
+    // PayFast ITN via the Admin SDK, which bypasses these rules; a client must
+    // never be able to write here, or the numbers could be forged.
+    match /analytics/{day} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // ------------------------------------------------------------------
     // Leads & inquiries
     // ------------------------------------------------------------------
 
