@@ -108,6 +108,12 @@ export type Order = {
   };
   items: OrderItem[];
   /**
+   * A rehearsal, not a sale: placed while the store was in sandbox mode, or
+   * marked as one by hand afterwards. Excluded from every figure the owner
+   * reads as a business number.
+   */
+  isTest?: boolean;
+  /**
    * What happened to this order's emails, written by /api/payfast-itn. Absent
    * on orders whose PayFast notification never arrived — which is exactly how
    * the admin dashboard tells "no ITN" apart from "the send was rejected".
