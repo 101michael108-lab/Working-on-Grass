@@ -9,6 +9,7 @@ import {
   nextStatusAction,
   summariseItems,
   summariseOrders,
+  daysWaiting,
 } from './order-display';
 import type { MailDoc } from './mail-delivery';
 
@@ -147,6 +148,46 @@ describe('summariseOrders', () => {
     // 2 unpaid of 5 started.
     expect(summariseOrders(orders, NOW).abandonRate).toBeCloseTo(0.4);
     expect(summariseOrders([], NOW).abandonRate).toBeNull();
+  });
+});
+
+describe('test orders', () => {
+  const real = { status: 'Processing' as const, totalAmount: 450, orderDate: daysAgo(2), emailStatus: { queuedAt: NOW } };
+  const rehearsal = { status: 'Processing' as const, totalAmount: 5, orderDate: daysAgo(2), emailStatus: undefined, isTest: true };
+
+  it('keeps rehearsals out of every business figure', () => {
+    // Sandbox checkouts made while setting the store up otherwise make the
+    // sales, abandonment and missed-notification numbers meaningless.
+    const t = summariseOrders([real, rehearsal], NOW);
+    expect(t.toPack).toBe(1);
+    expect(t.paidCount).toBe(1);
+    expect(t.revenue30Days).toBe(450);
+    expect(t.missedNotifications).toBe(0);
+    expect(t.testCount).toBe(1);
+  });
+
+  it('does not let rehearsals distort the abandonment rate', () => {
+    const abandonedTest = { status: 'Pending' as const, totalAmount: 5, orderDate: daysAgo(1), emailStatus: undefined, isTest: true };
+    const abandonedReal = { status: 'Pending' as const, totalAmount: 450, orderDate: daysAgo(1), emailStatus: undefined };
+
+    // Three of four look abandoned, but only one real checkout of two was.
+    const t = summariseOrders([real, rehearsal, abandonedTest, abandonedReal], NOW);
+    expect(t.abandonRate).toBeCloseTo(0.5);
+    expect(t.testCount).toBe(2);
+  });
+
+  it('reports when the last real payment came in, so a zero has meaning', () => {
+    const t = summariseOrders([{ ...real, orderDate: daysAgo(90) }], NOW);
+    expect(t.revenue30Days).toBe(0);
+    expect(t.revenueAllTime).toBe(450);
+    expect(t.lastPaidAt?.toISOString().slice(0, 10)).toBe('2025-12-01');
+  });
+
+  it('measures how long the oldest unpacked order has waited', () => {
+    const t = summariseOrders([{ ...real, orderDate: daysAgo(40) }, real], NOW);
+    expect(t.oldestToPackDays).toBe(40);
+    expect(daysWaiting({ orderDate: daysAgo(40) }, NOW)).toBe(40);
+    expect(daysWaiting({ orderDate: undefined }, NOW)).toBeNull();
   });
 });
 

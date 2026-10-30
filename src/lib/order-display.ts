@@ -217,10 +217,18 @@ export function summariseItems(items: Order['items'] | undefined): string {
 
 export type OrderTotals = {
   toPack: number;
+  /** How many orders were excluded as rehearsals, so the exclusion is visible. */
+  testCount: number;
   paidCount: number;
   unpaidCount: number;
   /** Money from paid orders in the last 30 days. */
   revenue30Days: number;
+  /** Money from every paid order, so a quiet month is not mistaken for no sales ever. */
+  revenueAllTime: number;
+  /** When the most recent payment came in, which gives a zero its meaning. */
+  lastPaidAt: Date | null;
+  /** Days the oldest unpacked order has been waiting, for spotting a stale pile. */
+  oldestToPackDays: number | null;
   /** Share of checkouts that were started and never paid for, 0–1. */
   abandonRate: number | null;
   /** Paid orders whose notification never reached the owner. */
@@ -236,7 +244,7 @@ export type OrderTotals = {
  * demand.
  */
 export function summariseOrders(
-  orders: Array<Pick<Order, 'status' | 'totalAmount' | 'orderDate' | 'emailStatus'>>,
+  orders: Array<Pick<Order, 'status' | 'totalAmount' | 'orderDate' | 'emailStatus' | 'isTest'>>,
   now: Date = new Date()
 ): OrderTotals {
   const cutoff = now.getTime() - 30 * 24 * 60 * 60 * 1000;
@@ -244,17 +252,33 @@ export function summariseOrders(
   let paidCount = 0;
   let unpaidCount = 0;
   let revenue30Days = 0;
+  let revenueAllTime = 0;
   let missedNotifications = 0;
+  let lastPaidMs: number | null = null;
+  let oldestToPackMs: number | null = null;
+  let testCount = 0;
+  for (const order of orders) if (order.isTest) testCount++;
 
   for (const order of orders) {
+    // A rehearsal is not a sale, an abandonment, or a missed notification.
+    // Counting them makes every figure on the page meaningless.
+    if (order.isTest) continue;
+
     const paid = isPaid(order.status);
-    if (order.status === 'Processing') toPack++;
+    const placed = orderDateMs(order.orderDate);
+
+    if (order.status === 'Processing') {
+      toPack++;
+      if (placed !== null && (oldestToPackMs === null || placed < oldestToPackMs)) oldestToPackMs = placed;
+    }
 
     if (paid) {
       paidCount++;
       if (!order.emailStatus?.queuedAt) missedNotifications++;
-      const placed = orderDateMs(order.orderDate);
-      if (placed === null || placed >= cutoff) revenue30Days += Number(order.totalAmount) || 0;
+      const amount = Number(order.totalAmount) || 0;
+      revenueAllTime += amount;
+      if (placed === null || placed >= cutoff) revenue30Days += amount;
+      if (placed !== null && (lastPaidMs === null || placed > lastPaidMs)) lastPaidMs = placed;
     } else if (order.status === 'Pending') {
       unpaidCount++;
     }
@@ -263,9 +287,14 @@ export function summariseOrders(
   const started = paidCount + unpaidCount;
   return {
     toPack,
+    testCount,
     paidCount,
     unpaidCount,
     revenue30Days,
+    revenueAllTime,
+    lastPaidAt: lastPaidMs === null ? null : new Date(lastPaidMs),
+    oldestToPackDays:
+      oldestToPackMs === null ? null : Math.floor((now.getTime() - oldestToPackMs) / 86_400_000),
     abandonRate: started > 0 ? unpaidCount / started : null,
     missedNotifications,
   };
@@ -281,6 +310,19 @@ function orderDateMs(value: unknown): number | null {
   }
   if (value instanceof Date) return value.getTime();
   return null;
+}
+
+/**
+ * How long an order has been sitting, in whole days.
+ *
+ * A pile of unpacked orders from months ago is not a to-do list, it is a sign
+ * nobody has been marking them off. Showing the age stops the count reading as
+ * work that arrived today.
+ */
+export function daysWaiting(order: Pick<Order, 'orderDate'>, now: Date = new Date()): number | null {
+  const placed = orderDateMs(order.orderDate);
+  if (placed === null) return null;
+  return Math.floor((now.getTime() - placed) / 86_400_000);
 }
 
 /** Match an order against what the owner typed in the search box. */

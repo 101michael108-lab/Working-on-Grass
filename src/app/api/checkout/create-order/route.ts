@@ -138,6 +138,16 @@ export async function POST(req: NextRequest) {
 
     // 5. Persist the order (authoritative data) with the Admin SDK.
     const storeName = settings?.storeName || 'Working on Grass';
+
+    // Decided before the write so the order itself records whether it was real.
+    // A sandbox checkout is a rehearsal: it must not count towards sales,
+    // abandonment or anything else the owner reads as a business number.
+    const base = (process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin).replace(/\/$/, '');
+    let host = '';
+    try { host = new URL(base).hostname; } catch { /* ignore */ }
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
+    const isLive = settings?.isLiveMode === true && !isLocalhost;
+
     const orderRef = db.collection('users').doc(uid).collection('orders').doc();
     const orderId = orderRef.id;
     await orderRef.set({
@@ -149,16 +159,11 @@ export async function POST(req: NextRequest) {
       shippingFee: shipping,
       shippingInfo,
       ...(billingInfo ? { billingInfo } : {}),
+      ...(isLive ? {} : { isTest: true }),
       items: lines.map((l) => ({ productId: l.productId, name: l.name, quantity: l.quantity, price: l.price })),
     });
 
     // 6. Resolve PayFast credentials server-side and build the signed form.
-    const base = (process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin).replace(/\/$/, '');
-    let host = '';
-    try { host = new URL(base).hostname; } catch { /* ignore */ }
-    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
-    const isLive = settings?.isLiveMode === true && !isLocalhost;
-
     const merchantId = (isLive ? settings?.payfastMerchantId : process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_ID)?.trim() || '';
     const merchantKey = (isLive ? settings?.payfastMerchantKey : process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_KEY)?.trim() || '';
     if (!merchantId || !merchantKey) {

@@ -42,6 +42,7 @@ import {
   FileText,
   Mail,
   MapPin,
+  FlaskConical,
   Package,
   Phone,
   RefreshCw,
@@ -59,6 +60,7 @@ import { resolveAdminRecipients, resolveReplyToEmail, resolveSenderEmail } from 
 import { type MailDoc } from "@/lib/mail-delivery";
 import {
   ORDER_GROUPS,
+  daysWaiting,
   describeOrderEmail,
   describeOrderStatus,
   groupForStatus,
@@ -145,6 +147,7 @@ export default function AdminOrdersPage() {
   const [search, setSearch] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<AdminOrder | null>(null);
   const [orderToDelete, setOrderToDelete] = useState<AdminOrder | null>(null);
+  const [showTests, setShowTests] = useState(false);
 
   const settingsRef = useMemoFirebase(() => doc(firestore, "settings", "config"), [firestore]);
   const { data: settings } = useDoc<SiteSettings>(settingsRef);
@@ -194,17 +197,19 @@ export default function AdminOrdersPage() {
 
   const totals = useMemo(() => summariseOrders(orders, loadedAt), [orders, loadedAt]);
 
+  const listed = useMemo(() => orders.filter((o) => showTests || !o.isTest), [orders, showTests]);
+
   const visible = useMemo(
-    () => orders.filter((o) => groupForStatus(o.status) === group && matchesSearch(o, search)),
-    [orders, group, search]
+    () => listed.filter((o) => groupForStatus(o.status) === group && matchesSearch(o, search)),
+    [listed, group, search]
   );
 
   const groupCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     for (const g of ORDER_GROUPS) counts[g.id] = 0;
-    for (const o of orders) counts[groupForStatus(o.status)] = (counts[groupForStatus(o.status)] ?? 0) + 1;
+    for (const o of listed) counts[groupForStatus(o.status)] = (counts[groupForStatus(o.status)] ?? 0) + 1;
     return counts;
-  }, [orders]);
+  }, [listed]);
 
   const activeGroup = ORDER_GROUPS.find((g) => g.id === group)!;
 
@@ -231,6 +236,29 @@ export default function AdminOrdersPage() {
       toast({ title: `Marked as ${newStatus.toLowerCase()}`, description: "The customer has been emailed." });
     } else {
       toast({ title: `Marked as ${newStatus.toLowerCase()}` });
+    }
+  };
+
+  /**
+   * Mark an order as a rehearsal rather than deleting it. Test checkouts made
+   * while setting the store up otherwise sit in the figures forever, and
+   * deleting them loses the record of what was tried.
+   */
+  const handleToggleTest = async (order: AdminOrder) => {
+    const next = !order.isTest;
+    setIsBusy(true);
+    try {
+      await updateDoc(doc(firestore, "users", order.userId, "orders", order.id), { isTest: next });
+      setOrders((prev) => prev.map((o) => (o.id === order.id ? { ...o, isTest: next } : o)));
+      setSelectedOrder((prev) => (prev && prev.id === order.id ? { ...prev, isTest: next } : prev));
+      toast({
+        title: next ? "Marked as a test" : "Marked as a real order",
+        description: next ? "It no longer counts towards your figures." : "It counts towards your figures again.",
+      });
+    } catch {
+      toast({ variant: "destructive", title: "Could not change that order" });
+    } finally {
+      setIsBusy(false);
     }
   };
 
@@ -328,13 +356,23 @@ export default function AdminOrdersPage() {
           hint={totals.toPack > 0 ? "Paid for and waiting" : "Nothing waiting"}
           tone={totals.toPack > 0 ? "good" : undefined}
         />
-        <StatTile label="Earned (30 days)" value={money(totals.revenue30Days)} hint="Paid orders only" />
+        <StatTile
+          label="Earned (30 days)"
+          value={money(totals.revenue30Days)}
+          hint={
+            totals.revenue30Days > 0
+              ? "Real paid orders only"
+              : totals.lastPaidAt
+                ? `Nothing recent · last paid ${totals.lastPaidAt.toLocaleDateString("en-ZA", { dateStyle: "medium" })}`
+                : "No real orders yet"
+          }
+        />
         <StatTile
           label="Didn't pay"
           value={
             totals.abandonRate == null ? "—" : `${Math.round(totals.abandonRate * 100)}%`
           }
-          hint={`${totals.unpaidCount} of ${totals.unpaidCount + totals.paidCount} checkouts`}
+          hint={`${totals.unpaidCount} of ${totals.unpaidCount + totals.paidCount} real checkouts`}
           tone={totals.abandonRate != null && totals.abandonRate > 0.7 ? "bad" : undefined}
         />
         <StatTile
@@ -344,6 +382,18 @@ export default function AdminOrdersPage() {
           tone={totals.missedNotifications > 0 ? "bad" : undefined}
         />
       </div>
+
+      {totals.testCount > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-dashed px-3 py-2 text-xs text-muted-foreground">
+          <span>
+            {totals.testCount} test order{totals.testCount === 1 ? "" : "s"} {showTests ? "shown" : "hidden"}. The
+            figures above ignore them.
+          </span>
+          <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={() => setShowTests((v) => !v)}>
+            {showTests ? "Hide test orders" : "Show test orders"}
+          </Button>
+        </div>
+      )}
 
       {totals.missedNotifications > 0 && (
         <Alert variant="destructive">
@@ -431,13 +481,19 @@ export default function AdminOrdersPage() {
                 const status = describeOrderStatus(order.status);
                 const email = describeOrderEmail(order, mailById, loadedAt);
                 const action = nextStatusAction(order.status);
+                const waiting = daysWaiting(order, loadedAt);
+                const isStale = order.status === "Processing" && waiting !== null && waiting > 14;
 
                 return (
                   <div
                     key={order.id}
                     className={
                       "rounded-md border p-3 transition-colors hover:bg-muted/40 " +
-                      (email.isProblem ? "border-destructive/40 bg-destructive/5" : "")
+                      (order.isTest
+                        ? "border-dashed opacity-60 "
+                        : email.isProblem
+                          ? "border-destructive/40 bg-destructive/5 "
+                          : "")
                     }
                   >
                     <div className="flex flex-wrap items-start gap-x-4 gap-y-2">
@@ -451,6 +507,11 @@ export default function AdminOrdersPage() {
                           <Badge variant={status.variant} className="whitespace-nowrap text-[10px]">
                             {status.label}
                           </Badge>
+                          {order.isTest && (
+                            <Badge variant="outline" className="whitespace-nowrap text-[10px]">
+                              Test
+                            </Badge>
+                          )}
                         </div>
                         <div className="mt-0.5 text-sm">
                           {order.shippingInfo?.firstName} {order.shippingInfo?.lastName}
@@ -460,6 +521,9 @@ export default function AdminOrdersPage() {
                         </div>
                         <div className="text-xs text-muted-foreground">
                           {orderDate(order)} · {summariseItems(order.items)}
+                          {isStale && (
+                            <span className="text-destructive"> · waiting {waiting} days</span>
+                          )}
                         </div>
                       </button>
 
@@ -476,7 +540,7 @@ export default function AdminOrdersPage() {
                             {action.label}
                           </Button>
                         )}
-                        {email.offerResend && (
+                        {email.offerResend && !order.isTest && (
                           <Button
                             size="sm"
                             variant="outline"
@@ -646,6 +710,15 @@ export default function AdminOrdersPage() {
                     </SelectContent>
                   </Select>
                   <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isBusy}
+                    onClick={() => handleToggleTest(selectedOrder)}
+                  >
+                    <FlaskConical className="mr-1.5 h-3 w-3" />
+                    {selectedOrder.isTest ? "This is a real order" : "This was a test"}
+                  </Button>
+                  <Button
                     variant="ghost"
                     size="sm"
                     className="text-destructive hover:bg-destructive/10"
@@ -657,7 +730,8 @@ export default function AdminOrdersPage() {
                 </div>
                 <p className="text-[11px] text-muted-foreground">
                   Marking an order <strong>sent</strong> or <strong>delivered</strong> emails the customer
-                  automatically.
+                  automatically. Marking one as a <strong>test</strong> keeps the record but leaves it out of your
+                  figures — better than deleting it.
                 </p>
               </div>
             </div>
