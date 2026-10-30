@@ -9,7 +9,18 @@ import type {
 } from "@/components/ui/toast"
 
 const TOAST_LIMIT = 1
-const TOAST_REMOVE_DELAY = 1000000
+
+/**
+ * How long a dismissed toast lingers in state before being dropped — long
+ * enough to finish its exit animation, no longer.
+ *
+ * This was 1000000ms (nearly 17 minutes), which is the upstream default and a
+ * bug. Radix treats the viewport as "has toasts" for as long as one is in this
+ * list, whether or not it is still visible, and stops guarding that area
+ * against clicks. So a single toast made a strip of the screen unclickable for
+ * a quarter of an hour after it had faded away.
+ */
+const TOAST_REMOVE_DELAY = 1_000
 
 type ToasterToast = ToastProps & {
   id: string
