@@ -74,6 +74,19 @@ export type OrderEmailStatus = {
   /** Set when queueing threw; the order itself was still updated. */
   emailError?: string;
   emailErrorAt?: unknown;
+  /**
+   * Written before the emails are queued, to stop two notifications arriving
+   * together from both sending. Older than `CLAIM_RETRY_AFTER_MS` with no
+   * `queuedAt` means an attempt died midway and a retry is allowed.
+   */
+  claimedAt?: unknown;
+  /** The payment-problem alert raised for an order the system refused. */
+  alertMailId?: string | null;
+  alertAt?: unknown;
+  alertReason?: string;
+  /** An admin notification re-sent by hand from the orders dashboard. */
+  resentAdminMailId?: string | null;
+  resentAt?: unknown;
 };
 
 /**

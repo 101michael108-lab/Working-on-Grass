@@ -1,6 +1,7 @@
 "use client"
 
 import React from "react";
+import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +15,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { SiteSettings } from "@/lib/types";
 import { Mail, Send, Info } from "lucide-react";
-import { sendOrderConfirmationEmail } from "@/services/email-service";
+import { sendOrderConfirmationEmail, sendAdminOrderNotification } from "@/services/email-service";
+import { resolveAdminRecipients, resolveSenderEmail } from "@/lib/email-recipients";
 
 export default function AdminSettingsPage() {
   const firestore = useFirestore();
@@ -65,31 +67,44 @@ export default function AdminSettingsPage() {
     toast({ title: "Settings Saved" });
   };
 
+  /**
+   * Queue the same two emails a real order would, resolved exactly the way the
+   * checkout resolves them. Testing only the customer receipt used to leave the
+   * [SALES] notification — the one that actually goes missing — untested.
+   */
   const handleSendTestEmail = async () => {
     setIsTestingEmail(true);
+    const recipients = resolveAdminRecipients(formData);
+    const fromEmail = resolveSenderEmail(formData);
+    const shippingInfo = {
+        email: recipients[0],
+        firstName: "Test",
+        lastName: "User",
+        address: "123 Veld Avenue",
+        city: "Modimolle",
+        postalCode: "0510",
+        country: "South Africa",
+    };
+    const payload = {
+        customerName: "Test User",
+        orderId: "TEST-12345",
+        totalAmount: 0,
+        items: [{ name: "Test Email Service Connection", quantity: 1, price: 0 }],
+        shippingInfo,
+        storeName: formData.storeName,
+        fromEmail,
+    };
+
     try {
-        await sendOrderConfirmationEmail({
-            to: formData.contactEmail,
-            customerName: "Test User",
-            orderId: "TEST-12345",
-            totalAmount: 0,
-            items: [{ name: "Test Email Service Connection", quantity: 1, price: 0 }],
-            shippingInfo: {
-                email: formData.contactEmail,
-                firstName: "Test",
-                lastName: "User",
-                address: "123 Veld Avenue",
-                city: "Modimolle",
-                postalCode: "0510",
-                country: "South Africa",
-            },
-            storeName: formData.storeName,
-            fromEmail: formData.senderEmail,
-        }, firestore);
-        
-        toast({ title: "Test Email Queued", description: `Sent to ${formData.contactEmail}` });
+        await sendOrderConfirmationEmail({ ...payload, to: recipients[0] }, firestore);
+        await sendAdminOrderNotification({ ...payload, to: recipients }, firestore);
+
+        toast({
+            title: "2 Test Emails Queued",
+            description: `Sent to ${recipients.join(', ')}. Check the Email Log for the delivery result.`,
+        });
     } catch (e: any) {
-        toast({ variant: "destructive", title: "Test Failed" });
+        toast({ variant: "destructive", title: "Test Failed", description: "Could not write to the mail collection." });
     } finally {
         setIsTestingEmail(false);
     }
@@ -109,9 +124,9 @@ export default function AdminSettingsPage() {
                     <p className="text-[10px] text-muted-foreground italic">Used as the "From Name" in emails.</p>
                 </div>
                 <div className="space-y-2">
-                    <Label>Notification Email (Inquiries)</Label>
-                    <Input type="email" value={formData.contactEmail} onChange={(e) => setFormData(p => ({ ...p, contactEmail: e.target.value }))}/>
-                    <p className="text-[10px] text-muted-foreground italic">Where you receive contact form submissions.</p>
+                    <Label>Notification Email (Orders &amp; Inquiries)</Label>
+                    <Input value={formData.contactEmail} onChange={(e) => setFormData(p => ({ ...p, contactEmail: e.target.value }))}/>
+                    <p className="text-[10px] text-muted-foreground italic">Where new orders and contact forms are sent. Separate several addresses with commas to notify more than one mailbox.</p>
                 </div>
                 <div className="space-y-2">
                     <Label>Sender Email Address</Label>
@@ -151,7 +166,7 @@ export default function AdminSettingsPage() {
                 <div className="bg-muted/30 p-4 rounded-md space-y-4 text-sm">
                     <div className="flex items-start gap-2 mb-2">
                         <Info className="h-4 w-4 text-primary shrink-0 mt-0.5" />
-                        <p>This creates a document in your 'mail' collection. If your Firebase Trigger Email extension is configured correctly, it will send a receipt to <strong>{formData.contactEmail}</strong>.</p>
+                        <p>Queues the same two emails a real order sends — a customer receipt and the <strong>[SALES]</strong> notification — to <strong>{resolveAdminRecipients(formData).join(', ')}</strong>. This writes documents to your <code>mail</code> collection; the Firebase Trigger Email extension is what actually sends them, so check the <Link href="/admin/email-log" className="underline font-medium">Email Log</Link> afterwards to see whether it succeeded.</p>
                     </div>
                     <Button variant="outline" onClick={handleSendTestEmail} disabled={isTestingEmail}><Send className="mr-2 h-4 w-4" />{isTestingEmail ? "Queuing..." : "Send Test Email"}</Button>
                 </div>

@@ -30,12 +30,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { updateDoc } from "firebase/firestore";
 import { updateDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, Trash2, Send } from "lucide-react";
+import { Eye, Trash2, Send, BellRing } from "lucide-react";
 import type { Order, User, SiteSettings } from "@/lib/types";
 import { formatOrderRef } from "@/lib/order-number";
-import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from "@/services/email-service";
+import {
+  sendOrderStatusUpdateEmail,
+  sendOrderConfirmationEmail,
+  sendAdminOrderNotification,
+} from "@/services/email-service";
+import { resolveAdminRecipients, resolveSenderEmail } from "@/lib/email-recipients";
 import {
   describeQueuedMail,
   formatDateTime,
@@ -142,24 +148,25 @@ function OrderEmailDetail({
   mailById: Map<string, MailDoc>;
   now: Date;
 }) {
-  if (!emailStatus?.queuedAt) {
-    return (
-      <div className="rounded border border-dashed p-3 text-xs text-muted-foreground">
-        No emails were ever queued for this order. The PayFast ITN writes this marker the moment it moves an order
-        off <strong>Pending</strong>, so its absence means no completed-payment notification reached{' '}
-        <code>/api/payfast-itn</code> for this order.
-      </div>
-    );
-  }
-
-  const rows: Array<{ label: string; mailId?: string | null; to?: string | null }> = [
-    { label: 'Admin notification', mailId: emailStatus.adminMailId, to: emailStatus.adminTo },
-    { label: 'Customer confirmation', mailId: emailStatus.customerMailId, to: emailStatus.customerTo },
-  ];
+  const rows: Array<{ label: string; mailId?: string | null; to?: string | null }> = emailStatus?.queuedAt
+    ? [
+        { label: 'Admin notification', mailId: emailStatus.adminMailId, to: emailStatus.adminTo },
+        { label: 'Customer confirmation', mailId: emailStatus.customerMailId, to: emailStatus.customerTo },
+      ]
+    : [];
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">Queued {formatDateTime(emailStatus.queuedAt)}</p>
+      {emailStatus?.queuedAt ? (
+        <p className="text-xs text-muted-foreground">Queued {formatDateTime(emailStatus.queuedAt)}</p>
+      ) : (
+        <div className="rounded border border-dashed p-3 text-xs text-muted-foreground">
+          The automatic flow never queued emails for this order. The PayFast notification writes this marker the
+          moment it moves an order off <strong>Pending</strong>, so its absence means no completed-payment
+          notification reached <code>/api/payfast-itn</code>. Use <strong>Send Me The Order</strong> above to get
+          the notification now.
+        </div>
+      )}
       {rows.map(({ label, mailId, to }) => {
         const badge = describeQueuedMail(mailId, mailById.get(mailId || ''), now);
         return (
@@ -176,12 +183,44 @@ function OrderEmailDetail({
           </div>
         );
       })}
-      {emailStatus.emailError && (
+      {emailStatus?.emailError && (
         <div className="rounded border border-destructive/50 bg-destructive/5 p-3">
           <p className="text-xs font-semibold uppercase tracking-wide text-destructive">
             Queueing failed {emailStatus.emailErrorAt ? `• ${formatDateTime(emailStatus.emailErrorAt)}` : ''}
           </p>
           <p className="mt-1 break-words font-mono text-xs">{emailStatus.emailError}</p>
+        </div>
+      )}
+
+      {emailStatus?.resentAdminMailId && (
+        <div className="rounded border p-3 text-xs">
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-medium">Sent by hand</span>
+            <Badge
+              variant={describeQueuedMail(
+                emailStatus.resentAdminMailId,
+                mailById.get(emailStatus.resentAdminMailId),
+                now
+              ).variant}
+              className="whitespace-nowrap"
+            >
+              {describeQueuedMail(
+                emailStatus.resentAdminMailId,
+                mailById.get(emailStatus.resentAdminMailId),
+                now
+              ).label}
+            </Badge>
+          </div>
+          <p className="mt-1 text-muted-foreground">{formatDateTime(emailStatus.resentAt)}</p>
+        </div>
+      )}
+
+      {emailStatus?.alertReason && (
+        <div className="rounded border border-destructive/50 bg-destructive/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-destructive">
+            Payment problem alert {emailStatus.alertAt ? `• ${formatDateTime(emailStatus.alertAt)}` : ''}
+          </p>
+          <p className="mt-1 break-words text-xs">{emailStatus.alertReason}</p>
         </div>
       )}
       <p className="text-xs text-muted-foreground">
@@ -238,6 +277,8 @@ export default function AdminOrdersPage() {
                 const mailIds = allOrders.flatMap((o) => [
                     o.emailStatus?.customerMailId,
                     o.emailStatus?.adminMailId,
+                    o.emailStatus?.resentAdminMailId,
+                    o.emailStatus?.alertMailId,
                 ]);
                 setMailById(await fetchMailByIds(firestore, mailIds.filter(Boolean) as string[]));
             } catch (error) {
@@ -269,7 +310,7 @@ export default function AdminOrdersPage() {
                     customerName: `${order.shippingInfo.firstName} ${order.shippingInfo.lastName}`,
                     newStatus: newStatus,
                     storeName: settings?.storeName,
-                    fromEmail: settings?.senderEmail,
+                    fromEmail: resolveSenderEmail(settings),
                 }, firestore);
             }
         }
@@ -304,11 +345,53 @@ export default function AdminOrdersPage() {
                 items: order.items,
                 shippingInfo: order.shippingInfo,
                 storeName: settings?.storeName,
-                fromEmail: settings?.senderEmail,
+                fromEmail: resolveSenderEmail(settings),
             }, firestore);
             toast({ title: "Email Queued" });
         } catch (e: any) {
             toast({ variant: "destructive", title: "Failed to queue email." });
+        } finally { setIsSendingEmail(false); }
+    }
+
+    /**
+     * Re-queue the [SALES] notification for one order.
+     *
+     * The recovery path for every way an order could go unannounced — a PayFast
+     * notification that never arrived, an order moved off Pending by hand, or a
+     * send the mail extension rejected while it was misconfigured. Recorded
+     * separately from the ITN's own marker so it stays clear which emails the
+     * automatic flow queued and which a person did.
+     */
+    const handleSendAdminNotification = async (order: Order) => {
+        const recipients = resolveAdminRecipients(settings);
+        setIsSendingEmail(true);
+        try {
+            const mail = await sendAdminOrderNotification({
+                to: recipients,
+                orderId: order.id,
+                orderNumber: order.orderNumber,
+                orderDate: order.orderDate?.toDate ? order.orderDate.toDate() : undefined,
+                customerName: `${order.shippingInfo?.firstName ?? ''} ${order.shippingInfo?.lastName ?? ''}`.trim() || 'Customer',
+                totalAmount: order.totalAmount,
+                items: order.items,
+                shippingInfo: order.shippingInfo,
+                storeName: settings?.storeName,
+                fromEmail: resolveSenderEmail(settings),
+            }, firestore);
+
+            // Dot paths so the ITN's own emailStatus fields are left intact.
+            if (order.userId && mail?.id) {
+                await updateDoc(doc(firestore, 'users', order.userId, 'orders', order.id), {
+                    'emailStatus.resentAdminMailId': mail.id,
+                    'emailStatus.resentAt': new Date(),
+                });
+            }
+
+            toast({ title: "Notification Queued", description: `Sent to ${recipients.join(', ')}` });
+            setSelectedOrder(null);
+            fetchAllOrders();
+        } catch (e) {
+            toast({ variant: "destructive", title: "Could not queue the notification." });
         } finally { setIsSendingEmail(false); }
     }
 
@@ -381,6 +464,9 @@ export default function AdminOrdersPage() {
                                     <Badge className="text-sm px-3">{selectedOrder.status}</Badge>
                                     <Button variant="outline" size="sm" className="w-full text-xs" disabled={isSendingEmail} onClick={() => handleResendConfirmation(selectedOrder)}>
                                         <Send className="mr-2 h-3 w-3" /> Resend Receipt
+                                    </Button>
+                                    <Button variant="outline" size="sm" className="w-full text-xs" disabled={isSendingEmail} onClick={() => handleSendAdminNotification(selectedOrder)}>
+                                        <BellRing className="mr-2 h-3 w-3" /> Send Me The Order
                                     </Button>
                                 </div>
                             </div>
