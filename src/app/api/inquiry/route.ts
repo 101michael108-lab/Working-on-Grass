@@ -12,6 +12,56 @@ import { resolveAdminRecipients, resolveSenderEmail } from '@/lib/email-recipien
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
 
+type InquiryEmailInput = {
+  db: ReturnType<typeof getAdminFirestore>;
+  adminTo: string[];
+  emailMeta: { storeName?: string; fromEmail?: string };
+  name: string;
+  email: string;
+  service: string;
+  message: string;
+  details: Array<[string, string | undefined]>;
+};
+
+/**
+ * Queue the enquirer's acknowledgment and the owners' notification.
+ *
+ * Independently, and never throwing. Awaiting the acknowledgment first meant a
+ * customer who mistyped their own address took the lead notification down with
+ * them: the enquiry was saved but nobody was ever told about it. The lead is
+ * already written by the time this runs, so a failure here costs visibility,
+ * not data — and it is recorded in the admin Email Log either way.
+ */
+async function queueInquiryEmails({
+  db,
+  adminTo,
+  emailMeta,
+  name,
+  email,
+  service,
+  message,
+  details,
+}: InquiryEmailInput): Promise<void> {
+  const attempts: Array<Promise<unknown>> = [
+    sendAdminInquiryNotification(
+      { to: adminTo, customerName: name, customerEmail: email, service, message, details, ...emailMeta },
+      db
+    ).catch((e) => {
+      console.error('Inquiry: admin notification could not be queued:', e);
+    }),
+  ];
+
+  if (email) {
+    attempts.push(
+      sendInquiryAcknowledgmentEmail({ to: email, customerName: name, service, ...emailMeta }, db).catch((e) => {
+        console.error('Inquiry: customer acknowledgment could not be queued:', e);
+      })
+    );
+  }
+
+  await Promise.all(attempts);
+}
+
 /**
  * Handles public contact / seed / consultation form submissions server-side.
  *
@@ -85,29 +135,21 @@ export async function POST(req: NextRequest) {
         submissionDate: FieldValue.serverTimestamp(),
       });
 
-      if (email) {
-        await sendInquiryAcknowledgmentEmail(
-          { to: email, customerName: name, service: serviceType, ...emailMeta },
-          db
-        );
-      }
-      await sendAdminInquiryNotification(
-        {
-          to: adminTo,
-          customerName: name,
-          customerEmail: email,
-          service: serviceType,
-          message: needs,
-          details: [
-            ['Phone', phone],
-            ['Email', email],
-            ['Location', location],
-            ['Property size', propertySize && `${propertySize} ha`],
-          ],
-          ...emailMeta,
-        },
-        db
-      );
+      await queueInquiryEmails({
+        db,
+        adminTo,
+        emailMeta,
+        name,
+        email,
+        service: serviceType,
+        message: needs,
+        details: [
+          ['Phone', phone],
+          ['Email', email],
+          ['Location', location],
+          ['Property size', propertySize && `${propertySize} ha`],
+        ],
+      });
     } else {
       // contact + seed both write to contactFormEntries
       const email = str(entry.email, 300);
@@ -130,30 +172,22 @@ export async function POST(req: NextRequest) {
         submissionDate: FieldValue.serverTimestamp(),
       });
 
-      if (email) {
-        await sendInquiryAcknowledgmentEmail(
-          { to: email, customerName: name, service: serviceInterestedIn, ...emailMeta },
-          db
-        );
-      }
-      await sendAdminInquiryNotification(
-        {
-          to: adminTo,
-          customerName: name,
-          customerEmail: email,
-          service: serviceInterestedIn,
-          message,
-          details: [
-            ['Phone', phone],
-            ['Email', email],
-            ['Region', location],
-            ['Area to plant', farmSize && `${farmSize} ha`],
-            ['Purpose', primaryUse],
-          ],
-          ...emailMeta,
-        },
-        db
-      );
+      await queueInquiryEmails({
+        db,
+        adminTo,
+        emailMeta,
+        name,
+        email,
+        service: serviceInterestedIn,
+        message,
+        details: [
+          ['Phone', phone],
+          ['Email', email],
+          ['Region', location],
+          ['Area to plant', farmSize && `${farmSize} ha`],
+          ['Purpose', primaryUse],
+        ],
+      });
     }
 
     return NextResponse.json({ ok: true });
