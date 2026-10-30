@@ -6,6 +6,7 @@ import {
   parseEmailList,
   primaryRecipient,
   resolveAdminRecipients,
+  resolveReplyToEmail,
   resolveSenderEmail,
 } from './email-recipients';
 
@@ -34,6 +35,22 @@ describe('email-recipients', () => {
     expect(resolveAdminRecipients({ contactEmail: '' })).toEqual([DEFAULT_ADMIN_EMAIL]);
     expect(resolveAdminRecipients({ contactEmail: 'not an address' })).toEqual([DEFAULT_ADMIN_EMAIL]);
     expect(resolveAdminRecipients(null)).toEqual([DEFAULT_ADMIN_EMAIL]);
+  });
+
+  it('resolves the reply address from its own setting, not the notification order', () => {
+    // With two owners notified, taking the first of the list would make the
+    // reply destination depend on the order they happened to be typed in.
+    const twoOwners = { contactEmail: 'frits@workingongrass.co.za, admin@workingongrass.co.za' };
+    expect(resolveReplyToEmail({ ...twoOwners, replyToEmail: 'admin@workingongrass.co.za' })).toBe(
+      'admin@workingongrass.co.za'
+    );
+
+    // Unset or unusable: fall back to the first notified owner, then default.
+    expect(resolveReplyToEmail(twoOwners)).toBe('frits@workingongrass.co.za');
+    expect(resolveReplyToEmail({ ...twoOwners, replyToEmail: 'not an address' })).toBe(
+      'frits@workingongrass.co.za'
+    );
+    expect(resolveReplyToEmail(null)).toBe(DEFAULT_ADMIN_EMAIL);
   });
 
   it('omits an unusable sender so the extension DEFAULT_FROM applies', () => {

@@ -49,6 +49,23 @@ export function resolveAdminRecipients(settings: { contactEmail?: string } | nul
 }
 
 /**
+ * Where a customer's reply goes.
+ *
+ * Deliberately a setting of its own rather than "the first notification
+ * address". `from` sits on the provider-verified sending domain, which is a
+ * sending identity and not a mailbox anyone reads, so a reply to it is lost —
+ * and with more than one owner being notified, picking one off the front of
+ * that list would make the destination depend on the order they were typed in.
+ */
+export function resolveReplyToEmail(
+  settings: { replyToEmail?: string; contactEmail?: string } | null | undefined
+): string {
+  const configured = typeof settings?.replyToEmail === 'string' ? settings.replyToEmail.trim() : '';
+  if (isEmailish(configured)) return configured;
+  return resolveAdminRecipients(settings)[0];
+}
+
+/**
  * The `from` address for outgoing mail, or undefined to omit the header and let
  * the Trigger Email extension's own DEFAULT_FROM apply. Omitting is the safer
  * default: the extension's configured sender is known to be accepted by the

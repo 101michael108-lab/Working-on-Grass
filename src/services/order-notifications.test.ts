@@ -200,3 +200,28 @@ describe('ensureOrderNotifications', () => {
     expect(fake.subjects()).toHaveLength(2);
   });
 });
+
+describe('reply addresses', () => {
+  it('points replies where a human will read them', async () => {
+    // `from` sits on the verified sending domain, which is not a mailbox — a
+    // reply to it bounces. So the receipt replies to the business, and the
+    // sales alert replies to the buyer.
+    const fake = fakeFirestore();
+    await run(fake, { storeName: 'Working on Grass', contactEmail: 'frits@workingongrass.co.za' });
+
+    const receipt = fake.queued.find((d) => String(d.message.subject).startsWith('Order Confirmation'));
+    const alert = fake.queued.find((d) => String(d.message.subject).startsWith('[SALES]'));
+
+    expect(receipt?.replyTo).toBe('frits@workingongrass.co.za');
+    expect(alert?.replyTo).toBe('buyer@example.com');
+  });
+
+  it('omits the reply address on the alert when the order has no buyer email', async () => {
+    const fake = fakeFirestore();
+    fake.setOrder({ shippingInfo: { firstName: 'Thandi', lastName: 'Mokoena' } });
+    await run(fake, { storeName: 'Working on Grass', contactEmail: 'frits@workingongrass.co.za' });
+
+    const alert = fake.queued.find((d) => String(d.message.subject).startsWith('[SALES]'));
+    expect(alert?.replyTo).toBeUndefined();
+  });
+});

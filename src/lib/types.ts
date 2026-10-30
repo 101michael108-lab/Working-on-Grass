@@ -201,6 +201,8 @@ export type SiteSettings = {
   storeName: string;
   contactEmail: string;
   senderEmail?: string;
+  /** Where customer replies go. Separate from `contactEmail`, which may list several owners. */
+  replyToEmail?: string;
   /** VAT registration number — when set, invoices render as a compliant TAX INVOICE. */
   vatNumber?: string;
   shippingFee: number;

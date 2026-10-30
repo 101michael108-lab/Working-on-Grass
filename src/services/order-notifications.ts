@@ -25,7 +25,7 @@ import {
   sendAdminPaymentProblemNotification,
   sendOrderConfirmationEmail,
 } from '@/services/email-service';
-import { resolveAdminRecipients, resolveSenderEmail } from '@/lib/email-recipients';
+import { resolveAdminRecipients, resolveReplyToEmail, resolveSenderEmail } from '@/lib/email-recipients';
 import { toDateish, type OrderEmailStatus } from '@/lib/mail-delivery';
 import type { SiteSettings } from '@/lib/types';
 
@@ -164,6 +164,8 @@ export async function ensureOrderNotifications(opts: {
         {
           ...shared,
           to: customerTo ?? '',
+          // A reply to the sending domain bounces, so point it at the business.
+          replyTo: resolveReplyToEmail(settings),
           billingInfo: order.billingInfo,
           invoiceUrl: opts.invoiceUrl,
           invoiceFileName: opts.invoiceFileName,
@@ -173,7 +175,11 @@ export async function ensureOrderNotifications(opts: {
       )
     ),
     attemptQueue('admin notification', () =>
-      sendAdminOrderNotification({ ...shared, to: adminRecipients }, db)
+      // Replying to the sales alert answers the buyer directly.
+      sendAdminOrderNotification(
+        { ...shared, to: adminRecipients, ...(customerTo ? { replyTo: customerTo } : {}) },
+        db
+      )
     ),
   ]);
 

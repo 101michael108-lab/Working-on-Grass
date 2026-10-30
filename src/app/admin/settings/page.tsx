@@ -16,7 +16,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { SiteSettings } from "@/lib/types";
 import { Mail, Send, Info } from "lucide-react";
 import { sendOrderConfirmationEmail, sendAdminOrderNotification } from "@/services/email-service";
-import { resolveAdminRecipients, resolveSenderEmail } from "@/lib/email-recipients";
+import { resolveAdminRecipients, resolveReplyToEmail, resolveSenderEmail } from "@/lib/email-recipients";
 
 export default function AdminSettingsPage() {
   const firestore = useFirestore();
@@ -30,6 +30,7 @@ export default function AdminSettingsPage() {
     storeName: "Working on Grass",
     contactEmail: "admin@workingongrass.co.za",
     senderEmail: "",
+    replyToEmail: "admin@workingongrass.co.za",
     vatNumber: "",
     shippingFee: 150,
     payfastMerchantId: "",
@@ -45,6 +46,7 @@ export default function AdminSettingsPage() {
         storeName: settings.storeName || "Working on Grass",
         contactEmail: settings.contactEmail || "admin@workingongrass.co.za",
         senderEmail: settings.senderEmail || "",
+        replyToEmail: settings.replyToEmail || "admin@workingongrass.co.za",
         vatNumber: settings.vatNumber || "",
         // ?? not ||: a deliberate R0 (free delivery) must survive the next save.
         shippingFee: settings.shippingFee ?? 150,
@@ -93,6 +95,7 @@ export default function AdminSettingsPage() {
         shippingInfo,
         storeName: formData.storeName,
         fromEmail,
+        replyTo: resolveReplyToEmail(formData),
     };
 
     try {
@@ -127,6 +130,11 @@ export default function AdminSettingsPage() {
                     <Label>Notification Email (Orders &amp; Inquiries)</Label>
                     <Input value={formData.contactEmail} onChange={(e) => setFormData(p => ({ ...p, contactEmail: e.target.value }))}/>
                     <p className="text-[10px] text-muted-foreground italic">Where new orders and contact forms are sent. Separate several addresses with commas to notify more than one mailbox.</p>
+                </div>
+                <div className="space-y-2">
+                    <Label>Reply-To Address</Label>
+                    <Input value={formData.replyToEmail} placeholder="e.g. admin@workingongrass.co.za" onChange={(e) => setFormData(p => ({ ...p, replyToEmail: e.target.value }))}/>
+                    <p className="text-[10px] text-muted-foreground italic">Where a customer&apos;s reply goes. One address — the Sender Address below is a sending identity, not a mailbox anyone reads.</p>
                 </div>
                 <div className="space-y-2">
                     <Label>Sender Email Address</Label>

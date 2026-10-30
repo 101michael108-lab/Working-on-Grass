@@ -114,6 +114,16 @@ interface OrderConfirmationPayload {
   storeName?: string;
   fromEmail?: string;
   /**
+   * Where a reply should go, which is not where the mail came from.
+   *
+   * `from` has to sit on the provider-verified sending domain
+   * (orders@mail.workingongrass.co.za), and that is a sending identity, not a
+   * mailbox someone reads — a reply to it bounces. So customer mail replies to
+   * the business contact address, and the internal order alert replies to the
+   * buyer, which makes answering them a single click.
+   */
+  replyTo?: string;
+  /**
    * URL the invoice PDF is fetched from and attached. We attach by URL (not
    * inline bytes) so the Firestore `mail` doc stays tiny — Firestore rejects
    * large/complex nested payloads, and nodemailer fetches the URL at send time.
@@ -136,6 +146,7 @@ interface StatusUpdatePayload {
   newStatus: string;
   storeName?: string;
   fromEmail?: string;
+  replyTo?: string;
 }
 
 interface InquiryPayload {
@@ -211,6 +222,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
+    ...(payload.replyTo && { replyTo: payload.replyTo }),
     message: {
       subject: `Order Confirmation ${orderRef} | ${storeName}`,
       html: `
@@ -320,6 +332,7 @@ export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, d
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
+    ...(payload.replyTo && { replyTo: payload.replyTo }),
     message: {
       subject: `Order Update: ${formatOrderRef({ orderNumber: payload.orderNumber, id: payload.orderId })} is ${payload.newStatus} | ${storeName}`,
       html: `
@@ -361,6 +374,7 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
+    ...(payload.replyTo && { replyTo: payload.replyTo }),
     message: {
       subject: `[SALES] New Order ${orderRef} - ${payload.customerName}`,
       html: `

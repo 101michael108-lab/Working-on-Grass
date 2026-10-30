@@ -41,7 +41,7 @@ import {
   sendOrderConfirmationEmail,
   sendAdminOrderNotification,
 } from "@/services/email-service";
-import { resolveAdminRecipients, resolveSenderEmail } from "@/lib/email-recipients";
+import { resolveAdminRecipients, resolveReplyToEmail, resolveSenderEmail } from "@/lib/email-recipients";
 import {
   describeQueuedMail,
   formatDateTime,
@@ -311,6 +311,7 @@ export default function AdminOrdersPage() {
                     newStatus: newStatus,
                     storeName: settings?.storeName,
                     fromEmail: resolveSenderEmail(settings),
+                    replyTo: resolveReplyToEmail(settings),
                 }, firestore);
             }
         }
@@ -346,6 +347,7 @@ export default function AdminOrdersPage() {
                 shippingInfo: order.shippingInfo,
                 storeName: settings?.storeName,
                 fromEmail: resolveSenderEmail(settings),
+                replyTo: resolveReplyToEmail(settings),
             }, firestore);
             toast({ title: "Email Queued" });
         } catch (e: any) {
@@ -377,6 +379,7 @@ export default function AdminOrdersPage() {
                 shippingInfo: order.shippingInfo,
                 storeName: settings?.storeName,
                 fromEmail: resolveSenderEmail(settings),
+                ...(order.shippingInfo?.email ? { replyTo: order.shippingInfo.email } : {}),
             }, firestore);
 
             // Dot paths so the ITN's own emailStatus fields are left intact.
