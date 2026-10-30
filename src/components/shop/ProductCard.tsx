@@ -6,7 +6,7 @@ import { ShoppingCart } from 'lucide-react';
 import { useCart } from '@/context/cart-context';
 import type { Product } from '@/lib/types';
 import { formatRand, productUrl } from '@/lib/utils';
-import { getDiscountPercent, getSalePrice } from '@/lib/pricing';
+import { getDiscountPercent, getSaleLabel, getSalePrice } from '@/lib/pricing';
 
 // First plain-text paragraph — skip bullet lines.
 function getTeaser(description: string): string {
@@ -27,6 +27,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const img = product.images?.[0];
   const teaser = getTeaser(product.description);
   const salePrice = getSalePrice(product);
+  const saleLabel = getSaleLabel(product);
 
   // Keep Add working above the stretched card link.
   const handleAdd = (e: MouseEvent) => {
@@ -59,15 +60,25 @@ export default function ProductCard({ product }: { product: Product }) {
             Digital
           </span>
         ) : null}
-        {salePrice !== null && (
-          <span className="absolute left-3 top-3 z-[1] rounded-[2px] border border-sale-border bg-sale-bg px-2 py-[3px] font-body text-[10px] font-bold uppercase tracking-[0.08em] text-sale">
-            {getDiscountPercent(product)}% off
-          </span>
-        )}
       </div>
 
       {/* Body */}
-      <div className="flex flex-grow flex-col p-5">
+      <div className="relative flex flex-grow flex-col p-5">
+        {/* Sale tags sit on the image/body divider, aligned with the text column:
+            never over the product photo (the image box keeps 20px padding) and they
+            add no height. One fixed-height line: if a card is too narrow for both
+            tags, "% off" wraps onto the clipped second line and drops out whole,
+            rather than overflowing (the struck-through price still shows the deal). */}
+        {salePrice !== null && (
+          <div className="pointer-events-none absolute inset-x-5 top-0 z-[1] flex h-[23px] -translate-y-1/2 flex-wrap gap-x-1 overflow-hidden font-body text-[10px] font-bold uppercase leading-[15px] tracking-[0.08em]">
+            {saleLabel && (
+              <span className="max-w-full truncate rounded-[2px] border border-sale bg-sale px-2 py-[3px] text-white">{saleLabel}</span>
+            )}
+            <span className="rounded-[2px] border border-sale-border bg-sale-bg px-2 py-[3px] text-sale">
+              {getDiscountPercent(product)}% off
+            </span>
+          </div>
+        )}
         <span className="mb-2 font-body text-[10.5px] font-semibold uppercase tracking-[0.14em] text-body-faint">
           {product.category}
         </span>
@@ -87,17 +98,28 @@ export default function ProductCard({ product }: { product: Product }) {
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-cream-line pt-4">
           <div className="flex min-w-0 flex-col">
             {salePrice !== null ? (
-              <span className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                <span className="sr-only">Sale price</span>
-                <span className="font-body text-[19px] font-bold leading-none text-sale">{formatRand(salePrice)}</span>
-                <span className="sr-only">, regular price</span>
-                <s className="font-body text-[13px] font-medium leading-none text-body-faint">{formatRand(product.price)}</s>
-              </span>
+              <>
+                <span className="font-body text-[19px] font-bold leading-none text-sale">
+                  <span className="sr-only">Sale price </span>
+                  {formatRand(salePrice)}
+                </span>
+                {/* Regular price + VAT note share one 14px line, like "Incl. VAT" on other
+                    cards, so price rows (and their dividers) line up across the grid. On
+                    the narrowest cards "Incl. VAT" wraps onto the clipped second line and
+                    drops out visually; screen readers still read it. */}
+                <span className="mt-1 flex h-[14px] flex-wrap items-baseline gap-x-1.5 overflow-hidden leading-[14px]">
+                  <span className="sr-only">Regular price </span>
+                  <s className="font-body text-[12px] font-medium text-body-faint">{formatRand(product.price)}</s>
+                  <span className="text-[9.5px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
+                </span>
+              </>
             ) : (
-              <span className="font-body text-[19px] font-bold leading-none text-ink">{formatRand(product.price)}</span>
-            )}
-            {product.price > 0 && (
-              <span className="mt-1 text-[9.5px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
+              <>
+                <span className="font-body text-[19px] font-bold leading-none text-ink">{formatRand(product.price)}</span>
+                {product.price > 0 && (
+                  <span className="mt-1 text-[9.5px] font-semibold uppercase tracking-[0.06em] text-body-faint">Incl. VAT</span>
+                )}
+              </>
             )}
           </div>
           <button

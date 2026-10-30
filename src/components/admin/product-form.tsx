@@ -34,7 +34,7 @@ import {
   BookOpen, Users, Wrench, MapPin, Table2, Quote, Sparkles, AlertTriangle,
 } from 'lucide-react';
 import { cn, formatRand } from '@/lib/utils';
-import { getDiscountPercent, getSalePrice } from '@/lib/pricing';
+import { getDiscountPercent, getSalePrice, SALE_LABEL_MAX_LENGTH } from '@/lib/pricing';
 
 // ─── Zod Schema ────────────────────────────────────────────────────────────────
 
@@ -55,6 +55,7 @@ const formSchema = z.object({
   description: z.string().min(5, "Short description is required"),
   price: z.coerce.number().nonnegative(),
   salePrice: z.union([z.literal(''), z.coerce.number().nonnegative()]).optional(),
+  saleLabel: z.string().trim().max(SALE_LABEL_MAX_LENGTH, `Keep it to ${SALE_LABEL_MAX_LENGTH} characters so it fits the shop cards`).optional(),
   stock: z.coerce.number().int().nonnegative(),
   shippingFee: z.union([z.literal(''), z.coerce.number().nonnegative()]).optional(),
   isDigital: z.boolean().default(false),
@@ -199,6 +200,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       description: product?.description ?? "",
       price: product?.price ?? 0,
       salePrice: product?.salePrice != null ? product.salePrice : '',
+      saleLabel: product?.saleLabel ?? '',
       stock: product?.stock ?? 0,
       shippingFee:
         product?.shippingFee != null ? product.shippingFee : '',
@@ -243,7 +245,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   };
 
   async function onSubmit(values: FormValues) {
-    const { shippingFee: shippingFeeInput, salePrice: salePriceInput, ...rest } = values;
+    const { shippingFee: shippingFeeInput, salePrice: salePriceInput, saleLabel: saleLabelInput, ...rest } = values;
     const productData: Record<string, unknown> = {
       ...rest,
       price: Number(values.price),
@@ -256,6 +258,12 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
       productData.salePrice = Number(salePriceInput);
     } else if (product) {
       productData.salePrice = deleteField();
+    }
+
+    if (saleLabelInput) {
+      productData.saleLabel = saleLabelInput;
+    } else if (product) {
+      productData.saleLabel = deleteField();
     }
 
     if (values.isDigital) {
@@ -339,6 +347,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
   const isDigital = form.watch("isDigital");
   const watchedPrice = form.watch("price");
   const watchedSalePrice = form.watch("salePrice");
+  const watchedSaleLabel = form.watch("saleLabel");
   const salePreview = (() => {
     const priced = { price: Number(watchedPrice), salePrice: watchedSalePrice === '' ? undefined : Number(watchedSalePrice) };
     const sale = getSalePrice(priced);
@@ -395,6 +404,7 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                     </FormControl>
                     {salePreview ? (
                       <p className="text-[10px] text-muted-foreground">
+                        {watchedSaleLabel?.trim() && <span className="font-semibold text-sale">{watchedSaleLabel.trim()}: </span>}
                         Customers pay <span className="font-semibold text-sale">{formatRand(salePreview.sale)}</span>{' '}
                         instead of <s>{formatRand(salePreview.regular)}</s> ({salePreview.percent}% off).
                       </p>
@@ -410,6 +420,18 @@ export function ProductForm({ product, onSuccess }: ProductFormProps) {
                   <FormItem>
                     <FormLabel>Inventory</FormLabel>
                     <FormControl><Input type="number" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField name="saleLabel" control={form.control} render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Sale label <span className="font-normal text-muted-foreground">(optional)</span></FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. Launch Special" maxLength={SALE_LABEL_MAX_LENGTH} {...field} />
+                    </FormControl>
+                    <p className="text-[10px] text-muted-foreground italic">
+                      Shown next to the &ldquo;% off&rdquo; tag while a sale price is set. Up to {SALE_LABEL_MAX_LENGTH} characters.
+                    </p>
                     <FormMessage />
                   </FormItem>
                 )} />
