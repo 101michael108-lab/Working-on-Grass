@@ -32,6 +32,10 @@ Production env vars and secrets are configured in **`apphosting.yaml`**, not com
 | Live PayFast ID/key → Firestore `settings/config` | Sandbox ID/key in env |
 | Firebase Admin → ADC | Service account JSON path |
 
+The Firebase project (`studio-7014438029-85e68`) is set as the default in
+`.firebaserc`, so CLI commands work from anywhere in the repo. Outside it, pass
+`--project studio-7014438029-85e68`.
+
 ```bash
 firebase apphosting:secrets:set payfast-passphrase
 firebase deploy --only firestore:rules,firestore:indexes,storage
