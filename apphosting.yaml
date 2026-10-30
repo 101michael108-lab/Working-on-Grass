@@ -32,3 +32,28 @@ env:
     secret: payfast-passphrase
     availability:
       - RUNTIME
+
+  # Email sending (Resend). The outbox in Firestore is unchanged; these decide
+  # who sends it. With RESEND_API_KEY unset the Firebase Trigger Email
+  # extension keeps sending, so this is safe to deploy before the key exists.
+  #
+  #   firebase apphosting:secrets:set resend-api-key
+  #
+  - variable: RESEND_API_KEY
+    secret: resend-api-key
+    availability:
+      - RUNTIME
+
+  # Must be an address on a domain verified in Resend, or Resend refuses it.
+  - variable: EMAIL_FROM
+    value: "Working on Grass <orders@mail.workingongrass.co.za>"
+    availability:
+      - RUNTIME
+
+  # Optional override: "resend" or "extension". Unset picks resend whenever
+  # RESEND_API_KEY is present. Set it to "extension" to fall back without
+  # removing the key.
+  # - variable: EMAIL_TRANSPORT
+  #   value: resend
+  #   availability:
+  #     - RUNTIME

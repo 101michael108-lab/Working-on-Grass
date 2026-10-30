@@ -25,6 +25,7 @@ import {
   MessageSquare,
   FileText,
   Newspaper,
+  Mail,
 } from "lucide-react"
 import { Logo } from "@/components/logo"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -117,6 +118,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             <NavLink href="/admin" icon={<LayoutDashboard />} tooltip="Dashboard">Dashboard</NavLink>
             <NavLink href="/admin/orders" icon={<ShoppingCart />} tooltip="Orders">Orders</NavLink>
             <NavLink href="/admin/inquiries" icon={<MessageSquare />} tooltip="Inquiries">Inquiries</NavLink>
+            <NavLink href="/admin/email-log" icon={<Mail />} tooltip="Email Log">Email Log</NavLink>
             <NavLink href="/admin/products" icon={<Package />} tooltip="Products">Products</NavLink>
             <NavLink href="/admin/media" icon={<ImageIcon />} tooltip="Media">Media</NavLink>
             <NavLink href="/admin/resources" icon={<FileText />} tooltip="Resources">Resources</NavLink>

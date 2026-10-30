@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAdminFirestore } from '@/lib/firebase-admin';
-import type { Firestore as AdminFirestore } from 'firebase-admin/firestore';
-import { sendOrderConfirmationEmail, sendAdminOrderNotification } from '@/services/email-service';
+import type {
+  DocumentData,
+  DocumentReference as AdminDocumentReference,
+  Firestore as AdminFirestore,
+} from 'firebase-admin/firestore';
+import { ensureOrderNotifications, notifyAdminOfPaymentProblem } from '@/services/order-notifications';
 import { invoiceFileName } from '@/lib/invoice';
 import { signInvoiceToken } from '@/lib/invoice-token';
 import { getSiteUrl } from '@/lib/site-url';
@@ -17,6 +21,13 @@ import { getPayfastPassphrase } from '@/lib/payfast-config';
 const PROCESSED_STATUSES = new Set(['Processing', 'Shipped', 'Fulfilled', 'Delivered']);
 
 type GuideAttachment = { filename: string; path: string };
+
+/**
+ * What the Pending -> Processing transaction actually did. A plain boolean could
+ * not distinguish "payment refused" (which now has to alert the owner) from
+ * "another notification got here first".
+ */
+type TransitionOutcome = 'fulfilled' | 'left-pending' | 'cancelled' | 'already-handled';
 
 /**
  * For each distinct product in the order, resolve its optional PDF guide to a
@@ -129,34 +140,44 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (PROCESSED_STATUSES.has(orderData.status)) {
-      console.log(`PayFast ITN: Order ${orderId} already processed (${orderData.status}). Skipping.`);
-      return new NextResponse('OK', { status: 200 });
-    }
-
     const paymentInfo = { ...pfData, itn_validated_at: new Date().toISOString() };
     const shouldFulfil = isSuccess && amountOk;
+
+    // PayFast resends a notification until it is acknowledged, and an order can
+    // also be moved off Pending by hand in the dashboard. Either way a repeat
+    // notification is the only chance to queue emails a first attempt lost, so
+    // an already-processed order falls through to the (idempotent) notification
+    // step instead of returning here.
+    if (PROCESSED_STATUSES.has(orderData.status)) {
+      console.log(
+        `PayFast ITN: Order ${orderId} already processed (${orderData.status}). Skipping fulfilment.`
+      );
+      if (isSuccess) {
+        await ensureOrderEmails(db, orderRef, orderData, orderId, userId, settings);
+      }
+      return new NextResponse('OK', { status: 200 });
+    }
 
     // Idempotent, transactional transition: Pending -> Processing exactly once,
     // decrementing stock (with a floor) in the same transaction so concurrent
     // ITNs can't double-decrement or oversell.
-    let processed = false;
+    let outcome: TransitionOutcome = 'already-handled';
     try {
-      processed = await db.runTransaction(async (tx) => {
+      outcome = await db.runTransaction<TransitionOutcome>(async (tx) => {
         const snap = await tx.get(orderRef);
-        if (!snap.exists) return false;
+        if (!snap.exists) return 'already-handled';
         const current = snap.data()!;
-        if (current.status !== 'Pending') return false; // already handled
+        if (current.status !== 'Pending') return 'already-handled';
 
         if (!shouldFulfil) {
           // Not settled yet: record what PayFast said but keep the order open, so
           // the COMPLETE notification that follows can still fulfil it.
           if (isPayfastPaymentPending(paymentStatus)) {
             tx.update(orderRef, { paymentInfo });
-            return false;
+            return 'left-pending';
           }
           tx.update(orderRef, { status: 'Cancelled', paymentInfo });
-          return false;
+          return 'cancelled';
         }
 
         const orderItems: Array<{ productId: string; quantity: number }> = current.items || [];
@@ -169,85 +190,92 @@ export async function POST(req: NextRequest) {
           }
         });
         tx.update(orderRef, { status: 'Processing', paymentInfo });
-        return true;
+        return 'fulfilled';
       });
     } catch (e) {
       console.error('PayFast ITN: transaction failed:', e);
       return new NextResponse('Internal Server Error', { status: 500 });
     }
 
-    if (!processed) {
-      // Already processed, cancelled, or refused — acknowledge so PayFast stops retrying.
+    if (outcome !== 'fulfilled') {
+      // A payment that arrived but was refused is the dangerous case: the money
+      // may have moved and the order is now cancelled, so a human has to see it.
+      if (outcome === 'cancelled' && isSuccess && !amountOk) {
+        await notifyAdminOfPaymentProblem({
+          orderRef,
+          order: orderData,
+          orderId,
+          settings,
+          paymentStatus,
+          amountPaid: Number.isFinite(amountGross) ? amountGross : undefined,
+          problem:
+            'PayFast reported this payment as complete, but the amount charged does not match the ' +
+            'order total calculated on the server. The order was not fulfilled.',
+          actionTaken:
+            'The order was marked Cancelled and no stock was deducted. Check PayFast for the actual ' +
+            'payment and refund or correct the order by hand.',
+        });
+      }
+      // Acknowledge either way so PayFast stops retrying.
       return new NextResponse('OK', { status: 200 });
     }
 
-    {
-
-      // Attach the invoice by URL (nodemailer fetches it at send time) rather
-      // than embedding the PDF bytes in the Firestore `mail` doc — Firestore
-      // rejects large/complex inline payloads. The invoice API generates the
-      // PDF on demand, authorised by a signed token (or raw ids as a fallback).
-      const invoiceToken = signInvoiceToken(orderId, userId);
-      const invoiceUrl = invoiceToken
-        ? `${getSiteUrl()}/api/invoice?t=${encodeURIComponent(invoiceToken)}`
-        : `${getSiteUrl()}/api/invoice?orderId=${encodeURIComponent(orderId)}&uid=${encodeURIComponent(userId)}`;
-
-      // Collect any PDF guides attached to the purchased products so they are
-      // emailed to the customer alongside the invoice.
-      let guideAttachments: GuideAttachment[] = [];
-      try {
-        guideAttachments = await collectGuideAttachments(db, orderData.items || []);
-      } catch (e) {
-        console.error('PayFast ITN: Guide collection failed (sending email without guides):', e);
-      }
-
-      try {
-        // Queue emails via the Admin SDK (the `mail` collection is no longer
-        // client-writable).
-        await sendOrderConfirmationEmail(
-          {
-            to: orderData.shippingInfo.email,
-            orderId,
-            orderNumber: orderData.orderNumber,
-            orderDate: new Date(),
-            customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
-            totalAmount: orderData.totalAmount,
-            items: orderData.items,
-            shippingInfo: orderData.shippingInfo,
-            billingInfo: orderData.billingInfo,
-            storeName: settings?.storeName,
-            fromEmail: settings?.senderEmail,
-            invoiceUrl,
-            invoiceFileName: invoiceFileName(orderId, orderData.orderNumber),
-            extraAttachments: guideAttachments,
-          },
-          db
-        );
-
-        await sendAdminOrderNotification(
-          {
-            to: settings?.contactEmail || 'admin@workingongrass.co.za',
-            orderId,
-            orderNumber: orderData.orderNumber,
-            orderDate: new Date(),
-            customerName: `${orderData.shippingInfo.firstName} ${orderData.shippingInfo.lastName}`,
-            totalAmount: orderData.totalAmount,
-            items: orderData.items,
-            shippingInfo: orderData.shippingInfo,
-            storeName: settings?.storeName,
-            fromEmail: settings?.senderEmail,
-          },
-          db
-        );
-      } catch (e) {
-        console.error('PayFast ITN: Email queue failed (order still updated):', e);
-      }
-    }
+    await ensureOrderEmails(db, orderRef, orderData, orderId, userId, settings);
 
     return new NextResponse('OK', { status: 200 });
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('PayFast ITN: Internal Error.', message);
     return new NextResponse('Internal Server Error', { status: 500 });
+  }
+}
+
+/**
+ * Prepare the customer email's attachments and hand off to the once-only
+ * notification step. Kept here because invoice-token signing belongs to the
+ * route, not to the notification service.
+ */
+async function ensureOrderEmails(
+  db: AdminFirestore,
+  orderRef: AdminDocumentReference,
+  orderData: DocumentData,
+  orderId: string,
+  userId: string,
+  settings: SiteSettings | null
+): Promise<void> {
+  // Attach the invoice by URL (nodemailer fetches it at send time) rather than
+  // embedding the PDF bytes in the Firestore `mail` doc — Firestore rejects
+  // large/complex inline payloads. The invoice API generates the PDF on demand,
+  // authorised by a signed token (or raw ids as a fallback).
+  const invoiceToken = signInvoiceToken(orderId, userId);
+  const invoiceUrl = invoiceToken
+    ? `${getSiteUrl()}/api/invoice?t=${encodeURIComponent(invoiceToken)}`
+    : `${getSiteUrl()}/api/invoice?orderId=${encodeURIComponent(orderId)}&uid=${encodeURIComponent(userId)}`;
+
+  // Collect any PDF guides attached to the purchased products so they are
+  // emailed to the customer alongside the invoice.
+  let guideAttachments: GuideAttachment[] = [];
+  try {
+    guideAttachments = await collectGuideAttachments(db, orderData.items || []);
+  } catch (e) {
+    console.error('PayFast ITN: Guide collection failed (sending email without guides):', e);
+  }
+
+  const result = await ensureOrderNotifications({
+    orderRef,
+    order: orderData,
+    orderId,
+    settings,
+    invoiceUrl,
+    invoiceFileName: invoiceFileName(orderId, orderData.orderNumber),
+    extraAttachments: guideAttachments,
+  });
+
+  if (result.outcome === 'queued' && result.errors.length === 0) {
+    console.log(`PayFast ITN: Order ${orderId} emails queued (admin=${result.adminMailId}).`);
+  } else if (result.outcome === 'queued') {
+    console.error(`PayFast ITN: Order ${orderId} email problems: ${result.errors.join(' | ')}`);
+  } else {
+    console.log(`PayFast ITN: Order ${orderId} emails ${result.outcome}; nothing queued.`);
   }
 }

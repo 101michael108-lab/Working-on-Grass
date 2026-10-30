@@ -7,6 +7,7 @@ import { collection, addDoc, Firestore } from 'firebase/firestore';
 import type { Firestore as AdminFirestore } from 'firebase-admin/firestore';
 import { getSiteUrl } from '@/lib/site-url';
 import { formatOrderRef } from '@/lib/order-number';
+import { hasRecipient, isEmailish, primaryRecipient } from '@/lib/email-recipients';
 
 /** Either the client Firestore or the Admin Firestore (server routes). */
 type AnyFirestore = Firestore | AdminFirestore;
@@ -19,14 +20,71 @@ type AnyFirestore = Firestore | AdminFirestore;
  * SDK so clients can never write arbitrary `mail` documents.
  */
 async function queueMail(db: AnyFirestore, emailData: Record<string, unknown>) {
+  // `queuedAt` is ours, not the extension's. The extension only timestamps
+  // documents it actually picks up, so without this there is no way to tell a
+  // mail doc that is about to be sent from one that will never be sent — the
+  // latter has no `delivery` field and no age. A plain Date (not a server
+  // timestamp sentinel) keeps this working on both the client and Admin SDK.
+  const data = { ...emailData, queuedAt: new Date() };
+
+  // The document is always written first. It is the durable outbox record: if
+  // the send below fails, the email still exists to be retried and to be seen
+  // in the admin Email Log.
   if (typeof (db as { collection?: unknown }).collection === 'function') {
-    return (db as AdminFirestore).collection('mail').add(emailData);
+    const adminDb = db as AdminFirestore;
+
+    // Server-side, so the provider can be called directly. Imported lazily
+    // because this module is also imported by admin dashboard components.
+    //
+    // The bundler still emits the transport as a client chunk that nothing
+    // loads: this branch needs an Admin SDK instance, which a browser cannot
+    // produce. No credential is exposed either way — Next.js inlines only
+    // NEXT_PUBLIC_* variables, so `process.env.RESEND_API_KEY` compiles to a
+    // lookup against an empty object in the browser.
+    const { claimedDelivery, dispatchQueuedMail, resolveTransport } = await import(
+      '@/services/email-transport'
+    );
+
+    // When we are the sender, the document is created already claimed so the
+    // Trigger Email extension cannot also send it during a switchover.
+    const sendingOurselves = resolveTransport(process.env) === 'resend';
+    const ref = await adminDb
+      .collection('mail')
+      .add(sendingOurselves ? { ...data, delivery: claimedDelivery() } : data);
+
+    await dispatchQueuedMail(adminDb, ref.id, data);
+    return ref;
   }
-  return addDoc(collection(db as Firestore, 'mail'), emailData);
+
+  const ref = await addDoc(collection(db as Firestore, 'mail'), data);
+  // In the browser the provider key is unavailable by design, so ask the server
+  // to send it. Best-effort: the outbox document is already written, so a failed
+  // request leaves the email visible in the Email Log rather than losing it.
+  await requestServerDispatch(ref.id);
+  return ref;
+}
+
+/**
+ * Ask the server to send an outbox document queued from the admin dashboard.
+ * Quiet on failure by design — the email is already queued, and an undelivered
+ * one shows up in the Email Log.
+ */
+async function requestServerDispatch(mailId: string): Promise<void> {
+  if (typeof fetch !== 'function') return;
+  try {
+    await fetch('/api/admin/dispatch-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mailId }),
+    });
+  } catch (e) {
+    console.error('Could not ask the server to send the queued email:', e);
+  }
 }
 
 interface OrderConfirmationPayload {
-  to: string;
+  /** One address, or several for an internal notification. */
+  to: string | string[];
   orderId: string;
   /** Sequential customer-facing number; falls back to the short id when absent. */
   orderNumber?: number;
@@ -56,6 +114,16 @@ interface OrderConfirmationPayload {
   storeName?: string;
   fromEmail?: string;
   /**
+   * Where a reply should go, which is not where the mail came from.
+   *
+   * `from` has to sit on the provider-verified sending domain
+   * (orders@mail.workingongrass.co.za), and that is a sending identity, not a
+   * mailbox someone reads — a reply to it bounces. So customer mail replies to
+   * the business contact address, and the internal order alert replies to the
+   * buyer, which makes answering them a single click.
+   */
+  replyTo?: string;
+  /**
    * URL the invoice PDF is fetched from and attached. We attach by URL (not
    * inline bytes) so the Firestore `mail` doc stays tiny — Firestore rejects
    * large/complex nested payloads, and nodemailer fetches the URL at send time.
@@ -78,10 +146,11 @@ interface StatusUpdatePayload {
   newStatus: string;
   storeName?: string;
   fromEmail?: string;
+  replyTo?: string;
 }
 
 interface InquiryPayload {
-  to: string;
+  to: string | string[];
   customerName: string;
   customerEmail?: string;
   service: string;
@@ -102,17 +171,22 @@ function escapeHtml(value: unknown): string {
 /**
  * Formats the "From" field to include a display name.
  * e.g., "Working on Grass <admin@workingongrass.co.za>"
+ *
+ * Returns undefined for anything that is not an address, which omits the header
+ * and lets the Trigger Email extension's DEFAULT_FROM apply. A malformed `from`
+ * is refused by most SMTP providers, and because every template shares this
+ * helper, one bad value in Settings would otherwise stop all mail.
  */
 function formatFrom(name: string, email?: string): string | undefined {
-  if (!email) return undefined;
-  return `${name} <${email}>`;
+  if (!isEmailish(email)) return undefined;
+  return `${name} <${email!.trim()}>`;
 }
 
 /**
  * Queues a customer order confirmation email in Firestore.
  */
 export async function sendOrderConfirmationEmail(payload: OrderConfirmationPayload, db?: AnyFirestore) {
-  if (!payload.to) return;
+  if (!hasRecipient(payload.to)) return;
 
   const firestore = db || initializeFirebase().firestore;
   const itemsList = payload.items.map(i => `
@@ -148,6 +222,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
+    ...(payload.replyTo && { replyTo: payload.replyTo }),
     message: {
       subject: `Order Confirmation ${orderRef} | ${storeName}`,
       html: `
@@ -171,7 +246,7 @@ export async function sendOrderConfirmationEmail(payload: OrderConfirmationPaylo
                 </tr>
                 <tr>
                   <td style="padding: 4px 0; font-size: 13px; color: #6b7280;">Email</td>
-                  <td style="padding: 4px 0;">${payload.shippingInfo?.email || payload.to}</td>
+                  <td style="padding: 4px 0;">${payload.shippingInfo?.email || primaryRecipient(payload.to)}</td>
                 </tr>
               </table>
             </div>
@@ -257,6 +332,7 @@ export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, d
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
+    ...(payload.replyTo && { replyTo: payload.replyTo }),
     message: {
       subject: `Order Update: ${formatOrderRef({ orderNumber: payload.orderNumber, id: payload.orderId })} is ${payload.newStatus} | ${storeName}`,
       html: `
@@ -278,6 +354,8 @@ export async function sendOrderStatusUpdateEmail(payload: StatusUpdatePayload, d
  * Queues an internal admin notification for new orders.
  */
 export async function sendAdminOrderNotification(payload: OrderConfirmationPayload, db?: AnyFirestore) {
+  // Queueing a mail doc with no recipient is a guaranteed extension error.
+  if (!hasRecipient(payload.to)) return;
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
@@ -296,6 +374,7 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
   const emailData: any = {
     to: payload.to,
     ...(from && { from }),
+    ...(payload.replyTo && { replyTo: payload.replyTo }),
     message: {
       subject: `[SALES] New Order ${orderRef} - ${payload.customerName}`,
       html: `
@@ -357,7 +436,7 @@ export async function sendAdminOrderNotification(payload: OrderConfirmationPaylo
  * Queues a "Thank You" acknowledgment for an inquiry.
  */
 export async function sendInquiryAcknowledgmentEmail(payload: InquiryPayload, db?: AnyFirestore) {
-  if (!payload.to) return;
+  if (!hasRecipient(payload.to)) return;
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
@@ -392,7 +471,7 @@ export async function sendInquiryAcknowledgmentEmail(payload: InquiryPayload, db
  * Queues an internal notification for new inquiries.
  */
 export async function sendAdminInquiryNotification(payload: InquiryPayload, db?: AnyFirestore) {
-  if (!payload.to) return;
+  if (!hasRecipient(payload.to)) return;
   const firestore = db || initializeFirebase().firestore;
   const storeName = payload.storeName || 'Working on Grass';
   const from = formatFrom(storeName, payload.fromEmail);
@@ -427,6 +506,90 @@ export async function sendAdminInquiryNotification(payload: InquiryPayload, db?:
         </div>
       `
     }
+  };
+
+  return queueMail(firestore, emailData);
+}
+
+interface PaymentProblemPayload {
+  to: string | string[];
+  orderId: string;
+  orderNumber?: number;
+  customerName: string;
+  customerEmail?: string;
+  /** What PayFast reported in the ITN, e.g. "COMPLETE" or "FAILED". */
+  paymentStatus?: string;
+  /** What PayFast says was actually charged. */
+  amountPaid?: number;
+  /** What the server-priced order says it should have been. */
+  expectedAmount: number;
+  /** Plain-English description of what is wrong. */
+  problem: string;
+  /** What the system did about it, so the owner knows where things stand. */
+  actionTaken: string;
+  storeName?: string;
+  fromEmail?: string;
+}
+
+/**
+ * Queues an urgent admin alert for an order the system refused to fulfil.
+ *
+ * This exists because the dangerous cases used to be the quiet ones: a payment
+ * whose amount does not match the server-priced total gets the order cancelled,
+ * which means money may have moved while nobody was told anything. A refusal is
+ * a decision a human has to review, so it has to leave the building.
+ */
+export async function sendAdminPaymentProblemNotification(payload: PaymentProblemPayload, db?: AnyFirestore) {
+  if (!hasRecipient(payload.to)) return;
+  const firestore = db || initializeFirebase().firestore;
+  const storeName = payload.storeName || 'Working on Grass';
+  const from = formatFrom(storeName, payload.fromEmail);
+  const orderRef = formatOrderRef({ orderNumber: payload.orderNumber, id: payload.orderId });
+
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding: 6px 16px 6px 0; color: #64748b; vertical-align: top; white-space: nowrap;">${escapeHtml(label)}</td>
+      <td style="padding: 6px 0;"><strong>${escapeHtml(value)}</strong></td>
+    </tr>
+  `;
+
+  const emailData: any = {
+    to: payload.to,
+    ...(from && { from }),
+    message: {
+      subject: `[ACTION REQUIRED] Order ${orderRef} payment problem`,
+      html: `
+        <div style="font-family: sans-serif; line-height: 1.5; color: #111; max-width: 700px; margin: auto; border: 2px solid #b91c1c; padding: 32px;">
+          <div style="border-bottom: 2px solid #eee; padding-bottom: 16px; margin-bottom: 24px;">
+            <h1 style="color: #b91c1c; margin: 0; font-size: 22px;">Order payment needs review</h1>
+            <p style="color: #666; margin: 6px 0 0 0;">Order ${orderRef} &bull; ${escapeHtml(payload.customerName)}</p>
+          </div>
+
+          <p style="background-color: #fef2f2; border-left: 4px solid #b91c1c; padding: 14px 16px; margin: 0 0 24px 0;">
+            ${escapeHtml(payload.problem)}
+          </p>
+
+          <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 14px;">
+            ${row('Customer', payload.customerName)}
+            ${payload.customerEmail ? row('Email', payload.customerEmail) : ''}
+            ${payload.paymentStatus ? row('PayFast status', payload.paymentStatus) : ''}
+            ${payload.amountPaid != null ? row('Amount paid', `R${payload.amountPaid.toFixed(2)}`) : ''}
+            ${row('Order total', `R${payload.expectedAmount.toFixed(2)}`)}
+          </table>
+
+          <p style="margin: 0 0 24px 0;"><strong>What the system did:</strong> ${escapeHtml(payload.actionTaken)}</p>
+
+          <div style="border-top: 1px dashed #ccc; padding-top: 16px; font-size: 12px; color: #888;">
+            <p style="margin: 0;">Check this order against your PayFast dashboard before refunding or dispatching anything.
+            <a href="${getSiteUrl()}/admin/orders">Open the orders dashboard</a>.</p>
+          </div>
+        </div>
+      `,
+      text:
+        `Order ${orderRef} payment needs review. ${payload.problem} ` +
+        `Paid: ${payload.amountPaid != null ? `R${payload.amountPaid.toFixed(2)}` : 'unknown'}, ` +
+        `expected: R${payload.expectedAmount.toFixed(2)}. ${payload.actionTaken}`,
+    },
   };
 
   return queueMail(firestore, emailData);

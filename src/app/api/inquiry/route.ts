@@ -7,6 +7,7 @@ import {
 } from '@/services/email-service';
 import { enforceRateLimit } from '@/lib/rate-limit';
 import type { SiteSettings } from '@/lib/types';
+import { resolveAdminRecipients, resolveSenderEmail } from '@/lib/email-recipients';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
@@ -55,9 +56,10 @@ export async function POST(req: NextRequest) {
 
     const emailMeta = {
       storeName: settings?.storeName,
-      fromEmail: settings?.senderEmail,
+      // Validated, so one malformed value in Settings cannot stop all mail.
+      fromEmail: resolveSenderEmail(settings),
     };
-    const adminTo = settings?.contactEmail || 'admin@workingongrass.co.za';
+    const adminTo = resolveAdminRecipients(settings);
 
     if (kind === 'consultation') {
       const contactDetail = str(entry.contactDetail, 300);
