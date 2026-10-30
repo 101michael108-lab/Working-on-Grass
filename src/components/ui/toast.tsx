@@ -17,7 +17,16 @@ const ToastViewport = React.forwardRef<
     ref={ref}
     className={cn(
       // Phones: just below the 72px sticky header, so a toast never hides the cart icon.
-      "fixed top-[72px] z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
+      //
+      // `pointer-events-none` is load-bearing. Radix only guards this area
+      // while there are no toasts (it puts `pointer-events: none` on its own
+      // wrapper and removes it the moment one exists). Without this class the
+      // viewport then becomes clickable in its own right — and it is a fixed,
+      // full-width box that is 32px tall from the padding alone even when it
+      // looks empty, so it silently swallows clicks on whatever is underneath.
+      // Each toast re-enables pointer events on itself via `pointer-events-auto`
+      // in `toastVariants`, so the toast and its close button stay clickable.
+      "pointer-events-none fixed top-[72px] z-[100] flex max-h-screen w-full flex-col-reverse p-4 sm:bottom-0 sm:right-0 sm:top-auto sm:flex-col md:max-w-[420px]",
       className
     )}
     {...props}
