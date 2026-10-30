@@ -277,7 +277,12 @@ export default function AdminEmailLogPage() {
                         {badge.label}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-center text-xs">{doc.delivery?.attempts ?? "—"}</TableCell>
+                    <TableCell className="text-center text-xs">
+                      {doc.delivery?.attempts ?? "—"}
+                      {doc.delivery?.provider && (
+                        <span className="block text-muted-foreground">{doc.delivery.provider}</span>
+                      )}
+                    </TableCell>
                     <TableCell className="whitespace-nowrap text-xs">{formatDateTime(doc.delivery?.endTime)}</TableCell>
                     <TableCell className="text-right">
                       <Button variant="ghost" size="icon" onClick={() => setSelected(doc)}>
@@ -341,6 +346,8 @@ export default function AdminEmailLogPage() {
                 <span>{formatDateTime(selected.delivery?.startTime)}</span>
                 <span className="text-muted-foreground">Finished</span>
                 <span>{formatDateTime(selected.delivery?.endTime)}</span>
+                <span className="text-muted-foreground">Sent by</span>
+                <span>{selected.delivery?.provider || 'Trigger Email extension'}</span>
                 <span className="text-muted-foreground">Message ID</span>
                 <span className="break-all">{selected.delivery?.info?.messageId || "—"}</span>
                 <span className="text-muted-foreground">Accepted</span>

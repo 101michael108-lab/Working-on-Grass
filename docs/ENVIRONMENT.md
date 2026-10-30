@@ -11,6 +11,9 @@
 | PayFast **live** merchant ID/key | — | **Firestore** `settings/config` |
 | Firebase client config | `src/firebase/config.ts` / App Hosting auto-init | App Hosting auto-init |
 | Firebase Admin | `GOOGLE_APPLICATION_CREDENTIALS` | Application Default Credentials |
+| `RESEND_API_KEY` | Plain text in `.env.local` | Secret `resend-api-key` |
+| `EMAIL_FROM` | Plain text in `.env.local` | Plain value in yaml |
+| `EMAIL_TRANSPORT` | Optional override | Optional override |
 
 ## PayFast troubleshooting (signature mismatch / 400)
 
@@ -107,3 +110,63 @@ If the hosted site uses `isLiveMode: false`, uncomment the sandbox variable bloc
 firebase apphosting:secrets:set payfast-sandbox-merchant-id
 firebase apphosting:secrets:set payfast-sandbox-merchant-key
 ```
+
+## Email sending
+
+Every email is written to the Firestore `mail` collection first — that is the
+durable outbox, and it is what `/admin/email-log` reads. Two things can send it:
+
+| `EMAIL_TRANSPORT` | Who sends | Result recorded? |
+|-------------------|-----------|------------------|
+| `resend` (or unset with a key present) | This app, via the Resend API | Yes — immediately, in the document's `delivery` field |
+| `extension` (or unset with no key) | Firebase Trigger Email extension | Only what the extension writes back |
+
+The provider is used as soon as `RESEND_API_KEY` exists, so switching over is
+adding one secret and reverting is removing it. Set `EMAIL_TRANSPORT=extension`
+to fall back without deleting the key.
+
+### Setting it up
+
+1. **Verify a sending domain** in Resend (e.g. `mail.workingongrass.co.za`) by
+   adding the DKIM and SPF records it gives you at your DNS provider. Resend
+   refuses any `from` outside a verified domain.
+2. **Create an API key** in Resend with *Sending access* only.
+3. **Store it.** Production:
+   ```bash
+   firebase apphosting:secrets:set resend-api-key
+   ```
+   Then redeploy, because secrets are read at instance start. Locally, put
+   `RESEND_API_KEY=re_...` in `.env.local`.
+4. **Set `EMAIL_FROM`** to an address on the verified domain, in
+   `apphosting.yaml` (it is not a secret).
+5. **Check it worked:** Admin → Settings → *Send Test Email*, then Admin →
+   *Email Log*. A `SUCCESS` row with a provider message id means Resend
+   accepted it.
+6. **Uninstall the Trigger Email extension**, once you are satisfied the
+   provider is sending. See below — leaving both running sends everything twice.
+
+### Do not leave both senders running
+
+The extension claims any `mail` document that arrives without a `delivery`
+field, so with the extension installed *and* a Resend key set, both would send
+every email — two receipts per customer.
+
+Order emails are protected during the switchover: the server creates those
+documents already marked `PROCESSING`, which the extension skips. Emails queued
+from the admin dashboard (resend receipt, *Send Me The Order*, test email) are
+**not** protected, because the browser cannot know which transport is
+configured — it writes the document and asks the server to send it. So expect
+possible duplicates of those until the extension is removed.
+
+The API key is a server-only secret. It must never be given a `NEXT_PUBLIC_`
+prefix or stored in Firestore `settings/config`, both of which are readable by
+the browser. The admin dashboard cannot send directly for this reason — it
+queues the document and posts the id to `/api/admin/dispatch-mail`, which sends
+it server-side after verifying the admin session.
+
+### Why not just the extension
+
+The extension's write *is* the send, so the app never learned the outcome, and
+its SMTP settings lived in the Firebase console — unversioned and unreviewable.
+Sending from the app means a failure is known at the moment it happens and is
+recorded on the order and in the Email Log.

@@ -27,6 +27,11 @@ export type MailDelivery = {
   /** When the extension finished (successfully or not). */
   endTime?: unknown;
   leaseExpireTime?: unknown;
+  /**
+   * Which sender produced this result. Absent on documents written by the
+   * Trigger Email extension, which does not identify itself.
+   */
+  provider?: string;
   info?: {
     messageId?: string;
     accepted?: string[];

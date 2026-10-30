@@ -27,10 +27,59 @@ async function queueMail(db: AnyFirestore, emailData: Record<string, unknown>) {
   // timestamp sentinel) keeps this working on both the client and Admin SDK.
   const data = { ...emailData, queuedAt: new Date() };
 
+  // The document is always written first. It is the durable outbox record: if
+  // the send below fails, the email still exists to be retried and to be seen
+  // in the admin Email Log.
   if (typeof (db as { collection?: unknown }).collection === 'function') {
-    return (db as AdminFirestore).collection('mail').add(data);
+    const adminDb = db as AdminFirestore;
+
+    // Server-side, so the provider can be called directly. Imported lazily
+    // because this module is also imported by admin dashboard components.
+    //
+    // The bundler still emits the transport as a client chunk that nothing
+    // loads: this branch needs an Admin SDK instance, which a browser cannot
+    // produce. No credential is exposed either way — Next.js inlines only
+    // NEXT_PUBLIC_* variables, so `process.env.RESEND_API_KEY` compiles to a
+    // lookup against an empty object in the browser.
+    const { claimedDelivery, dispatchQueuedMail, resolveTransport } = await import(
+      '@/services/email-transport'
+    );
+
+    // When we are the sender, the document is created already claimed so the
+    // Trigger Email extension cannot also send it during a switchover.
+    const sendingOurselves = resolveTransport(process.env) === 'resend';
+    const ref = await adminDb
+      .collection('mail')
+      .add(sendingOurselves ? { ...data, delivery: claimedDelivery() } : data);
+
+    await dispatchQueuedMail(adminDb, ref.id, data);
+    return ref;
   }
-  return addDoc(collection(db as Firestore, 'mail'), data);
+
+  const ref = await addDoc(collection(db as Firestore, 'mail'), data);
+  // In the browser the provider key is unavailable by design, so ask the server
+  // to send it. Best-effort: the outbox document is already written, so a failed
+  // request leaves the email visible in the Email Log rather than losing it.
+  await requestServerDispatch(ref.id);
+  return ref;
+}
+
+/**
+ * Ask the server to send an outbox document queued from the admin dashboard.
+ * Quiet on failure by design — the email is already queued, and an undelivered
+ * one shows up in the Email Log.
+ */
+async function requestServerDispatch(mailId: string): Promise<void> {
+  if (typeof fetch !== 'function') return;
+  try {
+    await fetch('/api/admin/dispatch-mail', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ mailId }),
+    });
+  } catch (e) {
+    console.error('Could not ask the server to send the queued email:', e);
+  }
 }
 
 interface OrderConfirmationPayload {
