@@ -19,10 +19,17 @@ type AnyFirestore = Firestore | AdminFirestore;
  * SDK so clients can never write arbitrary `mail` documents.
  */
 async function queueMail(db: AnyFirestore, emailData: Record<string, unknown>) {
+  // `queuedAt` is ours, not the extension's. The extension only timestamps
+  // documents it actually picks up, so without this there is no way to tell a
+  // mail doc that is about to be sent from one that will never be sent — the
+  // latter has no `delivery` field and no age. A plain Date (not a server
+  // timestamp sentinel) keeps this working on both the client and Admin SDK.
+  const data = { ...emailData, queuedAt: new Date() };
+
   if (typeof (db as { collection?: unknown }).collection === 'function') {
-    return (db as AdminFirestore).collection('mail').add(emailData);
+    return (db as AdminFirestore).collection('mail').add(data);
   }
-  return addDoc(collection(db as Firestore, 'mail'), emailData);
+  return addDoc(collection(db as Firestore, 'mail'), data);
 }
 
 interface OrderConfirmationPayload {

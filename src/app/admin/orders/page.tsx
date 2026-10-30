@@ -1,7 +1,19 @@
 "use client";
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { useFirestore, useDoc, useMemoFirebase } from "@/firebase";
-import { collectionGroup, query, getDocs, orderBy, collection, doc, deleteDoc } from "firebase/firestore";
+import {
+  collectionGroup,
+  query,
+  getDocs,
+  orderBy,
+  collection,
+  doc,
+  deleteDoc,
+  documentId,
+  where,
+  type Firestore,
+} from "firebase/firestore";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -24,8 +36,164 @@ import { Eye, Trash2, Send } from "lucide-react";
 import type { Order, User, SiteSettings } from "@/lib/types";
 import { formatOrderRef } from "@/lib/order-number";
 import { sendOrderStatusUpdateEmail, sendOrderConfirmationEmail } from "@/services/email-service";
+import {
+  describeQueuedMail,
+  formatDateTime,
+  type MailDoc,
+  type OrderEmailStatus,
+} from "@/lib/mail-delivery";
 
 const statusOptions = ['Pending', 'Processing', 'Shipped', 'Fulfilled', 'Delivered', 'Cancelled'] as const;
+
+/** Statuses the ITN treats as "already paid for and processed". */
+const PROCESSED_STATUSES: ReadonlySet<string> = new Set(['Processing', 'Shipped', 'Fulfilled', 'Delivered']);
+
+/** Firestore caps an `in` filter at 30 values. */
+const ID_CHUNK = 30;
+
+/**
+ * Resolve the `mail` documents the orders point at. Batched on document id so
+ * the page costs one read per 30 emails rather than one per email.
+ */
+async function fetchMailByIds(firestore: Firestore, ids: string[]): Promise<Map<string, MailDoc>> {
+  const resolved = new Map<string, MailDoc>();
+  const unique = [...new Set(ids.filter(Boolean))];
+
+  for (let i = 0; i < unique.length; i += ID_CHUNK) {
+    const chunk = unique.slice(i, i + ID_CHUNK);
+    const snap = await getDocs(query(collection(firestore, 'mail'), where(documentId(), 'in', chunk)));
+    snap.forEach((d) => resolved.set(d.id, { ...(d.data() as Omit<MailDoc, 'id'>), id: d.id }));
+  }
+
+  return resolved;
+}
+
+/**
+ * Per-order email verdict. An order with no `emailStatus.queuedAt` never
+ * reached the ITN's email block; one that did and whose mail doc reads ERROR
+ * was rejected by the Trigger Email extension's SMTP server. Pending orders are
+ * deliberately not flagged — an abandoned checkout correctly has no emails.
+ */
+function OrderEmailCell({
+  order,
+  mailById,
+  now,
+}: {
+  order: Order;
+  mailById: Map<string, MailDoc>;
+  now: Date;
+}) {
+  const emailStatus = order.emailStatus;
+
+  if (!emailStatus?.queuedAt) {
+    const wasProcessed = PROCESSED_STATUSES.has(order.status);
+    return (
+      <div className="text-[11px] leading-tight">
+        <Badge
+          variant={wasProcessed ? 'destructive' : order.status === 'Cancelled' ? 'outline' : 'secondary'}
+          className="whitespace-nowrap"
+        >
+          Not queued
+        </Badge>
+        <span className="mt-1 block text-muted-foreground">
+          {wasProcessed
+            ? 'processed without queueing email'
+            : order.status === 'Cancelled'
+              ? 'order cancelled'
+              : 'no paid-order ITN received'}
+        </span>
+      </div>
+    );
+  }
+
+  const admin = describeQueuedMail(emailStatus.adminMailId, mailById.get(emailStatus.adminMailId || ''), now);
+  const customer = describeQueuedMail(
+    emailStatus.customerMailId,
+    mailById.get(emailStatus.customerMailId || ''),
+    now
+  );
+
+  return (
+    <div className="space-y-1 text-[11px] leading-tight">
+      <div className="flex items-center gap-1.5">
+        <span className="w-10 text-muted-foreground">Admin</span>
+        <Badge variant={admin.variant} className="whitespace-nowrap px-1.5 py-0 text-[10px]">
+          {admin.label}
+        </Badge>
+      </div>
+      <div className="flex items-center gap-1.5">
+        <span className="w-10 text-muted-foreground">Cust.</span>
+        <Badge variant={customer.variant} className="whitespace-nowrap px-1.5 py-0 text-[10px]">
+          {customer.label}
+        </Badge>
+      </div>
+      {emailStatus.emailError && <span className="block text-destructive">queueing threw</span>}
+    </div>
+  );
+}
+
+/** Full email-delivery breakdown for one order, shown in the detail dialog. */
+function OrderEmailDetail({
+  emailStatus,
+  mailById,
+  now,
+}: {
+  emailStatus: OrderEmailStatus | undefined;
+  mailById: Map<string, MailDoc>;
+  now: Date;
+}) {
+  if (!emailStatus?.queuedAt) {
+    return (
+      <div className="rounded border border-dashed p-3 text-xs text-muted-foreground">
+        No emails were ever queued for this order. The PayFast ITN writes this marker the moment it moves an order
+        off <strong>Pending</strong>, so its absence means no completed-payment notification reached{' '}
+        <code>/api/payfast-itn</code> for this order.
+      </div>
+    );
+  }
+
+  const rows: Array<{ label: string; mailId?: string | null; to?: string | null }> = [
+    { label: 'Admin notification', mailId: emailStatus.adminMailId, to: emailStatus.adminTo },
+    { label: 'Customer confirmation', mailId: emailStatus.customerMailId, to: emailStatus.customerTo },
+  ];
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-muted-foreground">Queued {formatDateTime(emailStatus.queuedAt)}</p>
+      {rows.map(({ label, mailId, to }) => {
+        const badge = describeQueuedMail(mailId, mailById.get(mailId || ''), now);
+        return (
+          <div key={label} className="rounded border p-3 text-xs">
+            <div className="flex items-center justify-between gap-2">
+              <span className="font-medium">{label}</span>
+              <Badge variant={badge.variant} className="whitespace-nowrap">
+                {badge.label}
+              </Badge>
+            </div>
+            <p className="mt-1 break-all text-muted-foreground">{to || 'no recipient recorded'}</p>
+            {badge.detail && <p className="mt-1 break-words text-muted-foreground">{badge.detail}</p>}
+            {mailId && <p className="mt-1 font-mono text-[10px] text-muted-foreground">mail/{mailId}</p>}
+          </div>
+        );
+      })}
+      {emailStatus.emailError && (
+        <div className="rounded border border-destructive/50 bg-destructive/5 p-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-destructive">
+            Queueing failed {emailStatus.emailErrorAt ? `• ${formatDateTime(emailStatus.emailErrorAt)}` : ''}
+          </p>
+          <p className="mt-1 break-words font-mono text-xs">{emailStatus.emailError}</p>
+        </div>
+      )}
+      <p className="text-xs text-muted-foreground">
+        Delivery states come from the Trigger Email extension&apos;s writeback —{' '}
+        <Link href="/admin/email-log" className="underline">
+          see the full email log
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
 
 export default function AdminOrdersPage() {
     const firestore = useFirestore();
@@ -35,6 +203,11 @@ export default function AdminOrdersPage() {
     const [isSendingEmail, setIsSendingEmail] = useState(false);
     const [selectedOrder, setSelectedOrder] = useState<(Order & { customerName?: string }) | null>(null);
     const [orderToDelete, setOrderToDelete] = useState<{ id: string; userId: string } | null>(null);
+    // The `mail` documents the orders reference, so each row can show the
+    // extension's current delivery state rather than just "we queued it".
+    const [mailById, setMailById] = useState<Map<string, MailDoc>>(new Map());
+    // Captured per load so staleness is judged against one instant.
+    const [loadedAt, setLoadedAt] = useState(() => new Date());
 
     const settingsRef = useMemoFirebase(() => doc(firestore, 'settings', 'config'), [firestore]);
     const { data: settings } = useDoc<SiteSettings>(settingsRef);
@@ -58,9 +231,24 @@ export default function AdminOrdersPage() {
                 };
             });
             setOrders(allOrders);
+
+            // Resolve the queued mail docs separately — a failure here must not
+            // cost the admin their orders list.
+            try {
+                const mailIds = allOrders.flatMap((o) => [
+                    o.emailStatus?.customerMailId,
+                    o.emailStatus?.adminMailId,
+                ]);
+                setMailById(await fetchMailByIds(firestore, mailIds.filter(Boolean) as string[]));
+            } catch (error) {
+                console.error("Error resolving queued mail documents:", error);
+            }
         } catch (error) {
             console.error("Error fetching orders:", error);
-        } finally { setIsLoading(false); }
+        } finally {
+            setLoadedAt(new Date());
+            setIsLoading(false);
+        }
     };
 
     useEffect(() => { fetchAllOrders(); }, [firestore]);
@@ -127,11 +315,19 @@ export default function AdminOrdersPage() {
     return (
         <div className="space-y-6">
             <Card>
-                <CardHeader><CardTitle>Manage Orders</CardTitle></CardHeader>
+                <CardHeader>
+                    <CardTitle>Manage Orders</CardTitle>
+                    <CardDescription>
+                        The <strong>Emails</strong> column shows what became of each order&apos;s notifications. &quot;Not
+                        queued&quot; means the PayFast notification never reached the server; a state of ERROR means the
+                        Trigger Email extension refused the send. Full detail is in the{" "}
+                        <Link href="/admin/email-log" className="underline">email log</Link>.
+                    </CardDescription>
+                </CardHeader>
                 <CardContent>
                     {isLoading ? <p>Loading...</p> : (
                         <Table>
-                            <TableHeader><TableRow><TableHead>Order ID</TableHead><TableHead>Customer</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Total</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
+                            <TableHeader><TableRow><TableHead>Order ID</TableHead><TableHead>Customer</TableHead><TableHead>Status</TableHead><TableHead>Emails</TableHead><TableHead className="text-right">Total</TableHead><TableHead className="text-right">Actions</TableHead></TableRow></TableHeader>
                             <TableBody>
                                 {orders.map(order => (
                                     <TableRow key={order.id}>
@@ -144,6 +340,9 @@ export default function AdminOrdersPage() {
                                                     <SelectContent>{statusOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}</SelectContent>
                                                 </Select>
                                             </div>
+                                        </TableCell>
+                                        <TableCell>
+                                            <OrderEmailCell order={order} mailById={mailById} now={loadedAt} />
                                         </TableCell>
                                         <TableCell className="text-right font-bold">R{order.totalAmount.toFixed(2)}</TableCell>
                                         <TableCell className="text-right">
@@ -193,6 +392,17 @@ export default function AdminOrdersPage() {
                                     ))}
                                 </TableBody>
                             </Table>
+
+                            <div className="space-y-2">
+                                <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                    Email delivery
+                                </h3>
+                                <OrderEmailDetail
+                                    emailStatus={selectedOrder.emailStatus}
+                                    mailById={mailById}
+                                    now={loadedAt}
+                                />
+                            </div>
                         </div>
                     )}
                 </DialogContent>

@@ -1,4 +1,6 @@
 
+import type { OrderEmailStatus } from '@/lib/mail-delivery';
+
 export type Service = {
   title: string;
   description: string;
@@ -105,6 +107,12 @@ export type Order = {
     country: string;
   };
   items: OrderItem[];
+  /**
+   * What happened to this order's emails, written by /api/payfast-itn. Absent
+   * on orders whose PayFast notification never arrived — which is exactly how
+   * the admin dashboard tells "no ITN" apart from "the send was rejected".
+   */
+  emailStatus?: OrderEmailStatus;
 };
 
 export type User = {

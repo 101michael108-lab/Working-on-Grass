@@ -201,10 +201,22 @@ export async function POST(req: NextRequest) {
         console.error('PayFast ITN: Guide collection failed (sending email without guides):', e);
       }
 
+      // Record on the order which mail documents were queued, so the admin
+      // dashboard can tell the two silent-failure modes apart: an order with no
+      // `emailStatus.queuedAt` never had its ITN delivered, while one with a
+      // queued-at marker whose mail doc shows delivery.state === 'ERROR' means
+      // the Trigger Email extension refused the send. `queuedAt` is stamped on
+      // both the success and failure paths — it records that the ITN reached
+      // this block, not that the emails went out.
+      const customerTo: string | null = orderData.shippingInfo?.email ?? null;
+      const adminTo = settings?.contactEmail || 'admin@workingongrass.co.za';
+      let customerMailId: string | null = null;
+      let adminMailId: string | null = null;
+
       try {
         // Queue emails via the Admin SDK (the `mail` collection is no longer
         // client-writable).
-        await sendOrderConfirmationEmail(
+        const customerMail = await sendOrderConfirmationEmail(
           {
             to: orderData.shippingInfo.email,
             orderId,
@@ -223,10 +235,11 @@ export async function POST(req: NextRequest) {
           },
           db
         );
+        customerMailId = customerMail?.id ?? null;
 
-        await sendAdminOrderNotification(
+        const adminMail = await sendAdminOrderNotification(
           {
-            to: settings?.contactEmail || 'admin@workingongrass.co.za',
+            to: adminTo,
             orderId,
             orderNumber: orderData.orderNumber,
             orderDate: new Date(),
@@ -239,8 +252,32 @@ export async function POST(req: NextRequest) {
           },
           db
         );
+        adminMailId = adminMail?.id ?? null;
+
+        await orderRef.update({
+          emailStatus: { queuedAt: new Date(), customerMailId, adminMailId, customerTo, adminTo },
+        });
       } catch (e) {
+        const message = e instanceof Error ? e.message : String(e);
         console.error('PayFast ITN: Email queue failed (order still updated):', e);
+
+        // Persist the failure on the order. A console.error alone is invisible
+        // to the owner, which is how the current outage stayed undiagnosed.
+        try {
+          await orderRef.update({
+            emailStatus: {
+              queuedAt: new Date(),
+              customerMailId,
+              adminMailId,
+              customerTo,
+              adminTo,
+              emailError: message,
+              emailErrorAt: new Date(),
+            },
+          });
+        } catch (persistError) {
+          console.error('PayFast ITN: Could not record the email failure on the order:', persistError);
+        }
       }
     }
 
