@@ -31,7 +31,10 @@ export async function POST(req: NextRequest) {
   if (limited) return limited;
 
   if (!hasAdminCredentials()) {
-    return NextResponse.json({ error: 'Server is not configured for checkout.' }, { status: 503 });
+    return NextResponse.json(
+      { error: 'Server is not configured for checkout.', reason: 'not_configured' },
+      { status: 503 }
+    );
   }
 
   // 1. Authenticate the caller (anonymous guests have valid ID tokens too).
@@ -62,7 +65,7 @@ export async function POST(req: NextRequest) {
     .filter((i) => i.productId && Number.isFinite(i.quantity) && i.quantity > 0);
 
   if (items.length === 0) {
-    return NextResponse.json({ error: 'Your cart is empty.' }, { status: 400 });
+    return NextResponse.json({ error: 'Your cart is empty.', reason: 'empty_cart' }, { status: 400 });
   }
 
   const shippingInfo: Record<string, string> = {};
@@ -71,7 +74,10 @@ export async function POST(req: NextRequest) {
   }
   const missing = SHIPPING_FIELDS.filter((f) => !shippingInfo[f]);
   if (missing.length) {
-    return NextResponse.json({ error: `Missing shipping details: ${missing.join(', ')}.` }, { status: 400 });
+    return NextResponse.json(
+      { error: `Missing shipping details: ${missing.join(', ')}.`, reason: 'invalid_details' },
+      { status: 400 }
+    );
   }
 
   // Optional buyer VAT number — shown on the invoice so VAT-registered
@@ -100,17 +106,20 @@ export async function POST(req: NextRequest) {
     for (const item of items) {
       const snap = await db.collection('products').doc(item.productId).get();
       if (!snap.exists) {
-        return NextResponse.json({ error: 'A product in your cart is no longer available.' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'A product in your cart is no longer available.', reason: 'unavailable_product' },
+          { status: 400 }
+        );
       }
       const p = snap.data() as Product;
       const price = getUnitPrice(p); // sale price when a discount is set
       if (!Number.isFinite(price) || price < 0) {
-        return NextResponse.json({ error: `Invalid price for ${p.name}.` }, { status: 400 });
+        return NextResponse.json({ error: `Invalid price for ${p.name}.`, reason: 'invalid_price' }, { status: 400 });
       }
       const stock = Number(p.stock ?? 0);
       if (stock < item.quantity) {
         return NextResponse.json(
-          { error: `Only ${stock} of "${p.name}" left in stock. Please update your cart.` },
+          { error: `Only ${stock} of "${p.name}" left in stock. Please update your cart.`, reason: 'out_of_stock' },
           { status: 409 }
         );
       }
@@ -168,12 +177,18 @@ export async function POST(req: NextRequest) {
     const merchantKey = (isLive ? settings?.payfastMerchantKey : process.env.NEXT_PUBLIC_PAYFAST_SANDBOX_MERCHANT_KEY)?.trim() || '';
     if (!merchantId || !merchantKey) {
       return NextResponse.json(
-        { error: isLive ? 'Store payment is not configured. Please contact us.' : 'Sandbox PayFast credentials are not set.' },
+        {
+          error: isLive ? 'Store payment is not configured. Please contact us.' : 'Sandbox PayFast credentials are not set.',
+          reason: 'not_configured',
+        },
         { status: 503 }
       );
     }
     if (isLive && isSandboxMerchantId(merchantId)) {
-      return NextResponse.json({ error: 'Store payment is misconfigured (sandbox ID in live mode).' }, { status: 503 });
+      return NextResponse.json(
+        { error: 'Store payment is misconfigured (sandbox ID in live mode).', reason: 'not_configured' },
+        { status: 503 }
+      );
     }
 
     // Prefer a signed, expiring invoice token in the return URL (falls back to
@@ -208,6 +223,9 @@ export async function POST(req: NextRequest) {
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : String(error);
     console.error('create-order error:', message);
-    return NextResponse.json({ error: 'Could not start checkout. Please try again.' }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Could not start checkout. Please try again.', reason: 'server_error' },
+      { status: 500 }
+    );
   }
 }

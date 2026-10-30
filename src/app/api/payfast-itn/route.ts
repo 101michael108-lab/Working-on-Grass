@@ -6,6 +6,7 @@ import type {
   Firestore as AdminFirestore,
 } from 'firebase-admin/firestore';
 import { ensureOrderNotifications, notifyAdminOfPaymentProblem } from '@/services/order-notifications';
+import { recordFunnelEvent } from '@/services/funnel-store';
 import { invoiceFileName } from '@/lib/invoice';
 import { signInvoiceToken } from '@/lib/invoice-token';
 import { getSiteUrl } from '@/lib/site-url';
@@ -219,6 +220,10 @@ export async function POST(req: NextRequest) {
       // Acknowledge either way so PayFast stops retrying.
       return new NextResponse('OK', { status: 200 });
     }
+
+    // The bottom of the funnel, recorded where payment is actually confirmed
+    // rather than where the customer happens to land afterwards.
+    await recordFunnelEvent(db, 'payment_confirmed');
 
     await ensureOrderEmails(db, orderRef, orderData, orderId, userId, settings);
 

@@ -8,7 +8,7 @@ import type { CartItem, Product } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { useFirestore } from '@/firebase';
-import { toGaItem, track } from '@/lib/analytics';
+import { toGaItem, track, countFunnelStep } from '@/lib/analytics';
 import { getUnitPrice } from '@/lib/pricing';
 import { formatRand } from '@/lib/utils';
 
@@ -76,7 +76,8 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
 
     const addedQty = Math.max(0, Math.min(newQty, stockLimit) - currentQty);
     if (addedQty > 0) {
-      track('add_to_cart', {
+      countFunnelStep('add_to_cart');
+    track('add_to_cart', {
         currency: 'ZAR',
         value: getUnitPrice(product) * addedQty,
         items: [toGaItem(product, addedQty)],
